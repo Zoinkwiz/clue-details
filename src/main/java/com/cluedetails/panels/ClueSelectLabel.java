@@ -12,13 +12,24 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.components.materialtabs.MaterialTab;
 
 public class ClueSelectLabel extends JLabel
 {
 	final CluePreferenceManager cluePreferenceManager;
 	final Clues clue;
+
+	private static final Border SELECTED_BORDER = new CompoundBorder(
+		BorderFactory.createMatteBorder(0, 0, 1, 0, ColorScheme.BRAND_ORANGE),
+		BorderFactory.createEmptyBorder(5, 10, 4, 10));
+
+	private static final Border UNSELECTED_BORDER = BorderFactory
+		.createEmptyBorder(5, 10, 5, 10);
+
 
 	public ClueSelectLabel(CluePreferenceManager cluePreferenceManager, Clues clue)
 	{
@@ -28,30 +39,39 @@ public class ClueSelectLabel extends JLabel
 		setLayout(new BorderLayout());
 		setHorizontalAlignment(SwingConstants.LEFT);
 		setVerticalAlignment(SwingConstants.TOP);
-		setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		setBorder(BorderFactory.createCompoundBorder(
-			BorderFactory.createMatteBorder(1, 0, 1, 0, ColorScheme.DARK_GRAY_COLOR.brighter()),
-			BorderFactory.createEmptyBorder(5, 5, 10, 0)
-		));
 		setText(generateText(clue.getClueText()));
 		setOpaque(true);
 		boolean isActive = cluePreferenceManager.getPreference(clue.getClueID());
-		setBackground(isActive ? Color.GREEN.darker() : Color.RED.darker());
+		setSelected(isActive);
+		setHovered(false);
 
 		addMouseListener(new MouseAdapter()
 		{
 			@Override
-			public void mouseClicked(MouseEvent e)
+			public void mousePressed(MouseEvent e)
 			{
+				if (e.getButton() != MouseEvent.BUTTON1) return;
+
 				boolean currentState = cluePreferenceManager.getPreference(clue.getClueID());
 				boolean newState = !currentState;
 
-				setBackground(newState ? Color.GREEN.darker() : Color.RED.darker());
+				setSelected(newState);
 				cluePreferenceManager.savePreference(clue.getClueID(), newState);
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				setHovered(true);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				setHovered(false);
 			}
 		});
 	}
-
 
 	public ClueSelectLabel(String text)
 	{
@@ -77,5 +97,29 @@ public class ClueSelectLabel extends JLabel
 	{
 		if (clue == null) return List.of();
 		return Arrays.asList(clue.getClueText().toLowerCase().split(" "));
+	}
+
+	private void setSelected(boolean isSelected)
+	{
+		if (isSelected)
+		{
+			setBorder(SELECTED_BORDER);
+		}
+		else
+		{
+			setBorder(UNSELECTED_BORDER);
+		}
+	}
+
+	private void setHovered(boolean isHovered)
+	{
+		if (isHovered)
+		{
+			setBackground(ColorScheme.DARK_GRAY_HOVER_COLOR);
+		}
+		else
+		{
+			setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		}
 	}
 }

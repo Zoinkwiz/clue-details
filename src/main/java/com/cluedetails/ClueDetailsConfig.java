@@ -13,6 +13,7 @@ import lombok.Getter;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.Notification;
 import net.runelite.client.util.Text;
 
 @ConfigGroup("clue-details")
@@ -182,7 +183,7 @@ public interface ClueDetailsConfig extends Config
 		keyName = "filterListByRegion",
 		name = "Filter by region",
 		description = "Configures what clues to show based on region they fall in",
-		position = 1
+		position = 2
 	)
 	default ClueRegionFilter filterListByRegion()
 	{
@@ -198,5 +199,16 @@ public interface ClueDetailsConfig extends Config
 	default ClueOrdering orderListBy()
 	{
 		return ClueOrdering.TIER;
+	}
+
+	@ConfigItem(
+		keyName = "markedClueDroppedNotification",
+		name = "Notify when a marked clue drops",
+		description = "Send a notification when a marked clue drops",
+		position = 4
+	)
+	default Notification markedClueDroppedNotification()
+	{
+		return Notification.ON;
 	}
 }

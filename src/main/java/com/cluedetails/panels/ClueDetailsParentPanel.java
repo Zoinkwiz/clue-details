@@ -252,11 +252,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		}
 
-		for (Clues clue : filteredClues)
-		{
-			clueSelectLabels.add(new ClueSelectLabel(cluePreferenceManager, clue));
-		}
-
 		showMatchingClues(searchBar.getText() != null ? searchBar.getText() : "");
 
 		repaint();

@@ -1,6 +1,5 @@
 package com.cluedetails;
 
-import com.cluedetails.panels.ClueDetailsPanel;
 import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
@@ -97,6 +96,11 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
+		if (event.getGroup().equals("clue-details-highlights"))
+		{
+			infoOverlay.refreshHighlights();
+		}
+
 		if (!event.getGroup().equals(ClueDetailsConfig.class.getAnnotation(ConfigGroup.class).value()))
 		{
 			return;
