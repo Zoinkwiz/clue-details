@@ -1,10 +1,10 @@
+
 package com.cluedetails.panels;
 
 import com.cluedetails.ClueDetailsConfig;
 import com.cluedetails.ClueDetailsConfig.*;
 import com.cluedetails.CluePreferenceManager;
 import com.cluedetails.Clues;
-import com.cluedetails.filters.ClueTier;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -14,7 +14,6 @@ import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -25,7 +24,6 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import net.runelite.api.QuestState;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.ColorScheme;
@@ -228,9 +226,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		List<Clues> filteredClues = Arrays.stream(Clues.values())
 			.filter(config.filterListByTier())
 			.filter(config.filterListByRegion())
-//			.filter(config.difficulty())
-//			.filter(QuestDetails::showCompletedQuests)
-//			.filter(SkillFiltering::passesSkillFilter)
+			.filter(this::showOnlyMarkedClues)
 			.sorted(config.orderListBy())
 			.collect(Collectors.toList());
 
@@ -256,5 +252,10 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 		repaint();
 		revalidate();
+	}
+
+	public boolean showOnlyMarkedClues(Clues clue)
+	{
+		return config.onlyShowMarkedClues() && cluePreferenceManager.getPreference(clue.getClueID());
 	}
 }

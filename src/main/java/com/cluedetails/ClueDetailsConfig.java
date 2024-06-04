@@ -22,7 +22,7 @@ public interface ClueDetailsConfig extends Config
 	enum ClueOrdering implements Comparator<Clues>
 	{
 		/**
-		 * Sort quests in alphabetical order
+		 * Sort clues in alphabetical order
 		 */
 		TIER(ClueOrders.sortByTier(), ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.HARD, ClueTierFilter.ELITE),
 		REGION(ClueOrders.sortByRegion(), ClueRegionFilter.MISTHALIN, ClueRegionFilter.ASGARNIA, ClueRegionFilter.KARAMJA, ClueRegionFilter.KANDARIN, ClueRegionFilter.FREMENNIK_PROVINCE, ClueRegionFilter.KHARIDIAN_DESERT,
@@ -88,9 +88,9 @@ public interface ClueDetailsConfig extends Config
 		}
 
 		@Override
-		public boolean test(Clues quest)
+		public boolean test(Clues clue)
 		{
-			return predicate.test(quest);
+			return predicate.test(clue);
 		}
 
 		public List<Clues> test(Collection<Clues> helpers)
@@ -136,9 +136,9 @@ public interface ClueDetailsConfig extends Config
 		}
 
 		@Override
-		public boolean test(Clues quest)
+		public boolean test(Clues clue)
 		{
-			return predicate.test(quest);
+			return predicate.test(clue);
 		}
 
 		public List<Clues> test(Collection<Clues> helpers)
@@ -210,5 +210,16 @@ public interface ClueDetailsConfig extends Config
 	default Notification markedClueDroppedNotification()
 	{
 		return Notification.ON;
+	}
+
+	@ConfigItem(
+		keyName = "onlyShowMarkedClues",
+		name = "Only show marked clues in the sidebar",
+		description = "Toggle whether to only show marked clues in the sidebar",
+		position = 5
+	)
+	default boolean onlyShowMarkedClues()
+	{
+		return false;
 	}
 }
