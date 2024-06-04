@@ -1,5 +1,6 @@
 package com.cluedetails;
 
+import com.cluedetails.filters.ClueTier;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.runelite.api.ItemID;

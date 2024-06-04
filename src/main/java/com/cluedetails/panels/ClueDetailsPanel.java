@@ -1,42 +1,28 @@
-package com.cluedetails;
+package com.cluedetails.panels;
 
+import com.cluedetails.CluePreferenceManager;
+import com.cluedetails.Clues;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 
 public class ClueDetailsPanel extends PluginPanel
 {
-	private final ConfigManager configManager;
-	private final ClueDetailsConfig config;
+	private final CluePreferenceManager cluePreferenceManager;
 
-	private final Map<Integer, Boolean> clueStates = new HashMap<>();
-
-	public ClueDetailsPanel(ConfigManager configManager, ClueDetailsConfig config)
+	public ClueDetailsPanel(CluePreferenceManager cluePreferenceManager)
 	{
-		this.configManager = configManager;
-		this.config = config;
-
-		// Load the saved state
-		loadState();
+		this.cluePreferenceManager = cluePreferenceManager;
 
 		setLayout(new BorderLayout(0, 1));
 		setBorder(new EmptyBorder(5, 0, 0, 0));
@@ -60,15 +46,6 @@ public class ClueDetailsPanel extends PluginPanel
 		add(questStepsPanel);
 	}
 
-	private void loadState()
-	{
-		for (Clues clue : Clues.values())
-		{
-			boolean state = Boolean.TRUE.equals(configManager.getConfiguration("clue-details-highlights", String.valueOf(clue.getClueID()), Boolean.class));
-			clueStates.put(clue.getClueID(), state);
-		}
-	}
-
 	public String generateText(String clueText)
 	{
 		StringBuilder text = new StringBuilder();
@@ -90,7 +67,7 @@ public class ClueDetailsPanel extends PluginPanel
 		));
 		panel.setText(generateText(clue.getClueText()));
 		panel.setOpaque(true);
-		boolean isActive = clueStates.getOrDefault(clue.getClueID(), false);
+		boolean isActive = cluePreferenceManager.getPreference(clue.getClueID());
 		panel.setBackground(isActive ? Color.GREEN.darker() : Color.RED.darker());
 
 		panel.addMouseListener(new MouseAdapter()
@@ -98,12 +75,11 @@ public class ClueDetailsPanel extends PluginPanel
 			@Override
 			public void mouseClicked(MouseEvent e)
 			{
-				boolean currentState = clueStates.getOrDefault(clue.getClueID(), false);
+				boolean currentState = cluePreferenceManager.getPreference(clue.getClueID());
 				boolean newState = !currentState;
 
-				clueStates.put(clue.getClueID(), newState);
 				panel.setBackground(newState ? Color.GREEN.darker() : Color.RED.darker());
-				configManager.setConfiguration("clue-details-highlights", String.valueOf(clue.getClueID()), newState);
+				cluePreferenceManager.savePreference(clue.getClueID(), newState);
 			}
 		});
 

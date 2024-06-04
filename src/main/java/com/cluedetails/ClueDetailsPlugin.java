@@ -1,16 +1,19 @@
 package com.cluedetails;
 
+import com.cluedetails.panels.ClueDetailsPanel;
+import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
-import net.runelite.api.GameState;
-import net.runelite.api.events.GameStateChanged;
+import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -47,9 +50,13 @@ public class ClueDetailsPlugin extends Plugin
 	@Inject
 	ConfigManager configManager;
 
-	ClueDetailsPanel panel;
+	ClueDetailsParentPanel panel;
 
 	NavigationButton navButton;
+
+	CluePreferenceManager cluePreferenceManager;
+
+	private final Collection<String> configEvents = Arrays.asList("filterListByTier");
 
 	@Override
 	protected void startUp() throws Exception
@@ -57,9 +64,11 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.add(infoOverlay);
 		eventBus.register(infoOverlay);
 
+		cluePreferenceManager = new CluePreferenceManager(configManager);
+
 		final BufferedImage icon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/icon.png");
 
-		panel = new ClueDetailsPanel(configManager, config);
+		panel = new ClueDetailsParentPanel(configManager, cluePreferenceManager, config);
 		navButton = NavigationButton.builder()
 			.tooltip("Clue Details")
 			.icon(icon)
@@ -83,5 +92,19 @@ public class ClueDetailsPlugin extends Plugin
 	ClueDetailsConfig provideConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(ClueDetailsConfig.class);
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (!event.getGroup().equals(ClueDetailsConfig.class.getAnnotation(ConfigGroup.class).value()))
+		{
+			return;
+		}
+
+		if (configEvents.contains(event.getKey()))
+		{
+			panel.refresh();
+		}
 	}
 }
