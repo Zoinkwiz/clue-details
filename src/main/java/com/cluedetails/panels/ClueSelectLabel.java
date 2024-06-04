@@ -4,6 +4,7 @@ import com.cluedetails.CluePreferenceManager;
 import com.cluedetails.Clues;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import net.runelite.client.ui.ColorScheme;
+import net.runelite.client.ui.PluginPanel;
 
 public class ClueSelectLabel extends JLabel
 {
@@ -50,16 +52,30 @@ public class ClueSelectLabel extends JLabel
 		});
 	}
 
+
+	public ClueSelectLabel(String text)
+	{
+		this.cluePreferenceManager = null;
+		this.clue = null;
+
+		setLayout(new BorderLayout(3, 3));
+		setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH, 30));
+		setBackground(ColorScheme.DARKER_GRAY_COLOR);
+
+		JLabel nameLabel = new JLabel(text);
+		Color color = Color.WHITE;
+		nameLabel.setForeground(color);
+		add(nameLabel, BorderLayout.CENTER);
+	}
+
 	public String generateText(String clueText)
 	{
-		StringBuilder text = new StringBuilder();
-		text.append(clueText);
-
-		return "<html><body style='text-align:left'>" + text + "</body></html>";
+		return "<html><body style='text-align:left'>" + clueText + "</body></html>";
 	}
 
 	public List<String> getKeywords()
 	{
+		if (clue == null) return List.of();
 		return Arrays.asList(clue.getClueText().toLowerCase().split(" "));
 	}
 }

@@ -1,6 +1,7 @@
 package com.cluedetails.panels;
 
 import com.cluedetails.ClueDetailsConfig;
+import com.cluedetails.ClueDetailsConfig.*;
 import com.cluedetails.CluePreferenceManager;
 import com.cluedetails.Clues;
 import com.cluedetails.filters.ClueTier;
@@ -13,6 +14,7 @@ import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
@@ -23,6 +25,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import net.runelite.api.QuestState;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.ColorScheme;
@@ -35,7 +38,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private final IconTextField searchBar = new IconTextField();
 	JPanel searchCluesPanel = new JPanel();
 	JPanel clueListPanel = new JPanel();
-	private final JComboBox<Enum> tierFilterDropdown;
+	private final JComboBox<Enum> tierFilterDropdown, orderDropdown;
 
 	public static final int DROPDOWN_HEIGHT = 26;
 	private final ArrayList<ClueSelectLabel> clueSelectLabels = new ArrayList<>();
@@ -116,11 +119,15 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JPanel filtersPanel = makeDropdownPanel(tierFilterDropdown, "Tier");
 		filtersPanel.setPreferredSize(new Dimension(PANEL_WIDTH, DROPDOWN_HEIGHT));
 
+		orderDropdown = makeNewDropdown(ClueDetailsConfig.ClueOrdering.values(), "orderListBy");
+		JPanel orderPanel = makeDropdownPanel(orderDropdown, "Ordering");
+		orderPanel.setPreferredSize(new Dimension(PANEL_WIDTH, DROPDOWN_HEIGHT));
+
 		allDropdownSections.setLayout(new BoxLayout(allDropdownSections, BoxLayout.Y_AXIS));
 		allDropdownSections.setBorder(new EmptyBorder(0, 0, 10, 0));
 		allDropdownSections.add(filtersPanel);
 //		allDropdownSections.add(difficultyPanel);
-//		allDropdownSections.add(orderPanel);
+		allDropdownSections.add(orderPanel);
 //		allDropdownSections.add(skillsFilterPanel);
 
 		searchCluesPanel.add(allDropdownSections, BorderLayout.NORTH);
@@ -212,10 +219,33 @@ public class ClueDetailsParentPanel extends PluginPanel
 		clueSelectLabels.clear();
 
 		tierFilterDropdown.setSelectedItem(config.filterListByTier());
+		orderDropdown.setSelectedItem(config.orderListBy());
 
 		List<Clues> filteredClues = Arrays.stream(Clues.values())
 			.filter(config.filterListByTier())
+//			.filter(config.difficulty())
+//			.filter(QuestDetails::showCompletedQuests)
+//			.filter(SkillFiltering::passesSkillFilter)
+			.sorted(config.orderListBy())
 			.collect(Collectors.toList());
+
+		ClueFilter[] sections = config.orderListBy().getSections();
+
+		for (ClueFilter section : sections)
+		{
+			List<Clues> filterList = filteredClues.stream()
+				.filter(section)
+				.collect(Collectors.toList());
+
+			if (!filterList.isEmpty())
+			{
+				clueSelectLabels.add(new ClueSelectLabel(section.getDisplayName()));
+			}
+			for (Clues clue : filterList)
+			{
+				clueSelectLabels.add(new ClueSelectLabel(cluePreferenceManager, clue));
+			}
+		}
 
 		for (Clues clue : filteredClues)
 		{

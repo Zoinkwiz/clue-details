@@ -1,8 +1,10 @@
 package com.cluedetails;
 
+import com.cluedetails.filters.ClueOrders;
 import com.cluedetails.filters.ClueTier;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -15,26 +17,70 @@ import net.runelite.client.util.Text;
 @ConfigGroup("clue-details")
 public interface ClueDetailsConfig extends Config
 {
-	enum ClueTierFilter implements Predicate<Clues>
+	enum ClueOrdering implements Comparator<Clues>
 	{
-		SHOW_ALL(c -> true),
-		EASY(c -> c.getClueTier() == ClueTier.EASY),
-		MEDIUM(c -> c.getClueTier() == ClueTier.MEDIUM),
-		HARD(c -> c.getClueTier() == ClueTier.HARD),
-		ELITE(c -> c.getClueTier() == ClueTier.ELITE);
+		/**
+		 * Sort quests in alphabetical order
+		 */
+		TIER(ClueOrders.sortByTier(), ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.HARD, ClueTierFilter.ELITE);
 
-		private final Predicate<Clues> predicate;
-
+		private final Comparator<Clues> comparator;
 		@Getter
+		private final ClueFilter[] sections;
+
+		ClueOrdering(Comparator<Clues> comparator, ClueTierFilter... sections)
+		{
+			this.comparator = comparator;
+			this.sections = sections;
+		}
+
+		public List<Clues> sort(Collection<Clues> list)
+		{
+			return list.stream().sorted(this).collect(Collectors.toList());
+		}
+
+		@Override
+		public int compare(Clues o1, Clues o2)
+		{
+			return comparator.compare(o1, o2);
+		}
+	}
+
+	interface ClueFilter extends Predicate<Clues>
+	{
+		String getDisplayName();
+	}
+
+	class BaseClueFilter
+	{
 		private final String displayName;
 
-		private final boolean shouldDisplay;
+		public BaseClueFilter(String displayName)
+		{
+			this.displayName = displayName;
+		}
 
-		ClueTierFilter(Predicate<Clues> predicate)
+		public String getDisplayName()
+		{
+			return displayName;
+		}
+	}
+
+	enum ClueTierFilter implements ClueFilter
+	{
+		SHOW_ALL(c -> true, "Show All"),
+		EASY(c -> c.getClueTier() == ClueTier.EASY, "Easy"),
+		MEDIUM(c -> c.getClueTier() == ClueTier.MEDIUM, "Medium"),
+		HARD(c -> c.getClueTier() == ClueTier.HARD, "Hard"),
+		ELITE(c -> c.getClueTier() == ClueTier.ELITE, "Elite");
+
+		private final Predicate<Clues> predicate;
+		private final BaseClueFilter baseClueFilter;
+
+		ClueTierFilter(Predicate<Clues> predicate, String displayName)
 		{
 			this.predicate = predicate;
-			this.displayName = Text.titleCase(this);
-			this.shouldDisplay = true;
+			this.baseClueFilter = new BaseClueFilter(displayName);
 		}
 
 		@Override
@@ -50,7 +96,15 @@ public interface ClueDetailsConfig extends Config
 
 		public static ClueTierFilter[] displayFilters()
 		{
-			return Arrays.stream(ClueTierFilter.values()).filter((questFilter -> questFilter.shouldDisplay)).toArray(ClueTierFilter[]::new);
+			return ClueTierFilter.values();
+		}
+
+
+
+		@Override
+		public String getDisplayName()
+		{
+			return baseClueFilter.getDisplayName();
 		}
 	}
 
@@ -73,5 +127,16 @@ public interface ClueDetailsConfig extends Config
 	default ClueTierFilter filterListByTier()
 	{
 		return ClueTierFilter.SHOW_ALL;
+	}
+
+	@ConfigItem(
+		keyName = "orderListBy",
+		name = "Clue sidebar order",
+		description = "Configures which way to order the clue list",
+		position = 3
+	)
+	default ClueOrdering orderListBy()
+	{
+		return ClueOrdering.TIER;
 	}
 }

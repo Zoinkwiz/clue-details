@@ -48,10 +48,7 @@ public class ClueDetailsPanel extends PluginPanel
 
 	public String generateText(String clueText)
 	{
-		StringBuilder text = new StringBuilder();
-		text.append(clueText);
-
-		return "<html><body style='text-align:left'>" + text + "</body></html>";
+		return "<html><body style='text-align:left'>" + clueText + "</body></html>";
 	}
 
 	private JLabel createClueToggle(Clues clue)
