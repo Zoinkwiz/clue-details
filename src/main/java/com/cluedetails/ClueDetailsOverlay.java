@@ -200,12 +200,13 @@ public class ClueDetailsOverlay extends OverlayPanel
 		{
 			tileHighlights.clear();
 		}
+    
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
 			addItemTiles();
 		}
 	}
-
+  
 	@Subscribe
 	public void onItemSpawned(ItemSpawned itemSpawned)
 	{

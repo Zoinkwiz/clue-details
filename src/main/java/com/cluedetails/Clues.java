@@ -537,7 +537,6 @@ public enum Clues
 	HARD_2773("You will need to under-cook to solve this one.", ItemID.CLUE_SCROLL_HARD_2773, ClueTier.HARD, List.of(new WorldPoint(3219, 9617, 0))),
 	HARD_19904("ZHLUG ROG PDQ.", ItemID.CLUE_SCROLL_HARD_19904, ClueTier.HARD, List.of(new WorldPoint(3224, 3112, 0))),
 	HARD_19902("ZSBKDO ZODO.", ItemID.CLUE_SCROLL_HARD_19902, ClueTier.HARD, List.of(new WorldPoint(3680, 3537, 0))),
-
 	// CLUE_SCROLL_HARD_23174
 	// CLUE_SCROLL_HARD_23175
 	// CLUE_SCROLL_HARD_23176
@@ -751,6 +750,7 @@ public enum Clues
 	ELITE_12124("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12124, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12125("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12125, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12126("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12126, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
+
 	// CLUE_SCROLL_ELITE_24773, possibly a new Sherlock step?
 
 	// Master clues share same ID so can't do them
