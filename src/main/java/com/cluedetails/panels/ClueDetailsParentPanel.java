@@ -38,7 +38,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private final IconTextField searchBar = new IconTextField();
 	JPanel searchCluesPanel = new JPanel();
 	JPanel clueListPanel = new JPanel();
-	private final JComboBox<Enum> tierFilterDropdown, orderDropdown;
+	private final JComboBox<Enum> tierFilterDropdown, regionFilterDropdown, orderDropdown;
 
 	public static final int DROPDOWN_HEIGHT = 26;
 	private final ArrayList<ClueSelectLabel> clueSelectLabels = new ArrayList<>();
@@ -116,8 +116,12 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 		// Filters
 		tierFilterDropdown = makeNewDropdown(ClueDetailsConfig.ClueTierFilter.displayFilters(), "filterListByTier");
-		JPanel filtersPanel = makeDropdownPanel(tierFilterDropdown, "Tier");
-		filtersPanel.setPreferredSize(new Dimension(PANEL_WIDTH, DROPDOWN_HEIGHT));
+		JPanel filtersTierPanel = makeDropdownPanel(tierFilterDropdown, "Tier");
+		filtersTierPanel.setPreferredSize(new Dimension(PANEL_WIDTH, DROPDOWN_HEIGHT));
+
+		regionFilterDropdown = makeNewDropdown(ClueDetailsConfig.ClueRegionFilter.displayFilters(), "filterListByRegion");
+		JPanel filtersRegionPanel = makeDropdownPanel(regionFilterDropdown, "Region");
+		filtersRegionPanel.setPreferredSize(new Dimension(PANEL_WIDTH, DROPDOWN_HEIGHT));
 
 		orderDropdown = makeNewDropdown(ClueDetailsConfig.ClueOrdering.values(), "orderListBy");
 		JPanel orderPanel = makeDropdownPanel(orderDropdown, "Ordering");
@@ -125,10 +129,9 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 		allDropdownSections.setLayout(new BoxLayout(allDropdownSections, BoxLayout.Y_AXIS));
 		allDropdownSections.setBorder(new EmptyBorder(0, 0, 10, 0));
-		allDropdownSections.add(filtersPanel);
-//		allDropdownSections.add(difficultyPanel);
+		allDropdownSections.add(filtersTierPanel);
+		allDropdownSections.add(filtersRegionPanel);
 		allDropdownSections.add(orderPanel);
-//		allDropdownSections.add(skillsFilterPanel);
 
 		searchCluesPanel.add(allDropdownSections, BorderLayout.NORTH);
 
@@ -219,10 +222,12 @@ public class ClueDetailsParentPanel extends PluginPanel
 		clueSelectLabels.clear();
 
 		tierFilterDropdown.setSelectedItem(config.filterListByTier());
+		regionFilterDropdown.setSelectedItem(config.filterListByRegion());
 		orderDropdown.setSelectedItem(config.orderListBy());
 
 		List<Clues> filteredClues = Arrays.stream(Clues.values())
 			.filter(config.filterListByTier())
+			.filter(config.filterListByRegion())
 //			.filter(config.difficulty())
 //			.filter(QuestDetails::showCompletedQuests)
 //			.filter(SkillFiltering::passesSkillFilter)

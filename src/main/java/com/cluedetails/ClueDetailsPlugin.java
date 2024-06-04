@@ -56,7 +56,7 @@ public class ClueDetailsPlugin extends Plugin
 
 	CluePreferenceManager cluePreferenceManager;
 
-	private final Collection<String> configEvents = Arrays.asList("filterListByTier");
+	private final Collection<String> configEvents = Arrays.asList("filterListByTier", "filterListByRegion", "orderListBy");
 
 	@Override
 	protected void startUp() throws Exception

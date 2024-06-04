@@ -1,6 +1,7 @@
 package com.cluedetails;
 
 import com.cluedetails.filters.ClueOrders;
+import com.cluedetails.filters.ClueRegion;
 import com.cluedetails.filters.ClueTier;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,13 +23,15 @@ public interface ClueDetailsConfig extends Config
 		/**
 		 * Sort quests in alphabetical order
 		 */
-		TIER(ClueOrders.sortByTier(), ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.HARD, ClueTierFilter.ELITE);
+		TIER(ClueOrders.sortByTier(), ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.HARD, ClueTierFilter.ELITE),
+		REGION(ClueOrders.sortByRegion(), ClueRegionFilter.MISTHALIN, ClueRegionFilter.ASGARNIA, ClueRegionFilter.KARAMJA, ClueRegionFilter.KANDARIN, ClueRegionFilter.FREMENNIK_PROVINCE, ClueRegionFilter.KHARIDIAN_DESERT,
+			ClueRegionFilter.MORYTANIA, ClueRegionFilter.TIRANNWN, ClueRegionFilter.WILDERNESS, ClueRegionFilter.KOUREND, ClueRegionFilter.VARLAMORE);
 
 		private final Comparator<Clues> comparator;
 		@Getter
 		private final ClueFilter[] sections;
 
-		ClueOrdering(Comparator<Clues> comparator, ClueTierFilter... sections)
+		ClueOrdering(Comparator<Clues> comparator, ClueFilter... sections)
 		{
 			this.comparator = comparator;
 			this.sections = sections;
@@ -99,7 +102,53 @@ public interface ClueDetailsConfig extends Config
 			return ClueTierFilter.values();
 		}
 
+		@Override
+		public String getDisplayName()
+		{
+			return baseClueFilter.getDisplayName();
+		}
+	}
 
+	enum ClueRegionFilter implements ClueFilter
+	{
+		SHOW_ALL(c -> true, "Show All"),
+		MISTHALIN(c -> c.getRegions().isRegionValid(ClueRegion.MISTHALIN), "Misthalin"),
+		KARAMJA(c -> c.getRegions().isRegionValid(ClueRegion.KARAMJA), "Karamja"),
+		ASGARNIA(c -> c.getRegions().isRegionValid(ClueRegion.ASGARNIA), "Asgarnia"),
+		FREMENNIK_PROVINCE(c -> c.getRegions().isRegionValid(ClueRegion.FREMENNIK_PROVINCE), "Fremennik province"),
+		KANDARIN(c -> c.getRegions().isRegionValid(ClueRegion.KANDARIN), "Kandarin"),
+		KHARIDIAN_DESERT(c -> c.getRegions().isRegionValid(ClueRegion.KHARIDIAN_DESERT), "Kharidian desert"),
+		MORYTANIA(c -> c.getRegions().isRegionValid(ClueRegion.MORYTANIA), "Morytania"),
+		TIRANNWN(c -> c.getRegions().isRegionValid(ClueRegion.TIRANNWN), "Tirannwn"),
+		WILDERNESS(c -> c.getRegions().isRegionValid(ClueRegion.WILDERNESS), "Wilderness"),
+		KOUREND(c -> c.getRegions().isRegionValid(ClueRegion.KOUREND), "Kourend"),
+		VARLAMORE(c -> c.getRegions().isRegionValid(ClueRegion.VARLAMORE), "Varlamore"),
+		;
+
+		private final Predicate<Clues> predicate;
+		private final BaseClueFilter baseClueFilter;
+
+		ClueRegionFilter(Predicate<Clues> predicate, String displayName)
+		{
+			this.predicate = predicate;
+			this.baseClueFilter = new BaseClueFilter(displayName);
+		}
+
+		@Override
+		public boolean test(Clues quest)
+		{
+			return predicate.test(quest);
+		}
+
+		public List<Clues> test(Collection<Clues> helpers)
+		{
+			return helpers.stream().filter(this).collect(Collectors.toList());
+		}
+
+		public static ClueRegionFilter[] displayFilters()
+		{
+			return ClueRegionFilter.values();
+		}
 
 		@Override
 		public String getDisplayName()
@@ -127,6 +176,17 @@ public interface ClueDetailsConfig extends Config
 	default ClueTierFilter filterListByTier()
 	{
 		return ClueTierFilter.SHOW_ALL;
+	}
+
+	@ConfigItem(
+		keyName = "filterListByRegion",
+		name = "Filter by region",
+		description = "Configures what clues to show based on region they fall in",
+		position = 1
+	)
+	default ClueRegionFilter filterListByRegion()
+	{
+		return ClueRegionFilter.SHOW_ALL;
 	}
 
 	@ConfigItem(
