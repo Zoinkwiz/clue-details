@@ -169,7 +169,7 @@ public enum Clues
 	EASY_23161("Talk to Charles at Port Piscarilius.", ItemID.CLUE_SCROLL_EASY_23161, ClueTier.EASY, List.of(new WorldPoint(1821, 3690, 0))),
 	EASY_19828("Talk to Ermin.", ItemID.CLUE_SCROLL_EASY_19828, ClueTier.EASY, List.of(new WorldPoint(2488, 3409, 0))),
 	EASY_23162("Talk to Morgan in his house at Draynor Village.", ItemID.CLUE_SCROLL_EASY_23162, ClueTier.EASY, List.of(new WorldPoint(3098, 3268, 0))),
-	EASY_23165("Talk to Turael in Burthorpe.", ItemID.CLUE_SCROLL_EASY_23165, ClueTier.EASY, List.of(new WorldPoint(2930, 3536, 0))),
+	EASY_23165("Talk to the Slayer Master in Burthorpe.", ItemID.CLUE_SCROLL_EASY_23165, ClueTier.EASY, List.of(new WorldPoint(2930, 3536, 0))),
 	EASY_23163("Talk to Wayne at Wayne's Chains in Falador.", ItemID.CLUE_SCROLL_EASY_23163, ClueTier.EASY, List.of(new WorldPoint(2972, 3312, 0))),
 	EASY_2683("Talk to Zeke in Al Kharid.", ItemID.CLUE_SCROLL_EASY_2683, ClueTier.EASY, List.of(new WorldPoint(3287, 3190, 0))),
 	EASY_12169("Talk to a party-goer in Falador.", ItemID.CLUE_SCROLL_EASY_12169, ClueTier.EASY, List.of(new WorldPoint(3046, 3382, 0))),
