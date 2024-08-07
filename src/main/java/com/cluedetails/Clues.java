@@ -447,6 +447,7 @@ public enum Clues
 	HARD_12566("COPPER ORE CRYPTS.", ItemID.CLUE_SCROLL_HARD_12566, ClueTier.HARD, List.of(new WorldPoint(3061, 3377, 0))),
 	HARD_12550("Cheer at the top of the agility pyramid.", ItemID.CLUE_SCROLL_HARD_12550, ClueTier.HARD, List.of(new WorldPoint(3043, 4697, 0))),
 	HARD_3575("Citric cellar.", ItemID.CLUE_SCROLL_HARD_3575, ClueTier.HARD, List.of(new WorldPoint(2490, 3488, 0))),
+	HARD_3557("'Small shoe.'", ItemID.CLUE_SCROLL_HARD_3577, ClueTier.HARD, List.of(new WorldPoint(2469, 3435, 0))),
 	HARD_19846("Come have a cip with this great soot covered denizen.", ItemID.CLUE_SCROLL_HARD_19846, ClueTier.HARD, List.of(new WorldPoint(2527, 3891, 0))),
 	HARD_2774("Come to the evil ledge.", ItemID.CLUE_SCROLL_HARD_2774, ClueTier.HARD, List.of(new WorldPoint(3089, 3468, 0))),
 	HARD_7245("Covered in shadows.", ItemID.CLUE_SCROLL_HARD_7245, ClueTier.HARD, List.of(new WorldPoint(3488, 3289, 0))),
