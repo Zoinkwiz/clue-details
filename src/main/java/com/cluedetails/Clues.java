@@ -145,6 +145,7 @@ public enum Clues
 	EASY_10202("Shrug in the mine near Rimmington.", ItemID.CLUE_SCROLL_EASY_10202, ClueTier.EASY, List.of(new WorldPoint(2976, 3238, 0))),
 	EASY_3514("Someone watching the fights in the Emir's Arena.", ItemID.CLUE_SCROLL_EASY_3514, ClueTier.EASY, List.of(new WorldPoint(3366, 3222, 0))),
 	EASY_2716("South-east Varrock mine.", ItemID.CLUE_SCROLL_EASY_2716, ClueTier.EASY, List.of(new WorldPoint(3290, 3373, 0))),
+	EASY_2700("Search the drawers in Catherby's Archery shop", ItemID.CLUE_SCROLL_EASY_2700, ClueTier.EASY, List.of(new WorldPoint(2825, 3442, 0))),
 	EASY_2701("Speak to Arhein in Catherby.", ItemID.CLUE_SCROLL_EASY_2701, ClueTier.EASY, List.of(new WorldPoint(2803, 3430, 0))),
 	EASY_2698("Speak to Doric, who lives north of Falador.", ItemID.CLUE_SCROLL_EASY_2698, ClueTier.EASY, List.of(new WorldPoint(2951, 3450, 0))),
 	EASY_2684("Speak to Ellis in Al Kharid.", ItemID.CLUE_SCROLL_EASY_2684, ClueTier.EASY, List.of(new WorldPoint(3276, 3191, 0))),
