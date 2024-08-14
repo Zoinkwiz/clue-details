@@ -752,8 +752,7 @@ public enum Clues
 	ELITE_12124("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12124, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12125("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12125, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12126("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12126, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
-
-	// CLUE_SCROLL_ELITE_24773, possibly a new Sherlock step?
+	ELITE_24773("Play a song for Cecilia.", ItemID.CLUE_SCROLL_ELITE_24773, ClueTier.ELITE, List.of(new WorldPoint(2990, 3383, 0))),
 
 	// Master clues share same ID so can't do them
 	;
