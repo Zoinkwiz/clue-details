@@ -739,7 +739,7 @@ public enum Clues
 	ELITE_12147("You were 3 and I was the 6th Come speak to me.", ItemID.CLUE_SCROLL_ELITE_12147, ClueTier.ELITE, List.of(new WorldPoint(3148, 9913, 0))),
 	ELITE_19783("Zul-Andra.", ItemID.CLUE_SCROLL_ELITE_19783, ClueTier.ELITE, List.of(new WorldPoint(2202, 3062, 0))),
 	ELITE_12113("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12113, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
-	ELITE_12114("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12114, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
+	ELITE_12114("Talk to Sherlock (craft multiple cosmics).", ItemID.CLUE_SCROLL_ELITE_12114, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12115("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12115, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12116("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12116, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12117("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12117, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
