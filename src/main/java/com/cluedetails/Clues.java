@@ -552,6 +552,7 @@ public enum Clues
 	// CLUE_SCROLL_HARD_3577
 
 	// Elite clues
+	ELITE_12073("Spin in West Ardougne Church.", ItemID.CLUE_SCROLL_ELITE, ClueTier.ELITE, List.of(new WorldPoint(2528, 3294, 0))),
 	ELITE_12157("'See you in your dreams' said the vegetable man.", ItemID.CLUE_SCROLL_ELITE_12157, ClueTier.ELITE, List.of(new WorldPoint(2609, 3116, 0))),
 	ELITE_28912("0.42N 27.35W.", ItemID.CLUE_SCROLL_ELITE_28912, ClueTier.ELITE, List.of(new WorldPoint(1557, 3183, 0))),
 	ELITE_12089("00.18S 02.35W.", ItemID.CLUE_SCROLL_ELITE_12089, ClueTier.ELITE, List.of(new WorldPoint(2357, 3151, 0))),
