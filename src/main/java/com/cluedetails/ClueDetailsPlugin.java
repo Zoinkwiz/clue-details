@@ -182,6 +182,7 @@ public class ClueDetailsPlugin extends Plugin
 				{
 					boolean currentValue = cluePreferenceManager.getPreference(e.getIdentifier());
 					cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
+					panel.refresh();
 				});
 		}
 	}
