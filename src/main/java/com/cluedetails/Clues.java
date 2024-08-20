@@ -359,9 +359,9 @@ public enum Clues
 	MEDIUM_19778("Yawn in the centre of the Arceuus Library.", ItemID.CLUE_SCROLL_MEDIUM_19778, ClueTier.MEDIUM, List.of(new WorldPoint(1632, 3807, 0))),
 
 	// TODO: Kourend clues
-	// CLUE_SCROLL_MEDIUM_23138
+	MEDIUM_23138("Play 'Karamja Jam' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23138, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
 	// CLUE_SCROLL_MEDIUM_23139
-	// CLUE_SCROLL_MEDIUM_23140
+	MEDIUM_23140("Play 'Forgotten' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23140, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
 	// CLUE_SCROLL_MEDIUM_23141
 	// CLUE_SCROLL_MEDIUM_23142
 	// CLUE_SCROLL_MEDIUM_23143
