@@ -539,8 +539,8 @@ public enum Clues
 	HARD_2773("You will need to under-cook to solve this one.", ItemID.CLUE_SCROLL_HARD_2773, ClueTier.HARD, List.of(new WorldPoint(3219, 9617, 0))),
 	HARD_19904("ZHLUG ROG PDQ.", ItemID.CLUE_SCROLL_HARD_19904, ClueTier.HARD, List.of(new WorldPoint(3224, 3112, 0))),
 	HARD_19902("ZSBKDO ZODO.", ItemID.CLUE_SCROLL_HARD_19902, ClueTier.HARD, List.of(new WorldPoint(3680, 3537, 0))),
-	// CLUE_SCROLL_HARD_23174
-	// CLUE_SCROLL_HARD_23175
+	HARD_23174("Play 'Scorpia Dances' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23174, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
+	HARD_23175("Play 'Complication' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23175, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	// CLUE_SCROLL_HARD_23176
 	// CLUE_SCROLL_HARD_23177
 	// CLUE_SCROLL_HARD_23178
