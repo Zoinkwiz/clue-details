@@ -745,7 +745,7 @@ public enum Clues
 	ELITE_12116("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12116, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12117("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12117, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12118("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12118, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
-	ELITE_12119("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12119, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
+	ELITE_12119("Talk to Sherlock (fix a magical lamp in Dorgesh-Kaan).", ItemID.CLUE_SCROLL_ELITE_12119, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12120("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12120, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12121("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12121, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12122("Talk to Sherlock (equip dragon scimitar).", ItemID.CLUE_SCROLL_ELITE_12122, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
