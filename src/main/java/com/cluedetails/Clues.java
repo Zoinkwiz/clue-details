@@ -541,11 +541,12 @@ public enum Clues
 	HARD_19902("ZSBKDO ZODO.", ItemID.CLUE_SCROLL_HARD_19902, ClueTier.HARD, List.of(new WorldPoint(3680, 3537, 0))),
 	HARD_23174("Play 'Scorpia Dances' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23174, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	HARD_23175("Play 'Complication' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23175, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
-	// CLUE_SCROLL_HARD_23176
-	// CLUE_SCROLL_HARD_23177
+	HARD_2722("A crate in the Lumber Yard, north-east of Varrock.", ItemID.CLUE_SCROLL_HARD, ClueTier.HARD, List.of(new WorldPoint(3309, 3503, 0))),
+	HARD_23176("Play 'Subterranea' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23176, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
+	HARD_23177("Play 'Little Cave of Horrors' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23177, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
+	HARD_23180("Play 'Fossilised' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23180, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	// CLUE_SCROLL_HARD_23178
 	// CLUE_SCROLL_HARD_23179
-	// CLUE_SCROLL_HARD_23180
 	// CLUE_SCROLL_HARD_23181
 
 	// CLUE_SCROLL_HARD_25792
