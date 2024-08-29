@@ -546,8 +546,8 @@ public enum Clues
 	HARD_23177("Play 'Little Cave of Horrors' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23177, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	HARD_23180("Play 'Fossilised' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23180, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	HARD_23181("Play 'Hells Bells' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23181, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
+	HARD_23181("Play 'La Mort' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23179, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	// CLUE_SCROLL_HARD_23178
-	// CLUE_SCROLL_HARD_23179
 
 	// CLUE_SCROLL_HARD_25792
 	// CLUE_SCROLL_HARD_3577
