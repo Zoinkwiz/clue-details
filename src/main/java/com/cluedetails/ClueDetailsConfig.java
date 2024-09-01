@@ -270,6 +270,17 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "showInventoryCluesOverlay",
+		name = "Show clues overlay",
+		description = "Toggle whether to show an overlay with details on all clues in your inventory",
+		position = 5
+	)
+	default boolean showInventoryCluesOverlay()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 			keyName = "highlightFeather",
 			name = "Highlighted feathering",
 			description = "Configure the feathering of highlighted clues",

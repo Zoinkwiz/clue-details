@@ -69,6 +69,9 @@ public class ClueDetailsPlugin extends Plugin
 	private ClueDetailsOverlay infoOverlay;
 
 	@Inject
+	private ClueDetailsWidgetOverlay widgetOverlay;
+
+	@Inject
 	private EventBus eventBus;
 
 	@Inject
@@ -97,6 +100,9 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.add(infoOverlay);
 		eventBus.register(infoOverlay);
 
+		overlayManager.add(widgetOverlay);
+		eventBus.register(widgetOverlay);
+
 		cluePreferenceManager = new CluePreferenceManager(configManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/icon.png");
@@ -120,6 +126,9 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		overlayManager.remove(infoOverlay);
 		eventBus.unregister(infoOverlay);
+
+		overlayManager.remove(widgetOverlay);
+		eventBus.unregister(widgetOverlay);
 
 		clientToolbar.removeNavigation(navButton);
 	}
