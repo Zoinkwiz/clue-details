@@ -29,15 +29,23 @@ import com.cluedetails.Clues;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
+import net.runelite.client.config.ConfigManager;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 
@@ -46,6 +54,10 @@ public class ClueSelectLabel extends JLabel
 	final CluePreferenceManager cluePreferenceManager;
 	final Clues clue;
 
+	ChatboxPanelManager chatboxPanelManager;
+
+	ConfigManager configManager;
+
 	private static final Border SELECTED_BORDER = new CompoundBorder(
 		BorderFactory.createMatteBorder(0, 0, 1, 0, ColorScheme.BRAND_ORANGE),
 		BorderFactory.createEmptyBorder(5, 10, 4, 10));
@@ -53,15 +65,18 @@ public class ClueSelectLabel extends JLabel
 	private static final Border UNSELECTED_BORDER = BorderFactory
 		.createEmptyBorder(5, 10, 5, 10);
 
-	public ClueSelectLabel(CluePreferenceManager cluePreferenceManager, Clues clue)
+	public ClueSelectLabel(CluePreferenceManager cluePreferenceManager, Clues clue,
+						   ChatboxPanelManager chatboxPanelManager, ConfigManager configManager)
 	{
 		this.cluePreferenceManager = cluePreferenceManager;
 		this.clue = clue;
+		this.chatboxPanelManager = chatboxPanelManager;
+		this.configManager = configManager;
 
 		setLayout(new BorderLayout());
 		setHorizontalAlignment(SwingConstants.LEFT);
 		setVerticalAlignment(SwingConstants.TOP);
-		setText(generateText(clue.getClueText()));
+		setText(generateText(clue.getDisplayText(configManager)));
 		setOpaque(true);
 		boolean isActive = cluePreferenceManager.getPreference(clue.getClueID());
 		setSelected(isActive);
@@ -72,6 +87,11 @@ public class ClueSelectLabel extends JLabel
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
+				if (SwingUtilities.isRightMouseButton(e))
+				{
+					showPopupMenu(e);
+				}
+
 				if (e.getButton() != MouseEvent.BUTTON1) return;
 
 				boolean currentState = cluePreferenceManager.getPreference(clue.getClueID());
@@ -93,6 +113,29 @@ public class ClueSelectLabel extends JLabel
 				setHovered(false);
 			}
 		});
+	}
+
+	private void showPopupMenu(MouseEvent e)
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+
+		JMenuItem inputItem = new JMenuItem("Edit text for clue");
+		inputItem.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent event)
+			{
+				chatboxPanelManager.openTextInput("Enter new clue name:")
+					.onDone((newTag) -> {
+						configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
+						setText(generateText(clue.getDisplayText(configManager)));
+					})
+					.build();
+			}
+		});
+
+		popupMenu.add(inputItem);
+		popupMenu.show(e.getComponent(), e.getX(), e.getY());
 	}
 
 	public ClueSelectLabel(String text)
@@ -118,7 +161,7 @@ public class ClueSelectLabel extends JLabel
 	public List<String> getKeywords()
 	{
 		if (clue == null) return List.of();
-		return Arrays.asList(clue.getClueText().toLowerCase().split(" "));
+		return Arrays.asList(clue.getDisplayText(configManager).toLowerCase().split(" "));
 	}
 
 	private void setSelected(boolean isSelected)

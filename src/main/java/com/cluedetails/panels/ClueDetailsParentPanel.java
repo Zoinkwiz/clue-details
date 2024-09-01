@@ -49,6 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
@@ -66,6 +67,8 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private ConfigManager configManager;
 
+	private ChatboxPanelManager chatboxPanelManager;
+
 	private CluePreferenceManager cluePreferenceManager;
 	private final ClueDetailsConfig config;
 
@@ -75,13 +78,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private final JPanel allDropdownSections = new JPanel();
 
 
-	public ClueDetailsParentPanel(ConfigManager configManager, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config)
+	public ClueDetailsParentPanel(ConfigManager configManager, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config, ChatboxPanelManager chatboxPanelManager)
 	{
 		super(false);
 
 		this.configManager = configManager;
 		this.cluePreferenceManager = cluePreferenceManager;
 		this.config = config;
+		this.chatboxPanelManager = chatboxPanelManager;
 
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 		setLayout(new BorderLayout());
@@ -267,7 +271,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 			for (Clues clue : filterList)
 			{
-				clueSelectLabels.add(new ClueSelectLabel(cluePreferenceManager, clue));
+				clueSelectLabels.add(new ClueSelectLabel(cluePreferenceManager, clue, chatboxPanelManager, configManager));
 			}
 		}
 

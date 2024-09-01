@@ -40,6 +40,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -74,6 +75,9 @@ public class ClueDetailsPlugin extends Plugin
 	private ClientToolbar clientToolbar;
 
 	@Inject
+	private ChatboxPanelManager chatboxPanelManager;
+
+	@Inject
 	ConfigManager configManager;
 
 	ClueDetailsParentPanel panel;
@@ -94,7 +98,7 @@ public class ClueDetailsPlugin extends Plugin
 
 		final BufferedImage icon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/icon.png");
 
-		panel = new ClueDetailsParentPanel(configManager, cluePreferenceManager, config);
+		panel = new ClueDetailsParentPanel(configManager, cluePreferenceManager, config, chatboxPanelManager);
 		navButton = NavigationButton.builder()
 			.tooltip("Clue Details")
 			.icon(icon)

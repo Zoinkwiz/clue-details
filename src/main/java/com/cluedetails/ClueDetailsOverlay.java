@@ -223,7 +223,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return "Can't determine clue.";
 		}
 
-		return matchingClue.getClueText();
+		return matchingClue.getDisplayText(configManager);
 	}
 
 	@Subscribe

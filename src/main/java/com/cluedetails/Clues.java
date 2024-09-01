@@ -30,6 +30,7 @@ import java.util.List;
 import lombok.Getter;
 import net.runelite.api.ItemID;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.client.config.ConfigManager;
 
 @Getter
 public enum Clues
@@ -784,5 +785,12 @@ public enum Clues
 			}
 		}
 		return null;
+	}
+
+	public String getDisplayText(ConfigManager configManager)
+	{
+		String text = configManager.getConfiguration("clue-details-text", String.valueOf(getClueID()));
+		if (text != null) return text;
+		return getClueText();
 	}
 }
