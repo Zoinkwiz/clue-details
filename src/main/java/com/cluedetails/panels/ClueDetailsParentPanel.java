@@ -220,7 +220,12 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 		clueSelectLabels.forEach(listItem ->
 		{
-			if (Text.matchesSearchTerms(Arrays.asList(searchTerms), listItem.getKeywords()))
+			List<String> keywords = new ArrayList<>(listItem.getKeywords());
+			if (listItem.clue != null)
+			{
+				keywords.add(Integer.toString(listItem.clue.getClueID()));
+			}
+			if (Text.matchesSearchTerms(Arrays.asList(searchTerms), keywords))
 			{
 				clueListPanel.add(listItem);
 			}
