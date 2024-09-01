@@ -154,6 +154,20 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 			int numberNotInMainMenu = 0;
 
+			if (config.changeClueText())
+			{
+				// Change text of actual clue
+				for (int i = currentMenuEntries.length - 1; i >= 0; i--)
+				{
+					MenuEntry hoveredEntry = currentMenuEntries[i];
+					Clues clue = Clues.get(hoveredEntry.getIdentifier());
+					if (clue != null)
+					{
+						hoveredEntry.setTarget("<col=ff9146>" + clue.getDisplayText(configManager) + "<col=FFA07A>");
+					}
+				}
+			}
+
 			for (int i = currentMenuEntries.length - 1; i >= 0; i--)
 			{
 				MenuEntry hoveredEntry = currentMenuEntries[i];

@@ -259,6 +259,17 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "changeClueText",
+		name = "Change clue item text",
+		description = "Toggle whether to make the clue item text be the hint or the normal text",
+		position = 5
+	)
+	default boolean changeClueText()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 			keyName = "highlightFeather",
 			name = "Highlighted feathering",
 			description = "Configure the feathering of highlighted clues",
