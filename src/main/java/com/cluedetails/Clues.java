@@ -549,8 +549,7 @@ public enum Clues
 	HARD_23181("Play 'Hells Bells' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23181, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	HARD_23179("Play 'La Mort' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23179, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	// CLUE_SCROLL_HARD_23178
-
-	// CLUE_SCROLL_HARD_25792
+	HARD_25792("Play 'Regal Pomp' for Cecilia.", ItemID.CLUE_SCROLL_HARD_25792, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	// CLUE_SCROLL_HARD_3577
 
 	// Elite clues
