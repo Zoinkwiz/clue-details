@@ -281,6 +281,17 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+			keyName = "showInventoryClueTags",
+			name = "Show clue tags",
+			description = "Toggle whether to show details as item tags on all clues in your inventory",
+			position = 5
+	)
+	default boolean showInventoryClueTags()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 			keyName = "highlightFeather",
 			name = "Highlighted feathering",
 			description = "Configure the feathering of highlighted clues",

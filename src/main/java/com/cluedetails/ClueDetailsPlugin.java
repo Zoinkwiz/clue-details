@@ -69,6 +69,9 @@ public class ClueDetailsPlugin extends Plugin
 	private ClueDetailsOverlay infoOverlay;
 
 	@Inject
+	private ClueDetailsTagsOverlay tagsOverlay;
+
+	@Inject
 	private ClueDetailsWidgetOverlay widgetOverlay;
 
 	@Inject
@@ -100,6 +103,8 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.add(infoOverlay);
 		eventBus.register(infoOverlay);
 
+		overlayManager.add(tagsOverlay);
+
 		overlayManager.add(widgetOverlay);
 		eventBus.register(widgetOverlay);
 
@@ -126,6 +131,8 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		overlayManager.remove(infoOverlay);
 		eventBus.unregister(infoOverlay);
+
+		overlayManager.remove(tagsOverlay);
 
 		overlayManager.remove(widgetOverlay);
 		eventBus.unregister(widgetOverlay);
