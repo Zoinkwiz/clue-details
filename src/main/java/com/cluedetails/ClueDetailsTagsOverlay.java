@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Zoinkwiz <https://github.com/Zoinkwiz>
+ * Copyright (c) 2024, TheLope <https://github.com/TheLope>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.Collection;
-import java.util.List;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.FontManager;
@@ -39,15 +37,11 @@ import net.runelite.client.ui.overlay.components.TextComponent;
 
 public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 {
-	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
 
-	static final Collection<Clues> clues = List.of(Clues.values());
-
 	@Inject
-	public ClueDetailsTagsOverlay(ClueDetailsConfig config, ConfigManager configManager)
+	public ClueDetailsTagsOverlay(ConfigManager configManager)
 	{
-		this.config = config;
 		this.configManager = configManager;
 		showOnInventory();
 		showOnBank();
@@ -56,16 +50,11 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 	@Override
 	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem)
 	{
-		if (config.showInventoryClueTags()){
-			for (Clues clue : clues)
-			{
-				if (clue.getClueID() == itemId)
-				{
-					graphics.setFont(FontManager.getRunescapeSmallFont());
-					renderText(graphics, widgetItem.getCanvasBounds(), clue.getDisplayText(configManager));
-					break;
-				}
-			}
+		Clues clue = Clues.get(itemId);
+		if (clue != null)
+		{
+			graphics.setFont(FontManager.getRunescapeSmallFont());
+			renderText(graphics, widgetItem.getCanvasBounds(), clue.getDisplayText(configManager));
 		}
 	}
 
