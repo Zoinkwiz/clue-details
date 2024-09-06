@@ -37,11 +37,13 @@ import net.runelite.client.ui.overlay.components.TextComponent;
 
 public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 {
+	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
 
 	@Inject
-	public ClueDetailsTagsOverlay(ConfigManager configManager)
+	public ClueDetailsTagsOverlay(ClueDetailsConfig config, ConfigManager configManager)
 	{
+		this.config = config;
 		this.configManager = configManager;
 		showOnInventory();
 		showOnBank();
@@ -51,7 +53,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem)
 	{
 		Clues clue = Clues.get(itemId);
-		if (clue != null)
+		if (config.showInventoryClueTags() && clue != null)
 		{
 			graphics.setFont(FontManager.getRunescapeSmallFont());
 			renderText(graphics, widgetItem.getCanvasBounds(), clue.getDisplayText(configManager));
