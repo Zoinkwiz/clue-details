@@ -194,13 +194,12 @@ public enum Clues
 	//	EASY_2700("Behind Lumbridge Castle.", ItemID.CLUE_SCROLL_EASY_???, ClueTier.EASY), // TODO: Get real ID
 	//	EASY_2700("Search the drawers in Catherby's Archery shop.", ItemID.CLUE_SCROLL_EASY_???, ClueTier.EASY), // TODO: Get real ID
 	//	EASY_2700("South-west of the wheat field east of Draynor Village.", ItemID.CLUE_SCROLL_EASY_???, ClueTier.EASY), // TODO: Get real ID
-	// TODO: Kourend clues
-	// CLUE_SCROLL_EASY_23155
-	// CLUE_SCROLL_EASY_23156
-	// CLUE_SCROLL_EASY_23157
+	EASY_23155("Play 'Vision' for Cecilia.", ItemID.CLUE_SCROLL_EASY_23155, ClueTier.EASY, List.of(new WorldPoint(2990, 3383, 0))),
+	EASY_23156("Play 'The Forlorn Homestead' for Cecilia.", ItemID.CLUE_SCROLL_EASY_23156, ClueTier.EASY, List.of(new WorldPoint(2990, 3383, 0))),
+	EASY_23157("Play 'Tiptoe' for Cecilia.", ItemID.CLUE_SCROLL_EASY_23157, ClueTier.EASY, List.of(new WorldPoint(2990, 3383, 0))),
 	EASY_23158("Play 'Rugged Terrain' for Cecilia.", ItemID.CLUE_SCROLL_EASY_23158, ClueTier.EASY, List.of(new WorldPoint(2990, 3383, 0))),
-	// CLUE_SCROLL_EASY_23159
-	// CLUE_SCROLL_EASY_23160
+	EASY_23159("Play 'On the Shore' for Cecilia.", ItemID.CLUE_SCROLL_EASY_23159, ClueTier.EASY, List.of(new WorldPoint(2990, 3383, 0))),
+	EASY_23160("Play 'Alone' for Cecilia.", ItemID.CLUE_SCROLL_EASY_23160, ClueTier.EASY, List.of(new WorldPoint(2990, 3383, 0))),
 
 	// Medium clues
 	MEDIUM_2801("02.48N 22.30E.", ItemID.CLUE_SCROLL_MEDIUM, ClueTier.MEDIUM, List.of(new WorldPoint(3160, 3251, 0))),
@@ -358,14 +357,12 @@ public enum Clues
 	MEDIUM_19764("XJABSE USBJCPSO.", ItemID.CLUE_SCROLL_MEDIUM_19764, ClueTier.MEDIUM, List.of(new WorldPoint(3112, 3162, 0))),
 	MEDIUM_10262("Yawn in the Castle Wars lobby.", ItemID.CLUE_SCROLL_MEDIUM_10262, ClueTier.MEDIUM, List.of(new WorldPoint(2440, 3092, 0))),
 	MEDIUM_19778("Yawn in the centre of the Arceuus Library.", ItemID.CLUE_SCROLL_MEDIUM_19778, ClueTier.MEDIUM, List.of(new WorldPoint(1632, 3807, 0))),
-
-	// TODO: Kourend clues
 	MEDIUM_23138("Play 'Karamja Jam' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23138, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
-	// CLUE_SCROLL_MEDIUM_23139
+	MEDIUM_23139("Play 'Faerie' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23139, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
 	MEDIUM_23140("Play 'Forgotten' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23140, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
-	// CLUE_SCROLL_MEDIUM_23141
-	// CLUE_SCROLL_MEDIUM_23142
-	// CLUE_SCROLL_MEDIUM_23143
+	MEDIUM_23141("Play 'Catch Me If You Can' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23141, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
+	MEDIUM_23142("Play 'Cave of Beasts' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23142, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
+	MEDIUM_23143("Play 'Devils May Care' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23143, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
 
 	// Hard clues
 	HARD_3560("00.00N 07.13W.", ItemID.CLUE_SCROLL_HARD_3560, ClueTier.HARD, List.of(new WorldPoint(2209, 3161, 0))),
@@ -545,10 +542,10 @@ public enum Clues
 	HARD_2722("A crate in the Lumber Yard, north-east of Varrock.", ItemID.CLUE_SCROLL_HARD, ClueTier.HARD, List.of(new WorldPoint(3309, 3503, 0))),
 	HARD_23176("Play 'Subterranea' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23176, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	HARD_23177("Play 'Little Cave of Horrors' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23177, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
+	HARD_23178("Play 'Roc and Roll' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23178, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
+	HARD_23179("Play 'La Mort' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23179, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	HARD_23180("Play 'Fossilised' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23180, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	HARD_23181("Play 'Hells Bells' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23181, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
-	HARD_23179("Play 'La Mort' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23179, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
-	// CLUE_SCROLL_HARD_23178
 	HARD_25792("Play 'Regal Pomp' for Cecilia.", ItemID.CLUE_SCROLL_HARD_25792, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	// CLUE_SCROLL_HARD_3577
 
@@ -754,7 +751,7 @@ public enum Clues
 	ELITE_12124("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12124, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12125("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12125, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12126("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12126, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
-	ELITE_24773("Play a song for Cecilia.", ItemID.CLUE_SCROLL_ELITE_24773, ClueTier.ELITE, List.of(new WorldPoint(2990, 3383, 0))),
+	ELITE_24773("Play `Lament for the Hallowed` for Cecilia.", ItemID.CLUE_SCROLL_ELITE_24773, ClueTier.ELITE, List.of(new WorldPoint(2990, 3383, 0))),
 
 	// Master clues share same ID so can't do them
 	;
