@@ -34,7 +34,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.api.events.MenuOpened;
+import net.runelite.api.widgets.InterfaceID;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
@@ -207,6 +212,44 @@ public class ClueDetailsPlugin extends Plugin
 					cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
 					panel.refresh();
 				});
+		}
+	}
+
+	@Subscribe
+	public void onMenuOpened(final MenuOpened event)
+	{
+		if (!client.isKeyPressed(KeyCode.KC_SHIFT))
+		{
+			return;
+		}
+
+		final MenuEntry[] entries = event.getMenuEntries();
+		for (int idx = entries.length - 1; idx >= 0; --idx)
+		{
+			final MenuEntry entry = entries[idx];
+			final Widget w = entry.getWidget();
+
+			if (w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY
+					&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10
+					&& w.getName().contains("Clue scroll"))
+			{
+				final int itemId = w.getItemId();
+
+				client.createMenuEntry(idx)
+					.setOption("Clue details")
+					.setTarget(entry.getTarget())
+					.setType(MenuAction.RUNELITE)
+					.onClick(e ->
+					{
+						Clues clue = Clues.get(itemId);
+						chatboxPanelManager.openTextInput("Enter new clue text:")
+							.onDone((newTag) -> {
+								configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
+								// TODO: Refresh sidebar
+							})
+							.build();
+					});
+			}
 		}
 	}
 }

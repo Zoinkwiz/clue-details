@@ -125,7 +125,7 @@ public class ClueSelectLabel extends JLabel
 			@Override
 			public void actionPerformed(ActionEvent event)
 			{
-				chatboxPanelManager.openTextInput("Enter new clue name:")
+				chatboxPanelManager.openTextInput("Enter new clue text:")
 					.onDone((newTag) -> {
 						configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
 						setText(generateText(clue.getDisplayText(configManager)));
