@@ -27,18 +27,13 @@ package com.cluedetails;
 import com.cluedetails.filters.ClueOrders;
 import com.cluedetails.filters.ClueRegion;
 import com.cluedetails.filters.ClueTier;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.Getter;
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
-import net.runelite.client.config.Notification;
-import net.runelite.client.util.Text;
+import net.runelite.client.config.*;
 
 @ConfigGroup("clue-details")
 public interface ClueDetailsConfig extends Config
@@ -184,18 +179,23 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "showSidebar",
-		name = "Show highlighting sidebar",
-		description = "Customise clues to be highlighted in a sidebar"
+		name = "Show sidebar",
+		description = "Customise clue details in a sidebar",
+		position = 1
 	)
 	default boolean showSidebar()
 	{
 		return true;
 	}
 
+	@ConfigSection(name = "Sidebar", description = "Options that effect the sidebar", position = 2, closedByDefault = true)
+	String sidebarSection = "Sidebar";
+
 	@ConfigItem(
 		keyName = "filterListByTier",
 		name = "Filter by tier",
 		description = "Configures what tier of clue to show",
+		section = sidebarSection,
 		position = 1
 	)
 	default ClueTierFilter filterListByTier()
@@ -207,6 +207,7 @@ public interface ClueDetailsConfig extends Config
 		keyName = "filterListByRegion",
 		name = "Filter by region",
 		description = "Configures what clues to show based on region they fall in",
+		section = sidebarSection,
 		position = 2
 	)
 	default ClueRegionFilter filterListByRegion()
@@ -218,6 +219,7 @@ public interface ClueDetailsConfig extends Config
 		keyName = "orderListBy",
 		name = "Clue sidebar order",
 		description = "Configures which way to order the clue list",
+		section = sidebarSection,
 		position = 3
 	)
 	default ClueOrdering orderListBy()
@@ -225,11 +227,15 @@ public interface ClueDetailsConfig extends Config
 		return ClueOrdering.TIER;
 	}
 
+	@ConfigSection(name = "Marked Clues", description = "Options that effect marked clues", position = 3, closedByDefault = false)
+	String markedCluesSection = "Marked Clues";
+
 	@ConfigItem(
 		keyName = "markedClueDroppedNotification",
 		name = "Notify when a marked clue drops",
 		description = "Send a notification when a marked clue drops",
-		position = 4
+		section = markedCluesSection,
+		position = 1
 	)
 	default Notification markedClueDroppedNotification()
 	{
@@ -240,7 +246,8 @@ public interface ClueDetailsConfig extends Config
 		keyName = "onlyShowMarkedClues",
 		name = "Only show marked clues in the sidebar",
 		description = "Toggle whether to only show marked clues in the sidebar",
-		position = 6
+		section = markedCluesSection,
+		position = 5
 	)
 	default boolean onlyShowMarkedClues()
 	{
@@ -251,7 +258,8 @@ public interface ClueDetailsConfig extends Config
 		keyName = "highlightMarkedClues",
 		name = "Highlight marked clues",
 		description = "Toggle whether to highlight marked clues",
-		position = 5
+		section = markedCluesSection,
+		position = 2
 	)
 	default boolean highlightMarkedClues()
 	{
@@ -259,43 +267,11 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "changeClueText",
-		name = "Change clue item text",
-		description = "Toggle whether to make the clue item text be the hint or the normal text",
-		position = 5
-	)
-	default boolean changeClueText()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "showInventoryCluesOverlay",
-		name = "Show clues overlay",
-		description = "Toggle whether to show an overlay with details on all clues in your inventory",
-		position = 5
-	)
-	default boolean showInventoryCluesOverlay()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			keyName = "showInventoryClueTags",
-			name = "Show clue tags",
-			description = "Toggle whether to show details as item tags on all clues in your inventory",
-			position = 5
-	)
-	default boolean showInventoryClueTags()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			keyName = "highlightFeather",
-			name = "Highlighted feathering",
-			description = "Configure the feathering of highlighted clues",
-			position = 5
+		keyName = "highlightFeather",
+		name = "Highlighted feathering",
+		description = "Configure the feathering of highlighted clues",
+	section = markedCluesSection,
+		position = 3
 	)
 	default int highlightFeather()
 	{
@@ -306,10 +282,50 @@ public interface ClueDetailsConfig extends Config
 			keyName = "outlineWidth",
 			name = "Highlighted outline width",
 			description = "Configure the outline width of highlighted clues",
-			position = 6
+			section = markedCluesSection,
+			position = 4
 	)
 	default int outlineWidth()
 	{
 		return 4;
+	}
+
+	@ConfigSection(name = "Overlays", description = "Options that effect overlays", position = 4, closedByDefault = false)
+	String overlaysSection = "Overlays";
+
+	@ConfigItem(
+		keyName = "showInventoryClueTags",
+		name = "Show clue tags",
+		description = "Toggle whether to show clue details as item tags",
+		section = overlaysSection,
+		position = 1
+	)
+	default boolean showInventoryClueTags()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "showInventoryCluesOverlay",
+		name = "Show clues overlay",
+		description = "Toggle whether to show an overlay with details on all clues in your inventory",
+		section = overlaysSection,
+		position = 2
+	)
+	default boolean showInventoryCluesOverlay()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "changeClueText",
+		name = "Change clue item text",
+		description = "Toggle whether to make the clue item text be the hint or the normal text",
+		section = overlaysSection,
+		position = 3
+	)
+	default boolean changeClueText()
+	{
+		return false;
 	}
 }
