@@ -245,7 +245,7 @@ public class ClueDetailsPlugin extends Plugin
 						chatboxPanelManager.openTextInput("Enter new clue text:")
 							.onDone((newTag) -> {
 								configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
-								// TODO: Refresh sidebar
+								panel.refresh();
 							})
 							.build();
 					});
