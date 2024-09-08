@@ -25,10 +25,13 @@ The "Change clue item text" toggle in the plugin's settings makes it so the actu
 ![Screenshot 2024-09-01 221305](https://github.com/user-attachments/assets/72685ba5-f441-4cac-b18c-6cc0ddf42d98)
 
 The "Show clue tags" toggle in the plugin's settings renders the details on the clue item in your inventory.
-This is most useful when using shorthand details rather than with the default details.
 
 <!---TODO: Add clue_tag_example screenshot-->
-<!---TODO: Link to example shorthand details-->
+
+- This is most useful when using shorthand details rather than with the default details. <!---TODO: Link to example shorthand details-->
+- Text following the first instance of ": " will be automatically split to the bottom of the clue item.
+
+<!---TODO: Add clue_tag_example_split screenshot-->
 
 The "Show clues overlay" toggle in the plugin's settings renders the details as an infobox for all clues in your inventory.
 
