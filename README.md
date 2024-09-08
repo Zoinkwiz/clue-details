@@ -27,12 +27,12 @@ The "Change clue item text" toggle in the plugin's settings makes it so the actu
 The "Show clue tags" toggle in the plugin's settings renders the details on the clue item in your inventory.
 This is most useful when using shorthand details rather than with the default details.
 
-<!---TODO: Add example screenshot-->
+<!---TODO: Add clue_tag_example screenshot-->
 <!---TODO: Link to example shorthand details-->
 
 The "Show clues overlay" toggle in the plugin's settings renders the details as an infobox for all clues in your inventory.
 
-<!---TODO: Add example screenshot-->
+<!---TODO: Add clues_overlay_example screenshot-->
 
 ## Editing clue hints
 
