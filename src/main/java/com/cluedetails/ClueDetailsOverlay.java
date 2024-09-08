@@ -165,10 +165,8 @@ public class ClueDetailsOverlay extends OverlayPanel
 				{
 					MenuEntry hoveredEntry = currentMenuEntries[i];
 					Clues clue = Clues.get(hoveredEntry.getIdentifier());
-					if (clue != null)
-					{
-						hoveredEntry.setTarget("<col=ff9146>" + clue.getDisplayText(configManager) + "<col=FFA07A>");
-					}
+					if (!isTakeOrMarkClue(hoveredEntry)) continue;
+					hoveredEntry.setTarget("<col=ff9146>" + clue.getDisplayText(configManager) + "<col=FFA07A>");
 				}
 			}
 
