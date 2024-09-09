@@ -260,7 +260,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			{
 				Enum source = (Enum) e.getItem();
 				configManager.setConfiguration(ClueDetailsConfig.class.getAnnotation(ConfigGroup.class).value(), key,
-						source);
+					source);
 			}
 		});
 
@@ -327,19 +327,19 @@ public class ClueDetailsParentPanel extends PluginPanel
 		orderDropdown.setSelectedItem(config.orderListBy());
 
 		List<Clues> filteredClues = Arrays.stream(Clues.values())
-				.filter(config.filterListByTier())
-				.filter(config.filterListByRegion())
-				.filter(this::filterUnmarkedClues)
-				.sorted(config.orderListBy())
-				.collect(Collectors.toList());
+			.filter(config.filterListByTier())
+			.filter(config.filterListByRegion())
+			.filter(this::filterUnmarkedClues)
+			.sorted(config.orderListBy())
+			.collect(Collectors.toList());
 
 		ClueFilter[] sections = config.orderListBy().getSections();
 
 		for (ClueFilter section : sections)
 		{
 			List<Clues> filterList = filteredClues.stream()
-					.filter(section)
-					.collect(Collectors.toList());
+				.filter(section)
+				.collect(Collectors.toList());
 
 			if (!filterList.isEmpty())
 			{
