@@ -29,4 +29,4 @@ You can also edit the clue hints shown to you. In the sidebar, right-click the c
 
 You can share your edited clue descriptions, or import clue descriptions from someone else, by right-clicking the 'Clue Details' text at the top of the sidebar.
 
-![Screenshot 2024-09-01 231220](https://github.com/user-attachments/assets/53e16004-d64e-4a1d-a0c8-66ae5e9510be)
+![java_WJJq9uFwNH](https://github.com/user-attachments/assets/504a4bb8-a0dc-429d-be3d-1684e663a264)
