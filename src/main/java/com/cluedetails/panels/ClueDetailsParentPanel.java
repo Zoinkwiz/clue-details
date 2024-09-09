@@ -24,34 +24,24 @@
  */
 package com.cluedetails.panels;
 
-import com.cluedetails.ClueDetailsConfig;
+import com.cluedetails.*;
 import com.cluedetails.ClueDetailsConfig.*;
-import com.cluedetails.ClueDetailsSharingManager;
-import com.cluedetails.CluePreferenceManager;
-import com.cluedetails.Clues;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -61,6 +51,7 @@ import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
+import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
 
 public class ClueDetailsParentPanel extends PluginPanel
@@ -86,6 +77,24 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private final JPanel allDropdownSections = new JPanel();
 
+	private static final ImageIcon COPY_ICON;
+	private static final ImageIcon COPY_HOVER_ICON;
+	private static final ImageIcon PASTE_ICON;
+	private static final ImageIcon PASTE_HOVER_ICON;
+
+	private final JLabel copyMarkers = new JLabel(COPY_ICON);
+	private final JLabel pasteMarkers = new JLabel(PASTE_ICON);
+
+	static
+	{
+		final BufferedImage copyIcon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/copy_icon.png");
+		COPY_ICON = new ImageIcon(copyIcon);
+		COPY_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(copyIcon, 0.53f));
+
+		final BufferedImage pasteIcon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/paste_icon.png");
+		PASTE_ICON = new ImageIcon(pasteIcon);
+		PASTE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(pasteIcon, 0.53f));
+	}
 
 	public ClueDetailsParentPanel(ConfigManager configManager, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
 								  ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager)
@@ -110,17 +119,57 @@ public class ClueDetailsParentPanel extends PluginPanel
 		title.setText("Clue Details");
 		title.setForeground(Color.WHITE);
 		titlePanel.add(title, BorderLayout.WEST);
-		titlePanel.addMouseListener(new MouseAdapter()
+
+		// Import/Export Options
+		JPanel markerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 7, 3));
+		titlePanel.add(markerButtons, BorderLayout.EAST);
+
+		copyMarkers.setToolTipText("Export details to your clipboard");
+		copyMarkers.addMouseListener(new MouseAdapter()
 		{
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
-				if (SwingUtilities.isRightMouseButton(e))
-				{
-					showImportExportOptions(e);
-				}
+				clueDetailsSharingManager.exportClueDetails();
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				copyMarkers.setIcon(COPY_HOVER_ICON);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				copyMarkers.setIcon(COPY_ICON);
 			}
 		});
+
+		pasteMarkers.setToolTipText("Import details from your clipboard");
+		pasteMarkers.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				clueDetailsSharingManager.promptForImport();
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				pasteMarkers.setIcon(PASTE_HOVER_ICON);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				pasteMarkers.setIcon(PASTE_ICON);
+			}
+		});
+
+		markerButtons.add(pasteMarkers);
+		markerButtons.add(copyMarkers);
 
 		// Options
 		final JPanel viewControls = new JPanel(new GridLayout(1, 3, 10, 0));
@@ -199,35 +248,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 		refresh();
 	}
 
-	private void showImportExportOptions(MouseEvent e)
-	{
-		JPopupMenu popupMenu = new JPopupMenu();
-
-		JMenuItem inputItemImport = new JMenuItem("Import clue descriptions");
-		JMenuItem inputItemExport = new JMenuItem("Export clue descriptions");
-		inputItemImport.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent event)
-			{
-				clueDetailsSharingManager.promptForImport();
-			}
-		});
-
-		inputItemExport.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent event)
-			{
-				clueDetailsSharingManager.exportClueDetails();
-			}
-		});
-
-		popupMenu.add(inputItemImport);
-		popupMenu.add(inputItemExport);
-		popupMenu.show(e.getComponent(), e.getX(), e.getY());
-	}
-
 	private JComboBox<Enum> makeNewDropdown(Enum[] values, String key)
 	{
 		JComboBox<Enum> dropdown = new JComboBox<>(values);
@@ -240,7 +260,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			{
 				Enum source = (Enum) e.getItem();
 				configManager.setConfiguration(ClueDetailsConfig.class.getAnnotation(ConfigGroup.class).value(), key,
-					source);
+						source);
 			}
 		});
 
@@ -307,19 +327,19 @@ public class ClueDetailsParentPanel extends PluginPanel
 		orderDropdown.setSelectedItem(config.orderListBy());
 
 		List<Clues> filteredClues = Arrays.stream(Clues.values())
-			.filter(config.filterListByTier())
-			.filter(config.filterListByRegion())
-			.filter(this::filterUnmarkedClues)
-			.sorted(config.orderListBy())
-			.collect(Collectors.toList());
+				.filter(config.filterListByTier())
+				.filter(config.filterListByRegion())
+				.filter(this::filterUnmarkedClues)
+				.sorted(config.orderListBy())
+				.collect(Collectors.toList());
 
 		ClueFilter[] sections = config.orderListBy().getSections();
 
 		for (ClueFilter section : sections)
 		{
 			List<Clues> filterList = filteredClues.stream()
-				.filter(section)
-				.collect(Collectors.toList());
+					.filter(section)
+					.collect(Collectors.toList());
 
 			if (!filterList.isEmpty())
 			{
