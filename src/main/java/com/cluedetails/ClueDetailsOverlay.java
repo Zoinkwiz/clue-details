@@ -136,6 +136,8 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		String clueText = getText(menuEntry);
 
+		if (clueText == null) return;
+
 		tooltipManager.add(new Tooltip(clueText));
 	}
 
@@ -192,8 +194,23 @@ public class ClueDetailsOverlay extends OverlayPanel
 					mousePosition.getY() > entryTopY && mousePosition.getY() <= entryBottomY)
 				{
 					String text = getText(hoveredEntry);
-					panelComponent.setPreferredLocation(new java.awt.Point(menuX + menuWidth, entryTopY - menuEntryHeight));
+					if (text == null)
+					{
+						continue;
+					}
+
 					panelComponent.getChildren().add(LineComponent.builder().left(text).build());
+					double infoPanelWidth = panelComponent.getBounds().getWidth();
+					int viewportWidth = client.getViewportWidth();
+					if (menuX + menuWidth + infoPanelWidth > viewportWidth)
+					{
+						panelComponent.setPreferredLocation(new java.awt.Point(menuX - (int) infoPanelWidth, entryTopY - menuEntryHeight));
+					}
+					else
+					{
+						panelComponent.setPreferredLocation(new java.awt.Point(menuX + menuWidth, entryTopY - menuEntryHeight));
+					}
+
 					break;
 				}
 			}
@@ -206,7 +223,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		String option = entry.getOption();
 		MenuAction type = entry.getType();
 
-		return type == MenuAction.GROUND_ITEM_THIRD_OPTION && target.contains("Clue scroll") && option.equals("Take");
+		return type == MenuAction.GROUND_ITEM_THIRD_OPTION && option.equals("Take");
 	}
 
 	public boolean isTakeOrMarkClue(MenuEntry entry)
@@ -243,7 +260,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		Clues matchingClue = Clues.get(scrollID);
 		if (matchingClue == null)
 		{
-			return "Can't determine clue.";
+			return null;
 		}
 
 		return matchingClue.getDisplayText(configManager);
