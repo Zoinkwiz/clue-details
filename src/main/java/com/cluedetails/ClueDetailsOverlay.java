@@ -27,7 +27,6 @@ package com.cluedetails;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -35,14 +34,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.InventoryID;
-import net.runelite.api.Item;
-import net.runelite.api.ItemContainer;
 import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
@@ -138,6 +136,8 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		String clueText = getText(menuEntry);
 
+		if (clueText == null) return;
+
 		tooltipManager.add(new Tooltip(clueText));
 	}
 
@@ -165,10 +165,17 @@ public class ClueDetailsOverlay extends OverlayPanel
 				{
 					MenuEntry hoveredEntry = currentMenuEntries[i];
 					Clues clue = Clues.get(hoveredEntry.getIdentifier());
-					if (clue != null)
-					{
-						hoveredEntry.setTarget("<col=ff9146>" + clue.getDisplayText(configManager) + "<col=FFA07A>");
-					}
+					if (clue == null || !isTakeOrMarkClue(hoveredEntry)) continue;
+					String regex = "Clue scroll \\(.*?\\)";
+
+					// Compile the pattern
+					Pattern pattern = Pattern.compile(regex);
+					Matcher matcher = pattern.matcher(hoveredEntry.getTarget());
+
+					// Replace the matched text with the new text
+					String newText = matcher.replaceAll(clue.getDisplayText(configManager));
+
+					hoveredEntry.setTarget(newText);
 				}
 			}
 
@@ -187,8 +194,23 @@ public class ClueDetailsOverlay extends OverlayPanel
 					mousePosition.getY() > entryTopY && mousePosition.getY() <= entryBottomY)
 				{
 					String text = getText(hoveredEntry);
-					panelComponent.setPreferredLocation(new java.awt.Point(menuX + menuWidth, entryTopY - menuEntryHeight));
+					if (text == null)
+					{
+						continue;
+					}
+
 					panelComponent.getChildren().add(LineComponent.builder().left(text).build());
+					double infoPanelWidth = panelComponent.getBounds().getWidth();
+					int viewportWidth = client.getViewportWidth();
+					if (menuX + menuWidth + infoPanelWidth > viewportWidth)
+					{
+						panelComponent.setPreferredLocation(new java.awt.Point(menuX - (int) infoPanelWidth, entryTopY - menuEntryHeight));
+					}
+					else
+					{
+						panelComponent.setPreferredLocation(new java.awt.Point(menuX + menuWidth, entryTopY - menuEntryHeight));
+					}
+
 					break;
 				}
 			}
@@ -201,7 +223,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		String option = entry.getOption();
 		MenuAction type = entry.getType();
 
-		return type == MenuAction.GROUND_ITEM_THIRD_OPTION && target.contains("Clue scroll") && option.equals("Take");
+		return type == MenuAction.GROUND_ITEM_THIRD_OPTION && option.equals("Take");
 	}
 
 	public boolean isTakeOrMarkClue(MenuEntry entry)
@@ -238,7 +260,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		Clues matchingClue = Clues.get(scrollID);
 		if (matchingClue == null)
 		{
-			return "Can't determine clue.";
+			return null;
 		}
 
 		return matchingClue.getDisplayText(configManager);
