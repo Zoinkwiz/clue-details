@@ -33,6 +33,7 @@ public class ClueOrders
 	static List<ClueTier> tierOrder = List.of(
 		ClueTier.EASY,
 		ClueTier.MEDIUM,
+		ClueTier.MEDIUM_KEY,
 		ClueTier.HARD,
 		ClueTier.ELITE
 	);

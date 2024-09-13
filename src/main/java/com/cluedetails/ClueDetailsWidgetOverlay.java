@@ -27,7 +27,10 @@ package com.cluedetails;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.util.Arrays;
 import javax.inject.Inject;
+
+import com.cluedetails.filters.ClueTier;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
@@ -75,7 +78,10 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 		for (Item item : inventory.getItems())
 		{
 			Clues clue = Clues.get(item.getId());
-			if (clue != null)
+			if (clue != null && !Arrays.asList(
+					ClueTier.MEDIUM_CHALLENGE,
+					ClueTier.HARD_CHALLENGE,
+					ClueTier.ELITE_CHALLENGE).contains(clue.getClueTier()))
 			{
 				panelComponent.getChildren().add(LineComponent.builder()
 					.left(clue.getDisplayText(configManager))
