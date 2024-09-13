@@ -231,7 +231,9 @@ public class ClueDetailsPlugin extends Plugin
 
 			if (w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY
 					&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10
-					&& w.getName().contains("Clue scroll"))
+					&& (w.getName().contains("Clue scroll")
+					|| w.getName().contains("Challenge scroll")
+					|| w.getName().contains("Key (")))
 			{
 				final int itemId = w.getItemId();
 
