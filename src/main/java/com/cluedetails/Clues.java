@@ -828,8 +828,8 @@ public enum Clues
 	ELITE_12124("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12124, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12125("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12125, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12126("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12126, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
-	ELITE_26943("Play `The Pharaoh` for Cecilia.", ItemID.CLUE_SCROLL_ELITE_26943, ClueTier.ELITE, List.of(new WorldPoint(2990, 3384, 0))),
 	ELITE_24773("Play `Lament for the Hallowed` for Cecilia.", ItemID.CLUE_SCROLL_ELITE_24773, ClueTier.ELITE, List.of(new WorldPoint(2990, 3383, 0))),
+	ELITE_26943("Play `The Pharaoh` for Cecilia.", ItemID.CLUE_SCROLL_ELITE_26943, ClueTier.ELITE, List.of(new WorldPoint(2990, 3384, 0))),
 
 	// Elite challenges
 	ELITE_12128("Sherlock Challenge scroll", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, List.of(new WorldPoint(2733, 3415, 0))),
