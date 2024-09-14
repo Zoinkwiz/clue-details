@@ -60,19 +60,29 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		}
 	}
 
+	// Draw the text bottom left if true, top left if false
+	public boolean bottomText(int i) {
+		return (i == 1 && config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT)
+				|| config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.BOTTOM;
+	}
+
 	private void renderText(Graphics2D graphics, Rectangle bounds, String itemTag)
 	{
-		// Specific format due to backwards compatibility
-		String[] itemTags = itemTag.split(": ", 2);
 		final TextComponent textComponent = new TextComponent();
 		textComponent.setColor(Color.white);
 
+		String[] itemTags = new String [] {itemTag};
+		if (config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT
+				&& !config.clueTagSplit().isEmpty()){
+			itemTags = itemTag.split(config.clueTagSplit(), 2);
+		}
+
 		int i = 0;
 		for (String tag : itemTags){
-			// Draw the text in the bottom left first, and top left second
-			textComponent.setPosition(new Point(bounds.x - 1, bounds.y - 1 + (i == 1
-					? bounds.height
-					: graphics.getFontMetrics().getHeight())));
+			textComponent.setPosition(new Point(
+				bounds.x - 1,
+				bounds.y - 1 + (bottomText(i) ? bounds.height : graphics.getFontMetrics().getHeight())
+			));
 			textComponent.setText(tag);
 			textComponent.render(graphics);
 			i++;
