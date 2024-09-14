@@ -243,6 +243,7 @@ public class ClueDetailsPlugin extends Plugin
 					{
 						Clues clue = Clues.get(itemId);
 						chatboxPanelManager.openTextInput("Enter new clue text:")
+							.value(clue.getDisplayText(configManager))
 							.onDone((newTag) -> {
 								configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
 								panel.refresh();

@@ -29,25 +29,20 @@ import com.cluedetails.Clues;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.ui.ColorScheme;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.components.FlatTextField;
 
 public class ClueSelectLabel extends JLabel
 {
@@ -65,6 +60,12 @@ public class ClueSelectLabel extends JLabel
 	private static final Border UNSELECTED_BORDER = BorderFactory
 		.createEmptyBorder(5, 10, 5, 10);
 
+	private final FlatTextField nameInput = new FlatTextField();
+	private final JLabel save = new JLabel("Save");
+	private final JLabel cancel = new JLabel("Cancel");
+
+	JPanel nameActions = new JPanel(new BorderLayout(3, 0));
+
 	public ClueSelectLabel(CluePreferenceManager cluePreferenceManager, Clues clue,
 						   ChatboxPanelManager chatboxPanelManager, ConfigManager configManager)
 	{
@@ -81,6 +82,87 @@ public class ClueSelectLabel extends JLabel
 		boolean isActive = cluePreferenceManager.getPreference(clue.getClueID());
 		setSelected(isActive);
 		setHovered(false);
+
+		nameActions.setBorder(new EmptyBorder(0, 0, 0, 8));
+		nameActions.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+
+		save.setVisible(false);
+		save.setFont(FontManager.getRunescapeSmallFont());
+		save.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
+		save.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mousePressed(MouseEvent mouseEvent)
+			{
+				save();
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent mouseEvent)
+			{
+				save.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR.darker());
+			}
+
+			@Override
+			public void mouseExited(MouseEvent mouseEvent)
+			{
+				save.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
+			}
+		});
+
+		cancel.setVisible(false);
+		cancel.setFont(FontManager.getRunescapeSmallFont());
+		cancel.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+		cancel.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mousePressed(MouseEvent mouseEvent)
+			{
+				cancel();
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent mouseEvent)
+			{
+				cancel.setForeground(ColorScheme.PROGRESS_ERROR_COLOR.darker());
+			}
+
+			@Override
+			public void mouseExited(MouseEvent mouseEvent)
+			{
+				cancel.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+			}
+		});
+
+		nameActions.add(save, BorderLayout.EAST);
+		nameActions.add(cancel, BorderLayout.WEST);
+
+		nameInput.setVisible(false);
+		nameInput.setText(clue.getDisplayText(configManager));
+		nameInput.setBorder(null);
+		nameInput.setEditable(false);
+		nameInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		nameInput.setPreferredSize(new Dimension(0, 24));
+		nameInput.getTextField().setForeground(Color.WHITE);
+		nameInput.getTextField().setBorder(new EmptyBorder(0, 8, 0, 0));
+		nameInput.addKeyListener(new KeyAdapter()
+		{
+			@Override
+			public void keyPressed(KeyEvent e)
+			{
+				if (e.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					save();
+				}
+				else if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+				{
+					cancel();
+				}
+			}
+		});
+
+		add(nameInput, BorderLayout.CENTER);
+		add(nameActions, BorderLayout.EAST);
 
 		addMouseListener(new MouseAdapter()
 		{
@@ -125,12 +207,8 @@ public class ClueSelectLabel extends JLabel
 			@Override
 			public void actionPerformed(ActionEvent event)
 			{
-				chatboxPanelManager.openTextInput("Enter new clue text:")
-					.onDone((newTag) -> {
-						configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
-						setText(generateText(clue.getDisplayText(configManager)));
-					})
-					.build();
+				nameInput.setEditable(true);
+				updateNameActions(true);
 			}
 		});
 
@@ -181,10 +259,45 @@ public class ClueSelectLabel extends JLabel
 		if (isHovered)
 		{
 			setBackground(ColorScheme.DARK_GRAY_HOVER_COLOR);
+			nameActions.setBackground(ColorScheme.DARK_GRAY_HOVER_COLOR);
 		}
 		else
 		{
 			setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			nameActions.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		}
+	}
+
+	private void save()
+	{
+		configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), nameInput.getText());
+		setText(generateText(clue.getDisplayText(configManager)));
+
+		nameInput.setVisible(false);
+		nameInput.setEditable(false);
+		updateNameActions(false);
+		requestFocusInWindow();
+	}
+
+	private void cancel()
+	{
+		nameInput.setVisible(false);
+		nameInput.setEditable(false);
+		nameInput.setText(clue.getDisplayText(configManager));
+		updateNameActions(false);
+		requestFocusInWindow();
+	}
+
+	private void updateNameActions(boolean saveAndCancel)
+	{
+		nameInput.setVisible(saveAndCancel);
+		save.setVisible(saveAndCancel);
+		cancel.setVisible(saveAndCancel);
+
+		if (saveAndCancel)
+		{
+			nameInput.getTextField().requestFocusInWindow();
+			nameInput.getTextField().selectAll();
 		}
 	}
 }
