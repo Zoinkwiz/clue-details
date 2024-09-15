@@ -227,7 +227,7 @@ public interface ClueDetailsConfig extends Config
 		return ClueOrdering.TIER;
 	}
 
-	@ConfigSection(name = "Marked Clues", description = "Options that effect marked clues", position = 3, closedByDefault = false)
+	@ConfigSection(name = "Marked Clues", description = "Options that effect marked clues", position = 3)
 	String markedCluesSection = "Marked Clues";
 
 	@ConfigItem(
@@ -290,8 +290,20 @@ public interface ClueDetailsConfig extends Config
 		return 4;
 	}
 
-	@ConfigSection(name = "Overlays", description = "Options that effect overlays", position = 4, closedByDefault = false)
+	@ConfigSection(name = "Overlays", description = "Options that effect overlays", position = 4)
 	String overlaysSection = "Overlays";
+
+	@ConfigItem(
+		keyName = "hideHoverText",
+		name = "Hide hover text",
+		description = "Toggle whether to hide tooltips on clue hover",
+		section = overlaysSection,
+		position = 0
+	)
+	default boolean hideHoverText()
+	{
+		return false;
+	}
 
 	@ConfigItem(
 		keyName = "showInventoryClueTags",

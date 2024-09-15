@@ -108,7 +108,10 @@ public class ClueDetailsOverlay extends OverlayPanel
 		}
 		else
 		{
-			showHoveredItem();
+			if (!config.hideHoverText())
+			{
+				showHoveredItem();
+			}
 		}
 
 		tileHighlights.keySet().forEach(tile -> checkAllTilesForHighlighting(tile, tileHighlights.get(tile)));
@@ -177,6 +180,11 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 					hoveredEntry.setTarget(newText);
 				}
+			}
+
+			if (config.hideHoverText())
+			{
+				return;
 			}
 
 			for (int i = currentMenuEntries.length - 1; i >= 0; i--)
