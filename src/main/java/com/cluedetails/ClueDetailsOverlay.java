@@ -108,7 +108,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		}
 		else
 		{
-			if (!config.hideHoverText())
+			if (config.showHoverText())
 			{
 				showHoveredItem();
 			}
@@ -182,7 +182,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 				}
 			}
 
-			if (config.hideHoverText())
+			if (!config.showHoverText())
 			{
 				return;
 			}
