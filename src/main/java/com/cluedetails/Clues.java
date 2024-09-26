@@ -197,6 +197,8 @@ public enum Clues
 	EASY_23158("Play 'Rugged Terrain' for Cecilia.", ItemID.CLUE_SCROLL_EASY_23158, ClueTier.EASY, List.of(new WorldPoint(2990, 3383, 0))),
 	EASY_23159("Play 'On the Shore' for Cecilia.", ItemID.CLUE_SCROLL_EASY_23159, ClueTier.EASY, List.of(new WorldPoint(2990, 3383, 0))),
 	EASY_23160("Play 'Alone' for Cecilia.", ItemID.CLUE_SCROLL_EASY_23160, ClueTier.EASY, List.of(new WorldPoint(2990, 3383, 0))),
+	EASY_29853("Dig outside the bank on Aldarin.", ItemID.CLUE_SCROLL_EASY_29853, ClueTier.EASY, List.of(new WorldPoint(1390, 2926, 0))),
+	EASY_29854("Dig at a waterfall by the pines in the serpent's shadow.", ItemID.CLUE_SCROLL_EASY_29854, ClueTier.EASY, List.of(new WorldPoint(1490, 3257, 0))),
 
 	// Medium clues
 	MEDIUM_2801("02.48N 22.30E.", ItemID.CLUE_SCROLL_MEDIUM, ClueTier.MEDIUM, List.of(new WorldPoint(3160, 3251, 0))),
@@ -360,6 +362,8 @@ public enum Clues
 	MEDIUM_23141("Play 'Catch Me If You Can' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23141, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
 	MEDIUM_23142("Play 'Cave of Beasts' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23142, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
 	MEDIUM_23143("Play 'Devils May Care' for Cecilia.", ItemID.CLUE_SCROLL_MEDIUM_23143, ClueTier.MEDIUM, List.of(new WorldPoint(2990, 3384, 0))),
+	MEDIUM_29857("Jump for Joy in the mine near the Twilight Temple.", ItemID.CLUE_SCROLL_MEDIUM_29857, ClueTier.MEDIUM, List.of(new WorldPoint(1672, 3284, 0))),
+	MEDIUM_29858("Nod your head where the River Ortus meets the Proudspire.", ItemID.CLUE_SCROLL_MEDIUM_29858, ClueTier.MEDIUM, List.of(new WorldPoint(1626, 3241, 0))),
 
 	// Medium challenges
 	MEDIUM_2842("6859", ItemID.CHALLENGE_SCROLL_MEDIUM, ClueTier.MEDIUM_CHALLENGE, List.of(new WorldPoint( 2444, 3049, 0))),
@@ -602,6 +606,7 @@ public enum Clues
 	HARD_23180("Play 'Fossilised' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23180, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	HARD_23181("Play 'Hells Bells' for Cecilia.", ItemID.CLUE_SCROLL_HARD_23181, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
 	HARD_25792("Play 'Regal Pomp' for Cecilia.", ItemID.CLUE_SCROLL_HARD_25792, ClueTier.HARD, List.of(new WorldPoint(2990, 3383, 0))),
+	HARD_29859("Panic outside the Twlight Temple.", ItemID.CLUE_SCROLL_HARD_29859, ClueTier.HARD, List.of(new WorldPoint(1694, 3247, 0))),
 
 	// Hard challenges
 	HARD_7269("6", ItemID.CHALLENGE_SCROLL_HARD, ClueTier.HARD_CHALLENGE, List.of(new WorldPoint(2395, 3486, 0))),
@@ -830,6 +835,8 @@ public enum Clues
 	ELITE_12126("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12126, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_24773("Play `Lament for the Hallowed` for Cecilia.", ItemID.CLUE_SCROLL_ELITE_24773, ClueTier.ELITE, List.of(new WorldPoint(2990, 3383, 0))),
 	ELITE_26943("Play `The Pharaoh` for Cecilia.", ItemID.CLUE_SCROLL_ELITE_26943, ClueTier.ELITE, List.of(new WorldPoint(2990, 3384, 0))),
+	ELITE_29855("02.37N 27.09W.", ItemID.CLUE_SCROLL_ELITE_29855, ClueTier.ELITE, List.of(new WorldPoint(1571, 3245, 0))),
+	ELITE_29856("Banish a chilling spirit.", ItemID.CLUE_SCROLL_ELITE_29856, ClueTier.ELITE, List.of(new WorldPoint(1627, 9623, 0))),
 
 	// Elite challenges
 	ELITE_12128("Sherlock Challenge scroll", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, List.of(new WorldPoint(2733, 3415, 0))),
