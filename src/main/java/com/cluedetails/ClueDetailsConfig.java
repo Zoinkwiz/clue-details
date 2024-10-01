@@ -38,6 +38,10 @@ import net.runelite.client.config.*;
 @ConfigGroup("clue-details")
 public interface ClueDetailsConfig extends Config
 {
+	String CLUE_ITEM_HIGHLIGHT_CONFIG = "clue-details-item-highlights";
+
+	String CLUE_INFO_CONFIG = "clue-details-text-info";
+
 	enum ClueOrdering implements Comparator<Clues>
 	{
 		/**

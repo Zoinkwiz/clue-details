@@ -27,12 +27,18 @@ package com.cluedetails;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.inject.Inject;
+import lombok.Setter;
 import net.runelite.api.Client;
-import net.runelite.api.InventoryID;
-import net.runelite.api.Item;
-import net.runelite.api.ItemContainer;
+import net.runelite.api.widgets.ComponentID;
+import net.runelite.api.widgets.Widget;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -40,20 +46,29 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 public class ClueDetailsWidgetOverlay extends OverlayPanel
 {
 	private final Client client;
+	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
+	private final ItemManager itemManager;
+
+	List<Widget> widgetsToHighlight = new ArrayList<>();
+
+	@Setter
+	private boolean inventoryChanged;
 
 	private static final Color TITLED_CONTENT_COLOR = new Color(190, 190, 190);
 
 	@Inject
-	public ClueDetailsWidgetOverlay(Client client, ClueDetailsConfig config, ConfigManager configManager)
+	public ClueDetailsWidgetOverlay(Client client, ClueDetailsPlugin clueDetailsPlugin, ClueDetailsConfig config, ConfigManager configManager, ItemManager itemManager)
 	{
 		setPriority(PRIORITY_HIGHEST);
 		setLayer(OverlayLayer.ABOVE_WIDGETS);
 
 		this.client = client;
+		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.config = config;
 		this.configManager = configManager;
+		this.itemManager = itemManager;
 	}
 
 	@Override
@@ -61,27 +76,70 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 	{
 		if (config.showInventoryCluesOverlay())
 		{
-			createInventoryCluesOverlay();
+			createInventoryCluesOverlay(graphics);
 		}
 
 		return super.render(graphics);
 	}
 
-	private void createInventoryCluesOverlay()
+	private void createInventoryCluesOverlay(Graphics2D graphics)
 	{
-		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
-		if (inventory == null) return;
-
-		for (Item item : inventory.getItems())
+		for (Clues clue : clueDetailsPlugin.getCluesInInventory())
 		{
-			Clues clue = Clues.get(item.getId());
-			if (clue != null)
+			if (clue == null) continue;
+
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left(clue.getDisplayText(configManager))
+				.leftColor(TITLED_CONTENT_COLOR)
+				.build());
+
+			if (inventoryChanged)
 			{
-				panelComponent.getChildren().add(LineComponent.builder()
-					.left(clue.getDisplayText(configManager))
-					.leftColor(TITLED_CONTENT_COLOR)
-					.build());
+				checkInvAndHighlightItems(graphics, clue);
+				inventoryChanged = false;
+				continue;
+			}
+
+			for (Widget widget : widgetsToHighlight)
+			{
+				highlightItem(graphics, widget);
 			}
 		}
 	}
+
+	protected Widget getInventoryWidget()
+	{
+		return client.getWidget(ComponentID.INVENTORY_CONTAINER);
+	}
+
+	private void checkInvAndHighlightItems(Graphics2D graphics, Clues clue)
+	{
+		List<Integer> highlightItems = clue.getItems(configManager);
+		if (highlightItems == null) return;
+
+		Widget inventoryWidget = getInventoryWidget();
+		if (inventoryWidget == null || inventoryWidget.isHidden())
+		{
+			return;
+		}
+
+		if (inventoryWidget.getDynamicChildren() == null)
+		{
+			return;
+		}
+
+		for (Widget item : inventoryWidget.getDynamicChildren())
+		{
+			if (highlightItems.contains(item.getItemId()))
+			{
+				highlightItem(graphics, item);
+			}
+		}
+	}
+	private void highlightItem(Graphics2D graphics, Widget item)
+		{
+			Rectangle slotBounds = item.getBounds();
+			BufferedImage outlined = itemManager.getItemOutline(item.getItemId(), item.getItemQuantity(), Color.YELLOW.darker());
+			graphics.drawImage(outlined, (int) slotBounds.getX(), (int) slotBounds.getY(), null);
+		}
 }

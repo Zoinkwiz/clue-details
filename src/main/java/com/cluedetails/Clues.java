@@ -24,6 +24,7 @@
  */
 package com.cluedetails;
 
+import static com.cluedetails.ClueDetailsConfig.CLUE_ITEM_HIGHLIGHT_CONFIG;
 import com.cluedetails.filters.ClueTier;
 import com.cluedetails.filters.OrRequirement;
 import java.util.List;
@@ -740,7 +741,7 @@ public enum Clues
 	ELITE_12113("Talk to Sherlock (plant a watermelon seed).", ItemID.CLUE_SCROLL_ELITE_12113, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12114("Talk to Sherlock (craft multiple cosmics).", ItemID.CLUE_SCROLL_ELITE_12114, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12115("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12115, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
-	ELITE_12116("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12116, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
+	ELITE_12116("Talk to Sherlock (black warlock).", ItemID.CLUE_SCROLL_ELITE_12116, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12117("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12117, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12118("Talk to Sherlock.", ItemID.CLUE_SCROLL_ELITE_12118, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
 	ELITE_12119("Talk to Sherlock (fix a magical lamp in Dorgesh-Kaan).", ItemID.CLUE_SCROLL_ELITE_12119, ClueTier.ELITE, List.of(new WorldPoint(2733, 3413, 0))),
@@ -783,10 +784,31 @@ public enum Clues
 		return null;
 	}
 
+	public List<Integer> getItems(ConfigManager configManager)
+	{
+		try
+		{
+			ClueIdToInfo clueIdToInfo = configManager.getConfiguration(CLUE_ITEM_HIGHLIGHT_CONFIG, String.valueOf(getClueID()), ClueIdToInfo.class);
+			if (clueIdToInfo != null && clueIdToInfo.itemIds != null) return clueIdToInfo.itemIds;
+			return null;
+		}
+		catch (Exception err)
+		{
+			return null;
+		}
+	}
+
 	public String getDisplayText(ConfigManager configManager)
 	{
-		String text = configManager.getConfiguration("clue-details-text", String.valueOf(getClueID()));
-		if (text != null) return text;
-		return getClueText();
+		try
+		{
+			ClueIdToInfo clueIdToInfo = configManager.getConfiguration(CLUE_ITEM_HIGHLIGHT_CONFIG, String.valueOf(getClueID()), ClueIdToInfo.class);
+			if (clueIdToInfo != null && clueIdToInfo.text != null) return clueIdToInfo.text;
+			return getClueText();
+		}
+		catch (Exception err)
+		{
+			return getClueText();
+		}
 	}
 }

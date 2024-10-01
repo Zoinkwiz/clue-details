@@ -24,6 +24,8 @@
  */
 package com.cluedetails;
 
+import static com.cluedetails.ClueDetailsConfig.CLUE_INFO_CONFIG;
+import static com.cluedetails.ClueDetailsConfig.CLUE_ITEM_HIGHLIGHT_CONFIG;
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
@@ -74,30 +76,39 @@ public class ClueDetailsSharingManager
 
 	public void exportClueDetails()
 	{
-		List<ClueIdToText> clueIdToTextList = new ArrayList<>();
+		List<String> clueIdToTextList = new ArrayList<>();
+		List<int[]> clueIdToHighlightItemsList = new ArrayList<>();
 		for (Clues clue : Clues.values())
 		{
 			int id = clue.getClueID();
-			String clueText = configManager.getConfiguration("clue-details-text", String.valueOf(id));
-			if (clueText == null) continue;
 
-			clueIdToTextList.add(new ClueIdToText(id, clueText));
+			String clueIdToText = configManager.getConfiguration(CLUE_INFO_CONFIG, String.valueOf(id));
+			if (clueIdToText != null)
+			{
+				clueIdToTextList.add(clueIdToText);
+			}
+
+			int[] clueIdToHighlightItems = configManager.getConfiguration(CLUE_ITEM_HIGHLIGHT_CONFIG, String.valueOf(id), int[].class);
+			if (clueIdToHighlightItems != null)
+			{
+				clueIdToHighlightItemsList.add(clueIdToHighlightItems);
+			}
 		}
 
-		if (clueIdToTextList.isEmpty())
+		if (clueIdToTextList.isEmpty() && clueIdToHighlightItemsList.isEmpty())
 		{
 			sendChatMessage("You have no updated clue details to export.");
 			return;
 		}
 
-		final String exportDump = gson.toJson(clueIdToTextList);
+		final String exportDump = gson.toJson(clueIdToStringList);
 
 		log.debug("Exported clue details: {}", exportDump);
 
 		Toolkit.getDefaultToolkit()
 			.getSystemClipboard()
 			.setContents(new StringSelection(exportDump), null);
-		sendChatMessage(clueIdToTextList.size() + " clue details were copied to your clipboard.");
+		sendChatMessage(clueIdToStringList.size() + " clue details were copied to your clipboard.");
 	}
 
 	public void promptForImport()
@@ -124,11 +135,11 @@ public class ClueDetailsSharingManager
 			return;
 		}
 
-		List<ClueIdToText> importClueDetails;
+		List<ClueIdToInfo> importClueDetails;
 		try
 		{
 			// CHECKSTYLE:OFF
-			importClueDetails = gson.fromJson(clipboardText, new TypeToken<List<ClueIdToText>>(){}.getType());
+			importClueDetails = gson.fromJson(clipboardText, new TypeToken<List<ClueIdToInfo>>(){}.getType());
 			// CHECKSTYLE:ON
 		}
 		catch (JsonSyntaxException e)
@@ -150,11 +161,11 @@ public class ClueDetailsSharingManager
 			.build();
 	}
 
-	private void importClueDetails(Collection<ClueIdToText> importPoints)
+	private void importClueDetails(Collection<ClueIdToInfo> importPoints)
 	{
-		for (ClueIdToText importPoint : importPoints)
+		for (ClueIdToInfo importPoint : importPoints)
 		{
-			configManager.setConfiguration("clue-details-text", String.valueOf(importPoint.id), importPoint.text);
+			configManager.setConfiguration("clue-details-info", String.valueOf(importPoint.id), importPoint);
 		}
 
 		sendChatMessage(importPoints.size() + " clue details were imported from the clipboard.");

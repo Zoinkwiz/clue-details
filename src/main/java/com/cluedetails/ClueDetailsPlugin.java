@@ -24,17 +24,26 @@
  */
 package com.cluedetails;
 
+import static com.cluedetails.ClueDetailsConfig.CLUE_ITEM_HIGHLIGHT_CONFIG;
 import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.InventoryID;
+import net.runelite.api.Item;
+import net.runelite.api.ItemContainer;
 import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
 import net.runelite.api.widgets.InterfaceID;
@@ -102,6 +111,9 @@ public class ClueDetailsPlugin extends Plugin
 
 	private final Collection<String> configEvents = Arrays.asList("filterListByTier", "filterListByRegion", "orderListBy", "onlyShowMarkedClues");
 
+	@Getter
+	private final Clues[] cluesInInventory = new Clues[4];
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -129,6 +141,8 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			clientToolbar.addNavigation(navButton);
 		}
+
+		setupInventoryClues();
 	}
 
 	@Override
@@ -143,6 +157,8 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.unregister(widgetOverlay);
 
 		clientToolbar.removeNavigation(navButton);
+
+		Arrays.fill(cluesInInventory, null);
 	}
 
 	@Provides
@@ -179,6 +195,38 @@ public class ClueDetailsPlugin extends Plugin
 		if (configEvents.contains(event.getKey()))
 		{
 			panel.refresh();
+		}
+	}
+
+	private void setupInventoryClues()
+	{
+		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
+		if (inventory == null) return;
+
+		for (Item item : inventory.getItems())
+		{
+			Clues clue = Clues.get(item.getId());
+			if (clue != null)
+			{
+				cluesInInventory[clue.getClueTier().ordinal()] = clue;
+			}
+		}
+	}
+
+	@Subscribe
+	public void onItemContainerChanged(ItemContainerChanged itemContainerChanged)
+	{
+		if (itemContainerChanged.getContainerId() != InventoryID.INVENTORY.getId()) return;
+
+		widgetOverlay.setInventoryChanged(true);
+
+		for (Item item : itemContainerChanged.getItemContainer().getItems())
+		{
+			Clues clue = Clues.get(item.getId());
+			if (clue != null)
+			{
+				cluesInInventory[clue.getClueTier().ordinal()] = clue;
+			}
 		}
 	}
 
@@ -236,7 +284,7 @@ public class ClueDetailsPlugin extends Plugin
 				final int itemId = w.getItemId();
 
 				client.createMenuEntry(idx)
-					.setOption("Clue details")
+					.setOption("Clue details text")
 					.setTarget(entry.getTarget())
 					.setType(MenuAction.RUNELITE)
 					.onClick(e ->
@@ -250,6 +298,46 @@ public class ClueDetailsPlugin extends Plugin
 							.build();
 					});
 			}
+
+			if (w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY
+				&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10)
+			{
+				for (Clues clue : cluesInInventory)
+				{
+					if (clue == null) continue;
+					final int itemId = w.getItemId();
+					final String text = "Add to " + clue.getClueTier().name() + " clue";
+
+					// Add menu to item for clue
+					client.getMenu().createMenuEntry(idx)
+						.setOption(text)
+						.setTarget(entry.getTarget())
+						.setType(MenuAction.RUNELITE)
+						.onClick(e ->
+						{
+							addItemToClueHighlights(clue, itemId);
+						});
+				}
+			}
 		}
+	}
+
+	private void addItemToClueHighlights(Clues clue, int itemId)
+	{
+		int[] clueItemHighlightIds = configManager.getConfiguration(CLUE_ITEM_HIGHLIGHT_CONFIG, String.valueOf(clue.getClueID()), int[].class);
+		List<Integer> itemIds;
+		if (clueItemHighlightIds == null)
+		{
+			itemIds = new ArrayList<>(itemId);
+		}
+		else
+		{
+			itemIds = Arrays.stream(clueItemHighlightIds).boxed().collect(Collectors.toList());
+			itemIds.add(itemId);
+		}
+
+		System.out.println(clue.getDisplayText(configManager));
+		System.out.println(clue.getClueID());
+		configManager.setConfiguration(CLUE_ITEM_HIGHLIGHT_CONFIG, String.valueOf(clue.getClueID()), itemIds);
 	}
 }
