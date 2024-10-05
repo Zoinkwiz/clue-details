@@ -29,17 +29,29 @@ import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.inject.Inject;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.InventoryID;
+import net.runelite.api.Item;
+import net.runelite.api.ItemContainer;
+import net.runelite.api.ItemID;
 import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.events.GameTick;
+import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
+import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
@@ -63,6 +75,9 @@ public class ClueDetailsPlugin extends Plugin
 {
 	@Inject
 	private Client client;
+
+	@Inject
+	private ClientThread clientThread;
 
 	@Inject
 	private ClueDetailsConfig config;
@@ -101,6 +116,14 @@ public class ClueDetailsPlugin extends Plugin
 	CluePreferenceManager cluePreferenceManager;
 
 	private final Collection<String> configEvents = Arrays.asList("filterListByTier", "filterListByRegion", "orderListBy", "onlyShowMarkedClues");
+
+	private final Collection<Integer> trackedClues = Arrays.asList(ItemID.CLUE_SCROLL_MASTER, ItemID.TORN_CLUE_SCROLL_PART_1, ItemID.TORN_CLUE_SCROLL_PART_2, ItemID.TORN_CLUE_SCROLL_PART_3);
+
+	@Getter
+	public Set<Integer> trackedCluesInInventory = new HashSet<>();
+
+	@Getter
+	public String readClueText = null;
 
 	@Override
 	protected void startUp() throws Exception
@@ -143,6 +166,88 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.unregister(widgetOverlay);
 
 		clientToolbar.removeNavigation(navButton);
+	}
+
+	@Subscribe
+	public void onItemContainerChanged(final ItemContainerChanged event)
+	{
+		final ItemContainer itemContainer = event.getItemContainer();
+
+		if (event.getContainerId() != InventoryID.INVENTORY.getId())
+		{
+			return;
+		}
+
+		// Check if clues were added to inventory
+		Set<Integer> newTrackedClues = getTrackedCluesInInventory(itemContainer);
+		newTrackedClues.removeAll(trackedCluesInInventory);
+
+		if (!newTrackedClues.isEmpty())
+		{
+			trackedCluesInInventory = getTrackedCluesInInventory(itemContainer);
+		}
+	}
+
+	private Set<Integer> getTrackedCluesInInventory(ItemContainer inventoryContainer)
+	{
+		// Remove clues no longer in inventory
+		trackedCluesInInventory.removeIf(clue -> !inventoryContainer.contains(clue));
+
+		if (!trackedCluesInInventory.contains(ItemID.CLUE_SCROLL_MASTER))
+		{
+			readClueText = null;
+		}
+
+		// Add new clues
+		Item[] inventoryItems = inventoryContainer.getItems();
+		Set<Integer> cluesFound = new HashSet<>();
+
+		for (Item item : inventoryItems)
+		{
+			int invItemId = item.getId();
+			if (trackedClues.contains(invItemId))
+			{
+				cluesFound.add(invItemId);
+			}
+		}
+
+		return cluesFound;
+	}
+
+	public Boolean foundTrackedClue()
+	{
+		return trackedCluesInInventory.stream().anyMatch(trackedClues::contains);
+	}
+
+	@Subscribe
+	public void onGameTick(final GameTick event)
+	{
+		// Reset clueOpenedText when receiving a new beginner or master clue
+		// These clues use a single item ID, so we cannot detect step changes based on the item ID changing
+		final Widget chatDialogClueItem = client.getWidget(ComponentID.DIALOG_SPRITE_SPRITE);
+		if (chatDialogClueItem != null
+			&& (chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_BEGINNER || chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_MASTER))
+		{
+			readClueText = null;
+		}
+	}
+
+	@Subscribe
+	public void onWidgetLoaded(WidgetLoaded event)
+	{
+		// Set clueOpenedText when reading a beginner or master clue
+		// These clues use a single item ID, so we cannot detect step changes based on the item ID changing
+		if (event.getGroupId() == InterfaceID.CLUESCROLL && foundTrackedClue())
+		{
+			clientThread.invokeLater(() ->
+			{
+				final Widget clueScrollText = client.getWidget(ComponentID.CLUESCROLL_TEXT);
+				if (clueScrollText != null)
+				{
+					readClueText = clueScrollText.getText();
+				}
+			});
+		}
 	}
 
 	@Provides
