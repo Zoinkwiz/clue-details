@@ -60,86 +60,97 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 			Clues clue = Clues.get(itemId);
 			String itemTag = null;
 
-			// If clue can't be found by Clue ID, check if it can be found by Clue text
-			if (clue == null)
+			if (clue != null)
 			{
-				if (itemId == ItemID.CLUE_SCROLL_MASTER &&
-					clueDetailsPlugin.foundTrackedClue())
+				itemTag = clue.getDisplayText(configManager);
+			}
+			// If clue can't be found by Clue ID, check if it can be found by Clue text
+			else
+			{
+				if ((itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER)
+					&& clueDetailsPlugin.foundTrackedClue())
 				{
-					String openedText = clueDetailsPlugin.getReadClueText();
+					String readClueText = clueDetailsPlugin.getReadClueText();
 
-					// Handle master clues
-					String getText = ClueText.forText(openedText);
+					String getText = ClueText.forText(readClueText);
 
 					if (getText != null)
 					{
 						itemTag = getText;
 					}
-
 					// Handle three step cryptic clues
-					final ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(openedText);
-
-					if (threeStepCrypticClue != null)
+					else
 					{
-						threeStepCrypticClue.update(clueDetailsPlugin.getTrackedCluesInInventory());
-						itemTag = threeStepCrypticClue.getTag();
+						final ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(readClueText);
+
+						if (threeStepCrypticClue != null)
+						{
+							// Check which steps are already done
+							threeStepCrypticClue.update(clueDetailsPlugin.getTrackedCluesInInventory());
+							itemTag = threeStepCrypticClue.getTag();
+						}
 					}
-					renderText(graphics, widgetItem.getCanvasBounds(), itemTag);
 				}
 			}
-			else
-			{
-				itemTag = clue.getDisplayText(configManager);
-				renderText(graphics, widgetItem.getCanvasBounds(), itemTag);
-			}
+			renderText(graphics, widgetItem.getCanvasBounds(), itemTag);
 		}
 	}
 
-	public int textPosition(Graphics2D graphics, Rectangle bounds, int i, boolean threeStep)
+	public int textPosition(Graphics2D graphics, Rectangle bounds, int i, int tagCount)
 	{
-		// Return text position in the middle of item
-		if (threeStep && i == 1)
+		// Middle of item
+		if (tagCount == 3 && i == 1)
 		{
 			return (bounds.height + graphics.getFontMetrics().getHeight()) / 2;
 		}
 
-		boolean bottomText =
-			(config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT  && i == 1) ||
-			config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.BOTTOM ||
-			i == 2;
+		// Bottom of item
+		if ((config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT && i == 1)
+			|| (tagCount == 2 && i == 1)
+			|| config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.BOTTOM && tagCount == 1
+			|| i == 2)
+		{
+			return bounds.height;
+		}
 
-		// Return text position at bottom of item, otherwise top
-		return bottomText ? bounds.height : graphics.getFontMetrics().getHeight();
+		// Top of item
+		return graphics.getFontMetrics().getHeight();
 	}
 
 	private void renderText(Graphics2D graphics, Rectangle bounds, String itemTag)
 	{
+		if (itemTag == null)
+		{
+			return;
+		}
+
 		graphics.setFont(FontManager.getRunescapeSmallFont());
 
 		final TextComponent textComponent = new TextComponent();
 		textComponent.setColor(Color.white);
 
 		String[] itemTags = new String [] {itemTag};
-		boolean threeStep = false;
 		// Handle Three Step Cryptic Clues
 		if (itemTag.contains("<br>"))
 		{
-			threeStep = true;
 			itemTags = itemTag.split("<br>");
 		}
-		// Handle all other Clues
-		else if (config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT
-				&& !config.clueTagSplit().isEmpty())
+
+		// Handle split
+		if (config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT
+			&& !config.clueTagSplit().isEmpty()
+			&& itemTags.length == 1)
 		{
-			itemTags = itemTag.split(config.clueTagSplit(), 2);
+			itemTags = itemTags[0].split(config.clueTagSplit(), 3);
 		}
 
 		int i = 0;
+		int tagCount = itemTags.length;
 		for (String tag : itemTags)
 		{
 			textComponent.setPosition(new Point(
 				bounds.x - 1,
-				bounds.y - 1 + textPosition(graphics, bounds, i, threeStep)
+				bounds.y - 1 + textPosition(graphics, bounds, i, tagCount)
 			));
 			textComponent.setText(tag);
 			textComponent.render(graphics);

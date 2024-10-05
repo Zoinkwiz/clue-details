@@ -49,6 +49,11 @@ public class ThreeStepCrypticClue
 
 	public static ThreeStepCrypticClue forText(String text)
 	{
+		if (text == null)
+		{
+			return null;
+		}
+
 		final String[] split = text.split("<br>\\s*<br>");
 		final List<Map.Entry<ClueText, Boolean>> steps = new ArrayList<>(split.length);
 
