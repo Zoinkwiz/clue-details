@@ -30,15 +30,14 @@ import com.google.common.collect.Multimap;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
+
+import com.google.gson.Gson;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Menu;
@@ -51,6 +50,7 @@ import net.runelite.api.Tile;
 import net.runelite.api.TileItem;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.client.Notifier;
@@ -79,6 +79,8 @@ public class ClueDetailsOverlay extends OverlayPanel
 	protected Multimap<Tile, Integer> tileHighlights = ArrayListMultimap.create();
 
 	protected static final int MAX_DISTANCE = 2350;
+
+	protected Multimap<Tile, Integer> tileDespawns = ArrayListMultimap.create();
 
 	@Inject
 	public ClueDetailsOverlay(Client client, ClueDetailsConfig config, TooltipManager tooltipManager, ModelOutlineRenderer modelOutlineRenderer, ConfigManager configManager, Notifier notifier)

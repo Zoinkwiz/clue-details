@@ -27,26 +27,14 @@ package com.cluedetails;
 import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.Client;
-import net.runelite.api.InventoryID;
-import net.runelite.api.Item;
-import net.runelite.api.ItemContainer;
-import net.runelite.api.ItemID;
-import net.runelite.api.KeyCode;
-import net.runelite.api.MenuAction;
-import net.runelite.api.MenuEntry;
-import net.runelite.api.events.GameTick;
-import net.runelite.api.events.ItemContainerChanged;
-import net.runelite.api.events.MenuEntryAdded;
-import net.runelite.api.events.MenuOpened;
-import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.*;
+import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.*;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
@@ -56,7 +44,9 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -109,6 +99,9 @@ public class ClueDetailsPlugin extends Plugin
 	@Inject
 	ConfigManager configManager;
 
+	@Inject
+	ClueFloorManager clueFloorManager;
+
 	public ClueDetailsParentPanel panel;
 
 	NavigationButton navButton;
@@ -124,6 +117,9 @@ public class ClueDetailsPlugin extends Plugin
 
 	@Getter
 	public String readClueText = null;
+
+	private Integer fakeClueId;
+	boolean profileChanged;
 
 	@Override
 	protected void startUp() throws Exception
@@ -166,6 +162,8 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.unregister(widgetOverlay);
 
 		clientToolbar.removeNavigation(navButton);
+
+		clueFloorManager.saveFloorCluesToConfig();
 	}
 
 	@Subscribe
@@ -178,24 +176,21 @@ public class ClueDetailsPlugin extends Plugin
 			return;
 		}
 
-		// Check if clues were added to inventory
-		Set<Integer> newTrackedClues = getTrackedCluesInInventory(itemContainer);
-		newTrackedClues.removeAll(trackedCluesInInventory);
+		System.out.println(readClueText);
 
-		if (!newTrackedClues.isEmpty())
-		{
-			trackedCluesInInventory = getTrackedCluesInInventory(itemContainer);
-		}
+		// Check if clues were added to inventory
+		trackedCluesInInventory = getTrackedCluesInInventory(itemContainer);
 	}
 
 	private Set<Integer> getTrackedCluesInInventory(ItemContainer inventoryContainer)
 	{
 		// Remove clues no longer in inventory
 		trackedCluesInInventory.removeIf(clue -> !inventoryContainer.contains(clue));
-
 		if (!trackedCluesInInventory.contains(ItemID.CLUE_SCROLL_MASTER))
 		{
-			readClueText = null;
+			// If removed, let's check floor items to see if new master about under player
+			if (readClueText != null) checkForDroppedClue();
+			setClueTextIfClueDissapeared();
 		}
 
 		// Add new clues
@@ -220,8 +215,30 @@ public class ClueDetailsPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onGameStateChanged(GameStateChanged gameStateChanged)
+	{
+		if (gameStateChanged.getGameState() == GameState.LOGIN_SCREEN)
+		{
+			clueFloorManager.saveFloorCluesToConfig();
+			profileChanged = true;
+		}
+		if (gameStateChanged.getGameState() == GameState.LOGGED_IN && profileChanged)
+		{
+			profileChanged = false;
+			clueFloorManager.setUnknownInitialState();
+		}
+	}
+
+	@Subscribe
+	private void onRuneScapeProfileChanged(RuneScapeProfileChanged ev)
+	{
+		profileChanged = true;
+	}
+
+	@Subscribe
 	public void onGameTick(final GameTick event)
 	{
+		clueFloorManager.loadInitialStateFromConfig(client);
 		// Reset clueOpenedText when receiving a new beginner or master clue
 		// These clues use a single item ID, so we cannot detect step changes based on the item ID changing
 		final Widget chatDialogClueItem = client.getWidget(ComponentID.DIALOG_SPRITE_SPRITE);
@@ -229,7 +246,11 @@ public class ClueDetailsPlugin extends Plugin
 			&& (chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_BEGINNER || chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_MASTER))
 		{
 			readClueText = null;
+			fakeClueId = null;
 		}
+
+		// TODO: Don't do this every tick, be smarter with removal?
+		clueFloorManager.clearClues();
 	}
 
 	@Subscribe
@@ -245,6 +266,7 @@ public class ClueDetailsPlugin extends Plugin
 				if (clueScrollText != null)
 				{
 					readClueText = clueScrollText.getText();
+					fakeClueId = ClueText.forTextGetId(readClueText);
 				}
 			});
 		}
@@ -358,6 +380,85 @@ public class ClueDetailsPlugin extends Plugin
 							.build();
 					});
 			}
+		}
+	}
+
+	@Subscribe(priority = 100)
+	private void onClientShutdown(ClientShutdown e)
+	{
+		clueFloorManager.saveFloorCluesToConfig();
+	}
+
+	public void setClueTextIfClueDissapeared()
+	{
+		WorldPoint wp = client.getLocalPlayer().getWorldLocation();
+		for (FloorClue dissapearedClue : dissapearedClues)
+		{
+			if (dissapearedClue == null) continue;
+			// TODO: This is trash currently. need way to better map clue to disappearing one.
+			if (wp.distanceTo(dissapearedClue.getWorldPoint()) == 0)
+			{
+				fakeClueId = dissapearedClue.clueID;
+                readClueText = ClueText.getById(fakeClueId).getText();
+				dissapearedClues.remove(dissapearedClue);
+				return;
+			}
+		}
+
+		readClueText = null;
+		fakeClueId = null;
+	}
+
+	public void checkForDroppedClue()
+	{
+		WorldPoint wp = client.getLocalPlayer().getWorldLocation();
+		if (wp == null) return;
+		LocalPoint lp = LocalPoint.fromWorld(client.getTopLevelWorldView(), wp);
+		if (lp == null) return;
+
+		Tile tile = client.getTopLevelWorldView().getScene().getTiles()[wp.getPlane()][lp.getSceneX()][lp.getSceneY()];
+		if (tile == null) return;
+
+		List<TileItem> tileItems = tile.getGroundItems();
+		if (tileItems == null || tileItems.isEmpty()) return;
+
+		for (TileItem tileItem : tileItems)
+		{
+			if (tileItem.getId() == ItemID.CLUE_SCROLL_MASTER)
+			{
+				//
+				if (clueFloorManager.isNewClue(tileItem))
+				{
+					System.out.println("NEW CLUE BEING ADDED");
+					FloorClue newFloorClue = new FloorClue(fakeClueId, tileItem.getDespawnTime(), wp);
+					clueFloorManager.addFloorClue(newFloorClue);
+					floorClues.put(tileItem, newFloorClue);
+				}
+			}
+		}
+	}
+
+	public Map<TileItem, FloorClue> floorClues = new HashMap<>();
+	public List<FloorClue> dissapearedClues = new ArrayList<>();
+
+	@Subscribe
+	public void onItemSpawned(ItemSpawned itemSpawned)
+	{
+		if (itemSpawned.getItem().getId() == ItemID.CLUE_SCROLL_MASTER)
+		{
+			FloorClue floorClue = clueFloorManager.getExistingFloorClue(itemSpawned.getItem(), itemSpawned.getTile());
+			if (floorClue == null) return;
+			floorClues.put(itemSpawned.getItem(), floorClue);
+		}
+	}
+
+	@Subscribe
+	public void onItemDespawned(ItemDespawned itemDespawned)
+	{
+		if (itemDespawned.getItem().getId() == ItemID.CLUE_SCROLL_MASTER)
+		{
+			dissapearedClues.add(floorClues.get(itemDespawned.getItem()));
+			floorClues.remove(itemDespawned.getItem());
 		}
 	}
 }
