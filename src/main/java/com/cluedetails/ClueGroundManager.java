@@ -24,55 +24,43 @@
  */
 package com.cluedetails;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.util.stream.Collectors;
+import lombok.Getter;
 import net.runelite.api.*;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
-import net.runelite.client.config.ConfigManager;
 
-import java.lang.reflect.Type;
 import java.util.*;
+import net.runelite.client.config.ConfigManager;
 
 public class ClueGroundManager
 {
     private final Client client;
-    private final ConfigManager configManager;
-    private final Gson gson = new Gson();
-
-    private static final String CONFIG_GROUP = "clue-details";
-    private static final String GROUND_CLUES_KEY = "ground-clues";
-	private final List<ClueInstanceData> clueInstanceData = new ArrayList<>();;
+	@Getter
+	private final ClueGroundSaveDataManager clueGroundSaveDataManager;
     private final Map<WorldPoint, List<ClueInstance>> groundClues = new HashMap<>();
     private final List<PendingGroundClue> pendingGroundClues = new ArrayList<>();
-    private final PriorityQueue<ClueInstance> despawnQueue = new PriorityQueue<>(Comparator.comparing(ClueInstance::getDespawnTick));
-    private final int MAX_CLUE_DESPAWN_TICKS = 6000;
+	private final Set<WorldPoint> fullyKnownTiles = new HashSet<>();
 
-    private int savedTickCount = -1; // Initialize to -1 to indicate no saved ticks
+	@Getter
+	private final List<ClueInstance> despawnedClueQueue = new ArrayList<>();
+	private final int MAX_RENDER_DISTANCE = 24;
 
     public ClueGroundManager(Client client, ConfigManager configManager)
     {
         this.client = client;
-        this.configManager = configManager;
-        loadStateFromConfig();
+		this.clueGroundSaveDataManager = new ClueGroundSaveDataManager(configManager);
+		clueGroundSaveDataManager.loadStateFromConfig(client);
     }
 
-
-	// Possibilities for an itemSpawned for a clue:
-	// 1. The player just dropped the clue
-	// 2. The player has entered the spawn radius for it.
-	// For 2, we need to check if the clue is from the known clues in config
-	// If not, we remove it after say 5 ticks, to allow for the onItemContainerChanged event to occur
     public void onItemSpawned(ItemSpawned event)
     {
         TileItem item = event.getItem();
         if (isTrackedClue(item.getId()))
         {
-            // Add to pending ground clues
+			checkIfItemMatchesKnownItem(item, event.getTile().getWorldLocation());
             pendingGroundClues.add(new PendingGroundClue(item, event.getTile().getWorldLocation(), client.getTickCount()));
         }
     }
@@ -86,6 +74,14 @@ public class ClueGroundManager
 
 		List<ClueInstance> cluesAtLocation = groundClues.get(location);
 		if (cluesAtLocation == null) return;
+
+		// If despawned under player, find if it was a clue we know of. If it is, mark it in inventory
+		// We don't check the tile being under the player as technically the player could just telegrab it
+		Optional<ClueInstance> optionalClue = cluesAtLocation.stream()
+			.filter((clue) -> clue.getTileItem() == item)
+			.findFirst();
+		optionalClue.ifPresent(despawnedClueQueue::add);
+
 
 		// Remove the clue with matching despawnTick
 		cluesAtLocation.removeIf(clue -> clue.getTileItem() == item);
@@ -108,44 +104,28 @@ public class ClueGroundManager
                 ItemID.TORN_CLUE_SCROLL_PART_3 == itemId;
     }
 
+	public void checkIfItemMatchesKnownItem(TileItem tileItem, WorldPoint tileWp)
+	{
+		List<ClueInstance> knownItemsOnTile = groundClues.get(tileWp);
+		if (knownItemsOnTile == null) return;
+
+		for (ClueInstance clueInstance : knownItemsOnTile)
+		{
+			// For some reason this is always off by 1? IDK, but need to allow for it
+			if (Math.abs(clueInstance.getDespawnTick() - tileItem.getDespawnTime()) <= 1)
+			{
+				clueInstance.setTileItem(tileItem);
+				return;
+			}
+		}
+	}
+
     public void onGameTick()
     {
-		System.out.println(client.getTickCount());
 		processPendingGroundCluesOnGameTick();
 		// TODO: this should be done more smartly. For example, on first seeing of a known tile within the limit radius
 		// 	test just that tile, and don't test it again
 		scanTilesForClueAssociation();
-		/*
-		groundClues.forEach((wp, listClues) -> {
-			for (ClueInstance clue : listClues)
-			{
-				TileItem item = clue.getTileItem();
-				if (item == null)
-				{
-					System.out.println("NULL");
-					continue;
-				}
-				System.out.println(item.getDespawnTime());
-			}
-		});
-
-        int currentTick = client.getTickCount();
-
-        // If this is the first tick after startup or login, adjust despawn ticks
-        if (savedTickCount != -1 && savedTickCount != currentTick)
-        {
-            int ticksPassed = currentTick - savedTickCount;
-
-            adjustDespawnTicks(ticksPassed);
-        }
-
-        // Update savedTickCount for next tick
-        savedTickCount = currentTick;
-
-        // Remove clues that have despawned
-        removeDespawnedClues(currentTick);
-
-        */
     }
 
     public void processPendingGroundCluesFromInventoryChanged(ClueInstance removedClue)
@@ -175,15 +155,6 @@ public class ClueGroundManager
 		}
     }
 
-	// Scenarios:
-	// 1. We log in/tele somewhere, and have some knowledge of expected clues to be somewhere.
-	// 	  From this, we enter the area with ClueInstances tracked for the spot, but with no TileItem attached
-	//    onItemSpawned called for these items. We need to work out which items match to which ClueInstance.
-	// 2. We log in, and find out that some clues have been removed, maybe more added since last logging in.
-	//    We need to look through them all, and see which match, and which probs are new.
-	// ISSUE: Stuff is mixed between pending and not pending. We should consolidate unknown to known, but without
-	// a TileItem attached. Do a scan for missing steps with TileItem
-
 	public void processPendingGroundCluesOnGameTick()
 	{
 		// Remove from pending clues. We will work them out when we're checking tiles for missing clues as well.
@@ -192,13 +163,16 @@ public class ClueGroundManager
 
 	private void scanTilesForClueAssociation()
 	{
-		// We don't care about clues we didn't know about, because we still don't know anything about them
-		// We checks clue we did know, to find them on tiles.
+		// All known clue tiles are accounted for, stop
+		if (groundClues.entrySet().size() == fullyKnownTiles.size()) return;
+
 		Iterator<Map.Entry<WorldPoint, List<ClueInstance>>> iterator = groundClues.entrySet().iterator();
 		while (iterator.hasNext())
 		{
 			Map.Entry<WorldPoint, List<ClueInstance>> entry = iterator.next();
 			WorldPoint location = entry.getKey();
+
+			if (fullyKnownTiles.contains(location)) continue;
 
 			if (!isTileWithinRenderDistance(location))
 			{
@@ -211,9 +185,13 @@ public class ClueGroundManager
 				continue;
 			}
 
+			// At this point onwards, we'll resolve the known clues for the tile, and remove ones we don't know
+			fullyKnownTiles.add(location);
+
 			List<ClueInstance> storedClues = entry.getValue();
 			if (storedClues.isEmpty())
 			{
+				fullyKnownTiles.remove(location);
 				iterator.remove();
 				continue;
 			}
@@ -221,23 +199,25 @@ public class ClueGroundManager
 			List<TileItem> groundClues = getTrackedItemsAtTile(tile);
 			if (groundClues.isEmpty())
 			{
+				fullyKnownTiles.remove(location);
 				iterator.remove();
 				continue;
 			}
 
-			// If all have known items, don't do anything.
 			if (storedClues.stream().allMatch((clue) -> clue.getTileItem() != null)) continue;
 
-			// Compare stored clues and ground clues
 			List<ClueInstance> updatedStoredClues = generateNewCluesOnTile(storedClues, groundClues);
 
 			if (updatedStoredClues.isEmpty())
 			{
-				// All clues are missing, remove the entry
+				fullyKnownTiles.remove(location);
 				iterator.remove();
 			}
 			else
 			{
+				// If we didn't find an item for it on the tile, remove it
+				updatedStoredClues.removeIf((clue) -> clue.getTileItem() == null);
+
 				// Update the stored clues
 				entry.setValue(updatedStoredClues);
 			}
@@ -310,186 +290,6 @@ public class ClueGroundManager
 		return sortedStoredClues;
 	}
 
-    private void removeDespawnedClues(int currentTick)
-    {
-        Iterator<Map.Entry<WorldPoint, List<ClueInstance>>> iterator = groundClues.entrySet().iterator();
-        while (iterator.hasNext())
-        {
-            Map.Entry<WorldPoint, List<ClueInstance>> entry = iterator.next();
-            List<ClueInstance> clues = entry.getValue();
-
-            clues.removeIf(clue -> clue.getDespawnTick() <= currentTick);
-
-            if (clues.isEmpty())
-            {
-                iterator.remove();
-            }
-        }
-    }
-
-    private void adjustDespawnTicks(int ticksPassed)
-    {
-        for (List<ClueInstance> cluesAtLocation : groundClues.values())
-        {
-            for (ClueInstance clue : cluesAtLocation)
-            {
-                clue.adjustDespawnTick(ticksPassed);
-            }
-        }
-    }
-
-    private boolean hasClueDespawned(ClueInstance clue, int currentTick)
-    {
-        int ticksSinceSpawn = currentTick - clue.getDespawnTick() + clue.getRelativeDespawnTime(client);
-        return ticksSinceSpawn >= MAX_CLUE_DESPAWN_TICKS;
-    }
-
-
-    private void removeClue(ClueInstance clue, WorldPoint location)
-    {
-        List<ClueInstance> cluesAtLocation = groundClues.get(location);
-        if (cluesAtLocation != null)
-        {
-            cluesAtLocation.remove(clue);
-            if (cluesAtLocation.isEmpty())
-            {
-                groundClues.remove(location);
-            }
-        }
-    }
-
-    private void removeClueAtLocation(int despawnTick, WorldPoint location)
-    {
-        List<ClueInstance> cluesAtLocation = groundClues.get(location);
-        if (cluesAtLocation != null)
-        {
-            cluesAtLocation.removeIf(clue -> clue.getDespawnTick() == despawnTick);
-            if (cluesAtLocation.isEmpty())
-            {
-                groundClues.remove(location);
-            }
-        }
-    }
-
-    public void saveStateToConfig()
-    {
-        // Serialize groundClues and savedTickCount and save to config
-        // Use Gson or another serialization method
-		updateData();
-        String groundCluesJson = gson.toJson(clueInstanceData);
-        configManager.setConfiguration(CONFIG_GROUP, GROUND_CLUES_KEY, groundCluesJson);
-        configManager.setConfiguration(CONFIG_GROUP, "savedTickCount", savedTickCount);
-    }
-
-	private void updateData()
-	{
-		List<ClueInstanceData> newData = new ArrayList<>();
-		for (Map.Entry<WorldPoint, List<ClueInstance>> entry : groundClues.entrySet())
-		{
-			List<ClueInstance> clueDataList = entry.getValue();
-			int currentTick = client.getTickCount();
-			for (ClueInstance data : clueDataList)
-			{
-				newData.add(new ClueInstanceData(data, currentTick));
-			}
-		}
-		clueInstanceData.clear();
-		clueInstanceData.addAll(newData);
-	}
-
-    public void loadStateFromConfig()
-    {
-        // Deserialize groundClues and savedTickCount from config
-        String groundCluesJson = configManager.getConfiguration(CONFIG_GROUP, GROUND_CLUES_KEY);
-		clueInstanceData.clear();
-        if (groundCluesJson != null)
-        {
-            try
-            {
-                Type groundCluesType = new TypeToken<List<ClueInstanceData>>()
-                {
-                }.getType();
-
-                List<ClueInstanceData> loadedGroundCluesData = gson.fromJson(groundCluesJson, groundCluesType);
-
-				int currentTick = client.getTickCount();
-                // Convert ClueInstanceData back to ClueInstance
-				for (ClueInstanceData clueData : loadedGroundCluesData)
-				{
-					WorldPoint location = clueData.getLocation();
-					List<ClueInstance> clueInstances = new ArrayList<>();
-					ClueInstance clue = new ClueInstance(clueData, currentTick);
-					clueInstances.add(clue);
-
-					clueInstanceData.add(clueData);
-                    groundClues.put(location, clueInstances);
-                }
-            } catch (Exception err)
-            {
-                groundClues.clear();
-                saveStateToConfig();
-            }
-        }
-
-        Integer savedTickCountConfig = configManager.getConfiguration(CONFIG_GROUP, "savedTickCount", Integer.class);
-        savedTickCount = Objects.requireNonNullElseGet(savedTickCountConfig, client::getTickCount);
-    }
-
-	public void onGameStateChanged(GameStateChanged gameStateChanged)
-	{
-		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
-		{
-			checkForMissingClues();
-		}
-	}
-
-	private final int MAX_RENDER_DISTANCE = 24;
-
-	public void checkForMissingClues()
-	{
-		Iterator<Map.Entry<WorldPoint, List<ClueInstance>>> iterator = groundClues.entrySet().iterator();
-		while (iterator.hasNext())
-		{
-			Map.Entry<WorldPoint, List<ClueInstance>> entry = iterator.next();
-			WorldPoint location = entry.getKey();
-
-			if (!isTileWithinRenderDistance(location))
-			{
-				continue;
-			}
-
-			Tile tile = getTileAtWorldPoint(location);
-			if (tile == null)
-			{
-				continue;
-			}
-
-			List<ClueInstance> storedClues = entry.getValue();
-			List<TileItem> groundClues = getTrackedItemsAtTile(tile);
-
-			if (groundClues.isEmpty())
-			{
-				// No clues on the tile, remove stored clues
-				iterator.remove();
-				continue;
-			}
-
-			// Compare stored clues and ground clues
-			List<ClueInstance> updatedStoredClues = compareCluesOnTile(storedClues, groundClues);
-
-			if (updatedStoredClues.isEmpty())
-			{
-				// All clues are missing, remove the entry
-				iterator.remove();
-			}
-			else
-			{
-				// Update the stored clues
-				entry.setValue(updatedStoredClues);
-			}
-		}
-	}
-
 	private boolean isTileWithinRenderDistance(WorldPoint tileWp)
 	{
 		if (tileWp == null)
@@ -523,116 +323,15 @@ public class ClueGroundManager
 			.collect(Collectors.toList());
 	}
 
-	// TODO: Ensure tick returned from ClueInstance is considering current tick system
-	// TODO: Ensure ???
-	private List<ClueInstance> compareCluesOnTile(List<ClueInstance> storedClues, List<TileItem> groundClues)
+	public void saveStateToConfig()
 	{
-		List<ClueInstance> sortedStoredClues = new ArrayList<>(storedClues);
-		sortedStoredClues.sort(Comparator.comparingInt(ClueInstance::getDespawnTick));
-
-		// Sort ground clues by despawn time ascending
-		List<TileItem> sortedGroundClues = new ArrayList<>(groundClues);
-		sortedGroundClues.sort(Comparator.comparingInt(TileItem::getDespawnTime));
-
-		// Map to hold the matched stored clue to ground clue
-		Map<ClueInstance, TileItem> matchedClues = new HashMap<>();
-
-		// Tolerance for despawn time differences
-		final int TOLERANCE = 1;
-
-		// First, attempt to match based on positions (assuming order hasn't changed)
-		for (int i = 0; i < sortedStoredClues.size(); i++)
-		{
-			ClueInstance storedClue = sortedStoredClues.get(i);
-
-			if (i < sortedGroundClues.size())
-			{
-				TileItem groundClue = sortedGroundClues.get(i);
-				int despawnDifference = storedClue.getDespawnTick() - groundClue.getDespawnTime();
-
-				if (despawnDifference <= TOLERANCE)
-				{
-					matchedClues.put(storedClue, groundClue);
-					storedClue.setTileItem(groundClue);
-					continue;
-				}
-			}
-
-			// If position-based matching fails, try to match individually
-			boolean matched = false;
-			for (TileItem groundClue : sortedGroundClues)
-			{
-				if (matchedClues.containsValue(groundClue))
-				{
-					continue;
-				}
-
-				int despawnDifference = storedClue.getDespawnTick() - groundClue.getDespawnTime();
-				if (despawnDifference <= TOLERANCE)
-				{
-					matchedClues.put(storedClue, groundClue);
-					matched = true;
-					break;
-				}
-			}
-
-
-			// Matched means tick shift hasn't happened, means probably didn't do a lot on a non-tracked mobile device or w/e
-			if (!matched)
-			{
-				// Try matching based on relative differences
-
-				// Attempt to match storedClue with pairs of ground clues
-				for (int k = 0; k < sortedGroundClues.size(); k++)
-				{
-					for (int j = k + 1; j < sortedGroundClues.size(); j++)
-					{
-						int groundDiff = sortedGroundClues.get(j).getDespawnTime() - sortedGroundClues.get(k).getDespawnTime();
-						int storedDiff = getClosestDespawnDifference(storedClue, sortedStoredClues);
-
-						if (Math.abs(groundDiff - storedDiff) <= TOLERANCE)
-						{
-							// Match storedClue to one of these ground clues
-							matchedClues.put(storedClue, sortedGroundClues.get(k));
-							matched = true;
-							break;
-						}
-					}
-					if (matched)
-					{
-						break;
-					}
-				}
-			}
-		}
-
-		// Return only the matched stored clues
-		return new ArrayList<>(matchedClues.keySet());
+		clueGroundSaveDataManager.saveStateToConfig(client, groundClues);
 	}
 
-	private int getClosestDespawnDifference(ClueInstance storedClue, List<ClueInstance> sortedStoredClues)
+	public void loadStateFromConfig()
 	{
-		int index = sortedStoredClues.indexOf(storedClue);
-		int storedClueDespawnTick = storedClue.getDespawnTick();
-
-		int closestDifference = Integer.MAX_VALUE;
-
-		// Compare with the next clue
-		if (index + 1 < sortedStoredClues.size())
-		{
-			int nextDespawnTick = sortedStoredClues.get(index + 1).getDespawnTick();
-			int diff = nextDespawnTick - storedClueDespawnTick;
-			closestDifference = Math.min(closestDifference, diff);
-		}
-
-		// Compare with the previous clue
-		if (index - 1 >= 0)
-		{
-			int prevDespawnTick = sortedStoredClues.get(index - 1).getDespawnTick();
-			int diff = storedClueDespawnTick - prevDespawnTick;
-			closestDifference = Math.min(closestDifference, diff);
-		}
-
-		return closestDifference == Integer.MAX_VALUE ? 0 : closestDifference;
+		groundClues.clear();
+		groundClues.putAll(clueGroundSaveDataManager.loadStateFromConfig(client));
+		fullyKnownTiles.clear();
 	}
 }

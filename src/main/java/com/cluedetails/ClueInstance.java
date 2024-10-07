@@ -44,6 +44,7 @@ public class ClueInstance
         this.itemId = itemId;
         this.location = location;
         this.tileItem = tileItem;
+		this.despawnTick = tileItem.getDespawnTime();
 		setInitialClueText();
     }
 
@@ -58,6 +59,15 @@ public class ClueInstance
 			ClueText clueDetails = ClueText.getById(clueId);
 			this.clueText = clueDetails == null ? "error" : clueDetails.getText();
 		}
+	}
+
+	public int getDespawnTick()
+	{
+		if (tileItem != null)
+		{
+			return tileItem.getDespawnTime();
+		}
+		return despawnTick;
 	}
 
     public void adjustDespawnTick(int ticksPassed)

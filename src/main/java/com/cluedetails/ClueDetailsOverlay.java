@@ -80,8 +80,6 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 	protected static final int MAX_DISTANCE = 2350;
 
-	protected Multimap<Tile, Integer> tileDespawns = ArrayListMultimap.create();
-
 	@Inject
 	public ClueDetailsOverlay(Client client, ClueDetailsConfig config, TooltipManager tooltipManager, ModelOutlineRenderer modelOutlineRenderer, ConfigManager configManager, Notifier notifier)
 	{

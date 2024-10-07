@@ -1,29 +1,47 @@
+/*
+ * Copyright (c) 2024, Zoinkwiz <https://www.github.com/Zoinkwiz>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.cluedetails;
 
 import com.cluedetails.panels.ClueDetailsParentPanel;
 import net.runelite.api.*;
 
-import java.awt.event.KeyEvent;
 import java.util.*;
-import java.util.Deque;
 import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import net.runelite.api.events.MenuEntryAdded;
-import net.runelite.client.input.KeyListener;
 
 @Singleton
-public class ClueInventoryManager implements KeyListener
+public class ClueInventoryManager
 {
     private final Client client;
 	private final ClueGroundManager clueGroundManager;
     private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
     private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
-    private final Deque<ClueInstance> recentlyDroppedClues = new ArrayDeque<>();
-
-    private boolean shiftKeyDown;
 
     private static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
             ItemID.CLUE_SCROLL_MASTER,
@@ -51,21 +69,37 @@ public class ClueInventoryManager implements KeyListener
         Item[] inventoryItems = inventoryContainer.getItems();
 
         for (Item item : inventoryItems)
-        {
-            if (item != null && TRACKED_CLUE_IDS.contains(item.getId()))
-            {
-                int itemId = item.getId();
+		{
+			if (item == null || !TRACKED_CLUE_IDS.contains(item.getId())) continue;
+			int itemId = item.getId();
 
-                // If clue is already in previous, keep the same ClueInstance
-                ClueInstance clueInstance = previousTrackedCluesInInventory.get(itemId);
-                if (clueInstance == null)
-                {
-                    System.out.println(itemId);
-                    clueInstance = new ClueInstance(-1, itemId);
-                }
-                trackedCluesInInventory.put(itemId, clueInstance);
-            }
-        }
+			// If clue is already in previous, keep the same ClueInstance
+			ClueInstance clueInstance = previousTrackedCluesInInventory.get(itemId);
+			if (clueInstance != null)
+			{
+				trackedCluesInInventory.put(itemId, clueInstance);
+				continue;
+			}
+
+			// Wasn't in inventory. Now see if it was an item we picked up we know about
+			for (ClueInstance clueFromFloor : clueGroundManager.getDespawnedClueQueue())
+			{
+				if (clueFromFloor.getItemId() == item.getId())
+				{
+					clueInstance = new ClueInstance(clueFromFloor.getClueId(), itemId);
+				}
+			}
+			if (clueInstance != null)
+			{
+				trackedCluesInInventory.put(itemId, clueInstance);
+				continue;
+			}
+
+			clueInstance = new ClueInstance(-1, itemId);
+			trackedCluesInInventory.put(itemId, clueInstance);
+		}
+
+		clueGroundManager.getDespawnedClueQueue().clear();
 
         // Compare previous and current to find removed clues
         for (Integer itemId : previousTrackedCluesInInventory.keySet())
@@ -99,22 +133,6 @@ public class ClueInventoryManager implements KeyListener
         }
     }
 
-    public ClueInstance getClueFromRecentlyDropped(int itemId)
-    {
-        // Iterate over the recently dropped clues to find one with matching itemId
-        Iterator<ClueInstance> iterator = recentlyDroppedClues.descendingIterator();
-        while (iterator.hasNext())
-        {
-            ClueInstance clueInstance = iterator.next();
-            if (clueInstance.getItemId() == itemId)
-            {
-                iterator.remove(); // Remove it from the deque
-                return clueInstance;
-            }
-        }
-        return null;
-    }
-
     public Collection<ClueInstance> getTrackedClues()
     {
         return trackedCluesInInventory.values();
@@ -127,7 +145,7 @@ public class ClueInventoryManager implements KeyListener
 
     public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
     {
-        if (!shiftKeyDown)
+        if (client.isKeyPressed(KeyCode.KC_SHIFT))
         {
             return;
         }
@@ -137,7 +155,7 @@ public class ClueInventoryManager implements KeyListener
             int itemId = event.getIdentifier();
             boolean isMarked = cluePreferenceManager.getPreference(itemId);
 
-            client.createMenuEntry(-1)
+			client.getMenu().createMenuEntry(-1)
                     .setOption(isMarked ? "Unmark" : "Mark")
                     .setTarget(event.getTarget())
                     .setIdentifier(itemId)
@@ -148,30 +166,6 @@ public class ClueInventoryManager implements KeyListener
                         cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
                         panel.refresh();
                     });
-        }
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e)
-    {
-        // Not used
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e)
-    {
-        if (e.getKeyCode() == KeyEvent.VK_SHIFT)
-        {
-            shiftKeyDown = true;
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e)
-    {
-        if (e.getKeyCode() == KeyEvent.VK_SHIFT)
-        {
-            shiftKeyDown = false;
         }
     }
 }
