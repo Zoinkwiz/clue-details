@@ -1,7 +1,6 @@
 package com.cluedetails;
 
 import com.cluedetails.panels.ClueDetailsParentPanel;
-import lombok.Getter;
 import net.runelite.api.*;
 
 import java.awt.event.KeyEvent;
@@ -19,11 +18,10 @@ import net.runelite.client.input.KeyListener;
 public class ClueInventoryManager implements KeyListener
 {
     private final Client client;
+	private final ClueGroundManager clueGroundManager;
     private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
     private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
     private final Deque<ClueInstance> recentlyDroppedClues = new ArrayDeque<>();
-    @Getter
-    private final List<ClueInstance> pendingRemovedClues = new ArrayList<>();
 
     private boolean shiftKeyDown;
 
@@ -35,9 +33,10 @@ public class ClueInventoryManager implements KeyListener
             ItemID.TORN_CLUE_SCROLL_PART_3
     );
 
-    public ClueInventoryManager(Client client)
+    public ClueInventoryManager(Client client, ClueGroundManager clueGroundManager)
     {
         this.client = client;
+		this.clueGroundManager = clueGroundManager;
     }
 
     public void updateInventory(ItemContainer inventoryContainer)
@@ -62,7 +61,7 @@ public class ClueInventoryManager implements KeyListener
                 if (clueInstance == null)
                 {
                     System.out.println(itemId);
-                    clueInstance = new ClueInstance(-1, itemId, null, itemId);
+                    clueInstance = new ClueInstance(-1, itemId);
                 }
                 trackedCluesInInventory.put(itemId, clueInstance);
             }
@@ -77,15 +76,10 @@ public class ClueInventoryManager implements KeyListener
                 ClueInstance removedClue = previousTrackedCluesInInventory.get(itemId);
                 if (removedClue != null)
                 {
-                    pendingRemovedClues.add(removedClue);
+					clueGroundManager.processPendingGroundCluesFromInventoryChanged(removedClue);
                 }
             }
         }
-    }
-
-    public void clearPendingRemovedClues()
-    {
-        pendingRemovedClues.clear();
     }
 
     public void updateClueText(String clueText)

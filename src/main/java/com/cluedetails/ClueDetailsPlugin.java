@@ -138,8 +138,8 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.register(widgetOverlay);
 
 		cluePreferenceManager = new CluePreferenceManager(configManager);
-		clueInventoryManager = new ClueInventoryManager(client);
-		clueGroundManager = new ClueGroundManager(client, configManager, clueInventoryManager);
+		clueGroundManager = new ClueGroundManager(client, configManager);
+		clueInventoryManager = new ClueInventoryManager(client, clueGroundManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 

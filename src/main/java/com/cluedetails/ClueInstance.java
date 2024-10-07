@@ -2,6 +2,7 @@ package com.cluedetails;
 
 import lombok.Data;
 import net.runelite.api.Client;
+import net.runelite.api.TileItem;
 import net.runelite.api.coords.WorldPoint;
 
 @Data
@@ -11,31 +12,53 @@ public class ClueInstance
     private String clueText;
     private final int itemId; // Clue item ID
     private final WorldPoint location; // Null if in inventory
-    private int despawnTick; // Use -1 if not applicable
+    private int despawnTick = -1; // Use -1 if not applicable
+	private TileItem tileItem;
 
-    // Constructor for inventory clues
-    public ClueInstance(ClueInstanceData data)
+    // Constructor for clues from config
+    public ClueInstance(ClueInstanceData data, int currentTick)
     {
-        ClueText clueDetails = ClueText.getById(clueId);
-        System.out.println("FROM DATA");
-        System.out.println(data.getItemId());
         this.clueId = data.getClueId();
-        this.clueText = clueDetails == null ? "error" : clueDetails.getText();
         this.itemId = data.getItemId();
         this.location = data.getLocation();
-        this.despawnTick = -1;
+		// if had on then turned off in same session, we don't know what happened in meantime.
+		// Ticks go forward even when logged into other game modes. For simplicity we assume when
+		// Loaded we just are starting from the exact same despawn time remaining.
+		this.despawnTick = currentTick + data.getDespawnTick();
+		setInitialClueText();
     }
 
+	// Constructor for inventory clues from inventory changed event
+	public ClueInstance(int clueId, int itemId)
+	{
+		this.clueId = clueId;
+		this.itemId = itemId;
+		this.location = null;
+		setInitialClueText();
+	}
+
     // Constructor for ground clues
-    public ClueInstance(int clueId, int itemId, WorldPoint location, int despawnTick)
+    public ClueInstance(int clueId, int itemId, WorldPoint location, TileItem tileItem)
     {
-        ClueText clueDetails = ClueText.getById(clueId);
         this.clueId = clueId;
-        this.clueText = clueDetails == null ? null : clueDetails.getText();
-        this.itemId = itemId; // Not applicable for ground clues
+        this.itemId = itemId;
         this.location = location;
-        this.despawnTick = despawnTick;
+        this.tileItem = tileItem;
+		setInitialClueText();
     }
+
+	private void setInitialClueText()
+	{
+		if (clueId == -1)
+		{
+			this.clueText = "?";
+		}
+		else
+		{
+			ClueText clueDetails = ClueText.getById(clueId);
+			this.clueText = clueDetails == null ? "error" : clueDetails.getText();
+		}
+	}
 
     public void adjustDespawnTick(int ticksPassed)
     {
