@@ -34,12 +34,19 @@ import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.api.widgets.InterfaceID;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetUtil;
+import net.runelite.client.config.ConfigManager;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
 
 @Singleton
 public class ClueInventoryManager
 {
     private final Client client;
+	private final ConfigManager configManager;
 	private final ClueGroundManager clueGroundManager;
+	private final ChatboxPanelManager chatboxPanelManager;
     private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
     private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
 
@@ -51,10 +58,12 @@ public class ClueInventoryManager
             ItemID.TORN_CLUE_SCROLL_PART_3
     );
 
-    public ClueInventoryManager(Client client, ClueGroundManager clueGroundManager)
+    public ClueInventoryManager(Client client, ConfigManager configManager, ClueGroundManager clueGroundManager, ChatboxPanelManager chatboxPanelManager)
     {
         this.client = client;
+		this.configManager = configManager;
 		this.clueGroundManager = clueGroundManager;
+		this.chatboxPanelManager = chatboxPanelManager;
     }
 
     public void updateInventory(ItemContainer inventoryContainer)
@@ -143,45 +152,57 @@ public class ClueInventoryManager
     }
 
     public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
-    {
-        if (!client.isKeyPressed(KeyCode.KC_SHIFT))
-        {
-            return;
-        }
-
-        if (event.getTarget().contains("Clue scroll"))
-        {
-			if (!isTakeClue(event.getMenuEntry()) && !isReadClue(event.getMenuEntry())) return;
-
-            int itemId = event.getIdentifier();
-            boolean isMarked = cluePreferenceManager.getPreference(itemId);
-
-			client.getMenu().createMenuEntry(-1)
-                    .setOption(isMarked ? "Unmark" : "Mark")
-                    .setTarget(event.getTarget())
-                    .setIdentifier(itemId)
-                    .setType(MenuAction.RUNELITE)
-                    .onClick(e ->
-                    {
-                        boolean currentValue = cluePreferenceManager.getPreference(e.getIdentifier());
-                        cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
-                        panel.refresh();
-                    });
-        }
-    }
-
-	public boolean isReadClue(MenuEntry entry)
 	{
-		String target = entry.getTarget();
-		String option = entry.getOption();
-		return target.contains("Clue scroll") && option.equals("Read");
+		if (!client.isKeyPressed(KeyCode.KC_SHIFT))
+		{
+			return;
+		}
+
+		if (!event.getTarget().contains("Clue scroll")) return;
+		if (!isExamineClue(event.getMenuEntry())) return;
+
+		MenuEntry entry = event.getMenuEntry();
+		final Widget w = entry.getWidget();
+		boolean isInventoryMenu = w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY;
+		int itemId = isInventoryMenu ? event.getItemId() : event.getIdentifier();
+		boolean isMarked = cluePreferenceManager.getPreference(itemId);
+
+		client.getMenu().createMenuEntry(-1)
+			.setOption(isMarked ? "Unmark" : "Mark")
+			.setTarget(event.getTarget())
+			.setIdentifier(itemId)
+			.setType(MenuAction.RUNELITE)
+			.onClick(e ->
+			{
+				boolean currentValue = cluePreferenceManager.getPreference(e.getIdentifier());
+				cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
+				panel.refresh();
+			});
+
+		if (!isInventoryMenu) return;
+
+		client.getMenu().createMenuEntry(-1)
+			.setOption("Clue details")
+			.setTarget(entry.getTarget())
+			.setType(MenuAction.RUNELITE)
+			.onClick(e ->
+			{
+				Clues clue = Clues.get(itemId);
+				chatboxPanelManager.openTextInput("Enter new clue text:")
+					.value(clue.getDisplayText(configManager))
+					.onDone((newTag) -> {
+						configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
+						panel.refresh();
+					})
+					.build();
+			});
 	}
 
-	public boolean isTakeClue(MenuEntry entry)
+	public boolean isExamineClue(MenuEntry entry)
 	{
+		String[] textOptions = new String[] { "Clue scroll", "Challenge scroll", "Key (" };
+		String target = entry.getTarget();
 		String option = entry.getOption();
-		MenuAction type = entry.getType();
-
-		return type == MenuAction.GROUND_ITEM_THIRD_OPTION && option.equals("Take");
+		return Arrays.stream(textOptions).anyMatch(target::contains) && option.equals("Examine");
 	}
 }

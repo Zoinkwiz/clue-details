@@ -139,7 +139,7 @@ public class ClueDetailsPlugin extends Plugin
 
 		cluePreferenceManager = new CluePreferenceManager(configManager);
 		clueGroundManager = new ClueGroundManager(client, configManager);
-		clueInventoryManager = new ClueInventoryManager(client, clueGroundManager);
+		clueInventoryManager = new ClueInventoryManager(client, configManager, clueGroundManager, chatboxPanelManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -176,6 +176,7 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
+		System.out.println("ITEM CONTAIENR CHANGED!");
 		if (event.getContainerId() != InventoryID.INVENTORY.getId())
 		{
 			return;
