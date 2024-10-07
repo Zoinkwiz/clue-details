@@ -144,13 +144,15 @@ public class ClueInventoryManager
 
     public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
     {
-        if (client.isKeyPressed(KeyCode.KC_SHIFT))
+        if (!client.isKeyPressed(KeyCode.KC_SHIFT))
         {
             return;
         }
 
         if (event.getTarget().contains("Clue scroll"))
         {
+			if (!isTakeClue(event.getMenuEntry()) && !isReadClue(event.getMenuEntry())) return;
+
             int itemId = event.getIdentifier();
             boolean isMarked = cluePreferenceManager.getPreference(itemId);
 
@@ -167,4 +169,19 @@ public class ClueInventoryManager
                     });
         }
     }
+
+	public boolean isReadClue(MenuEntry entry)
+	{
+		String target = entry.getTarget();
+		String option = entry.getOption();
+		return target.contains("Clue scroll") && option.equals("Read");
+	}
+
+	public boolean isTakeClue(MenuEntry entry)
+	{
+		String option = entry.getOption();
+		MenuAction type = entry.getType();
+
+		return type == MenuAction.GROUND_ITEM_THIRD_OPTION && option.equals("Take");
+	}
 }

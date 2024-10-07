@@ -123,8 +123,6 @@ public class ClueGroundManager
     public void onGameTick()
     {
 		processPendingGroundCluesOnGameTick();
-		// TODO: this should be done more smartly. For example, on first seeing of a known tile within the limit radius
-		// 	test just that tile, and don't test it again
 		scanTilesForClueAssociation();
     }
 
