@@ -68,9 +68,11 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 			else
 			{
 				if ((itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER)
-					&& clueDetailsPlugin.foundTrackedClue())
+					&& clueDetailsPlugin.getClueInventoryManager().hasTrackedClues())
 				{
-					String readClueText = clueDetailsPlugin.getReadClueText();
+					ClueInstance[] readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClues().toArray(new ClueInstance[0]);
+					if (readClues.length == 0) return;
+					String readClueText = readClues[0].getClueText();
 
 					String getText = ClueText.forText(readClueText);
 
@@ -86,7 +88,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 						if (threeStepCrypticClue != null)
 						{
 							// Check which steps are already done
-							threeStepCrypticClue.update(clueDetailsPlugin.getTrackedCluesInInventory());
+							threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedClues());
 							itemTag = threeStepCrypticClue.getTag();
 						}
 					}

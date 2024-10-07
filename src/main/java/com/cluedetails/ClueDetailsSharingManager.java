@@ -158,7 +158,7 @@ public class ClueDetailsSharingManager
 		}
 
 		sendChatMessage(importPoints.size() + " clue details were imported from the clipboard.");
-		plugin.panel.refresh();
+		plugin.getPanel().refresh();
 	}
 
 	private void sendChatMessage(final String message)

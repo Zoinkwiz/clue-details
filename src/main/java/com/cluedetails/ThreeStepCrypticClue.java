@@ -24,11 +24,8 @@
  */
 package com.cluedetails;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import lombok.Getter;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_1;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_2;
@@ -100,7 +97,7 @@ public class ThreeStepCrypticClue
 		return tag.toString();
 	}
 
-	public void update(final Set<Integer> clues)
+	public void update(final Collection<ClueInstance> clues)
 	{
 		checkForPart(clues, TORN_CLUE_SCROLL_PART_1, 0);
 		checkForPart(clues, TORN_CLUE_SCROLL_PART_2, 1);
@@ -108,10 +105,10 @@ public class ThreeStepCrypticClue
 		this.tag = makeHint();
 	}
 
-	private void checkForPart(final Set<Integer> clues, int clueScrollPart, int index)
+	private void checkForPart(final Collection<ClueInstance> clues, int clueScrollPart, int index)
 	{
 		// If we have the part then that step is done
-		if (clues.contains(clueScrollPart))
+		if (clues.stream().anyMatch((clue) -> clue.getItemId() == clueScrollPart))
 		{
 			final Map.Entry<ClueText, Boolean> entry = clueSteps.get(index);
 
