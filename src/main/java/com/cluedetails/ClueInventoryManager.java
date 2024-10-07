@@ -127,7 +127,6 @@ public class ClueInventoryManager
             if (clueInstance.getClueId() == -1)
             {
                 clueInstance.setClueId(clueId);
-                clueInstance.setClueText(clueText);
                 break;
             }
         }

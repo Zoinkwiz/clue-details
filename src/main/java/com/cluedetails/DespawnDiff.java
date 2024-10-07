@@ -51,7 +51,7 @@ public class DespawnDiff
 		this.clue2 = null;
 		this.tileItem1 = tileItem1;
 		this.tileItem2 = tileItem2;
-		this.despawnDiff = tileItem1.getDespawnTime() - tileItem2.getDespawnTime();
+		this.despawnDiff = tileItem2.getDespawnTime() - tileItem1.getDespawnTime();
 	}
 
 	public int getDespawn1()

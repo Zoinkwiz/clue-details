@@ -94,12 +94,19 @@ public class ClueGroundSaveDataManager
 				// Convert ClueInstanceData back to ClueInstance
 				for (ClueInstanceData clueData : loadedGroundCluesData)
 				{
+					clueInstanceData.add(clueData);
+
 					WorldPoint location = clueData.getLocation();
-					List<ClueInstance> clueInstances = new ArrayList<>();
 					ClueInstance clue = new ClueInstance(clueData, currentTick);
+					if (groundClues.containsKey(location))
+					{
+						groundClues.get(location).add(clue);
+						continue;
+					}
+
+					List<ClueInstance> clueInstances = new ArrayList<>();
 					clueInstances.add(clue);
 
-					clueInstanceData.add(clueData);
 					groundClues.put(location, clueInstances);
 				}
 			} catch (Exception err)

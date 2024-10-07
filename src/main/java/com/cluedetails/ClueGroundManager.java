@@ -247,8 +247,8 @@ public class ClueGroundManager
 
 		// Sort ground clues by despawn time ascending
 		List<TileItem> sortedGroundClues = new ArrayList<>(groundClues);
-		sortedGroundClues.sort(Comparator.comparingInt(TileItem::getDespawnTime));
 		sortedGroundClues.removeIf((tileItem -> tileItem.getDespawnTime() > sortedStoredClues.get(sortedGroundClues.size() - 1).getDespawnTick()));
+		sortedGroundClues.sort(Comparator.comparingInt(TileItem::getDespawnTime));
 
 		// Want to generate expected diffs
 		List<DespawnDiff> despawnDiffsStoredClues = new ArrayList<>();
@@ -269,6 +269,8 @@ public class ClueGroundManager
 			}
 		}
 
+		List<ClueInstance> foundClues = new ArrayList<>();
+
 		// Need to loop diffs, and see matches in each.
 		for (DespawnDiff despawnDiffsStoredClue : despawnDiffsStoredClues)
 		{
@@ -282,12 +284,14 @@ public class ClueGroundManager
 				if (despawnDiffsGroundClue.getDespawn2() > despawnDiffsStoredClue.getDespawn2()) continue;
 
 				// Else assume it's right. Currently overwrites a few times but probs okay?
-				despawnDiffsGroundClue.getClue1().setTileItem(despawnDiffsStoredClue.getTileItem1());
-				despawnDiffsGroundClue.getClue2().setTileItem(despawnDiffsStoredClue.getTileItem2());
+				despawnDiffsStoredClue.getClue1().setTileItem(despawnDiffsGroundClue.getTileItem1());
+				despawnDiffsStoredClue.getClue2().setTileItem(despawnDiffsGroundClue.getTileItem2());
+				foundClues.add(despawnDiffsStoredClue.getClue1());
+				foundClues.add(despawnDiffsStoredClue.getClue2());
 			}
 		}
 
-		return sortedStoredClues;
+		return foundClues;
 	}
 
 	private boolean isTileWithinRenderDistance(WorldPoint tileWp)

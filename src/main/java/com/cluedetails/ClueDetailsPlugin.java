@@ -155,8 +155,6 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			clientToolbar.addNavigation(navButton);
 		}
-
-		keyManager.registerKeyListener(clueInventoryManager);
 	}
 
 	@Override
@@ -173,8 +171,6 @@ public class ClueDetailsPlugin extends Plugin
 		clientToolbar.removeNavigation(navButton);
 
 		clueGroundManager.saveStateToConfig();
-
-		keyManager.unregisterKeyListener(clueInventoryManager);
 	}
 
 	@Subscribe
