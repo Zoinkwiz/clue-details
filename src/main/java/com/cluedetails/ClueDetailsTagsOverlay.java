@@ -24,6 +24,7 @@
  */
 package com.cluedetails;
 
+import java.util.List;
 import javax.inject.Inject;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -72,26 +73,19 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 				{
 					ClueInstance[] readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClues().toArray(new ClueInstance[0]);
 					if (readClues.length == 0) return;
-					String readClueText = readClues[0].getClueText();
+					List<Integer> ids = readClues[0].getClueIds();
 
-					String getText = ClueText.forText(readClueText);
-
-					if (getText != null)
+					boolean isFirst = true;
+					StringBuilder text = new StringBuilder();
+					for (Integer id : ids)
 					{
-						itemTag = getText;
+						ClueText clueDetails = ClueText.getById(id);
+						if (!isFirst) text.append("<br>");
+						text.append(clueDetails == null ? "error" : clueDetails.getTag());
+						isFirst = false;
 					}
-					// Handle three step cryptic clues
-					else
-					{
-						final ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(readClueText);
 
-						if (threeStepCrypticClue != null)
-						{
-							// Check which steps are already done
-							threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedClues());
-							itemTag = threeStepCrypticClue.getTag();
-						}
-					}
+					itemTag = text.toString();
 				}
 			}
 			renderText(graphics, widgetItem.getCanvasBounds(), itemTag);

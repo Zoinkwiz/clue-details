@@ -138,7 +138,7 @@ public class ClueGroundManager
 			{
 				// Found a match
 				ClueInstance groundClueInstance = new ClueInstance(
-					removedClue.getClueId(),
+					removedClue.getClueIds(),
 					pendingGroundClue.getItem().getId(),
 					pendingGroundClue.getLocation(),
 					pendingGroundClue.getItem()

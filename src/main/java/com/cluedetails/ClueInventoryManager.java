@@ -25,7 +25,6 @@
 package com.cluedetails;
 
 import com.cluedetails.panels.ClueDetailsParentPanel;
-import net.runelite.api.*;
 
 import java.util.*;
 import javax.inject.Singleton;
@@ -33,6 +32,9 @@ import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
+import net.runelite.api.KeyCode;
+import net.runelite.api.MenuAction;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
@@ -95,7 +97,7 @@ public class ClueInventoryManager
 			{
 				if (clueFromFloor.getItemId() == item.getId())
 				{
-					clueInstance = new ClueInstance(clueFromFloor.getClueId(), itemId);
+					clueInstance = new ClueInstance(clueFromFloor.getClueIds(), itemId);
 				}
 			}
 			if (clueInstance != null)
@@ -104,7 +106,7 @@ public class ClueInventoryManager
 				continue;
 			}
 
-			clueInstance = new ClueInstance(-1, itemId);
+			clueInstance = new ClueInstance(new ArrayList<>(), itemId);
 			trackedCluesInInventory.put(itemId, clueInstance);
 		}
 
@@ -127,18 +129,30 @@ public class ClueInventoryManager
 
     public void updateClueText(String clueText)
     {
-        Integer clueId = ClueText.forTextGetId(clueText);
-        if (clueId == null) return;
+		List<Integer> clueIds = new ArrayList<>();
 
-        // Find the clue instance with undefined clueId
-        for (ClueInstance clueInstance : trackedCluesInInventory.values())
-        {
-            if (clueInstance.getClueId() == -1)
-            {
-                clueInstance.setClueId(clueId);
-                break;
-            }
-        }
+		ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(clueText);
+		if (threeStepCrypticClue != null)
+		{
+			for (Map.Entry<ClueText, Boolean> clueStep : threeStepCrypticClue.getClueSteps())
+			{
+				clueIds.add(clueStep.getKey().getFakeId());
+			}
+		}
+		else
+		{
+			clueIds.add(ClueText.forTextGetId(clueText));
+		}
+
+		// TODO: This should actually use the itemID expected for the clue text
+		for (ClueInstance clueInstance : trackedCluesInInventory.values())
+		{
+			if (clueInstance.getClueIds().isEmpty())
+			{
+				clueInstance.setClueIds(clueIds);
+				break;
+			}
+		}
     }
 
     public Collection<ClueInstance> getTrackedClues()

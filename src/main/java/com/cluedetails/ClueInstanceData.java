@@ -24,13 +24,14 @@
  */
 package com.cluedetails;
 
+import java.util.List;
 import lombok.Data;
 import net.runelite.api.coords.WorldPoint;
 
 @Data
 public class ClueInstanceData
 {
-    private int clueId;
+    private List<Integer> clueIds;
     private int itemId;
     private int despawnTick;
     private int x;
@@ -39,7 +40,7 @@ public class ClueInstanceData
 
     public ClueInstanceData(ClueInstance clue, int currentTick)
     {
-        this.clueId = clue.getClueId();
+        this.clueIds = clue.getClueIds();
         this.itemId = clue.getItemId();
         this.despawnTick = clue.getDespawnTick() - currentTick;
         this.x = clue.getLocation().getX();
