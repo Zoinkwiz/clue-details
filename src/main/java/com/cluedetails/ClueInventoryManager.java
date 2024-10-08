@@ -53,11 +53,11 @@ public class ClueInventoryManager
     private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
 
     private static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
-            ItemID.CLUE_SCROLL_MASTER,
-            ItemID.CLUE_SCROLL_BEGINNER,
-            ItemID.TORN_CLUE_SCROLL_PART_1,
-            ItemID.TORN_CLUE_SCROLL_PART_2,
-            ItemID.TORN_CLUE_SCROLL_PART_3
+        ItemID.CLUE_SCROLL_MASTER,
+		ItemID.CLUE_SCROLL_BEGINNER,
+		ItemID.TORN_CLUE_SCROLL_PART_1,
+		ItemID.TORN_CLUE_SCROLL_PART_2,
+		ItemID.TORN_CLUE_SCROLL_PART_3
     );
 
     public ClueInventoryManager(Client client, ConfigManager configManager, ClueGroundManager clueGroundManager, ChatboxPanelManager chatboxPanelManager)
@@ -144,21 +144,22 @@ public class ClueInventoryManager
 			clueIds.add(ClueText.forTextGetId(clueText));
 		}
 
-		// TODO: This should actually use the itemID expected for the clue text
-		for (ClueInstance clueInstance : trackedCluesInInventory.values())
+		Set<Integer> itemIDs = trackedCluesInInventory.keySet();
+		for (Integer itemID : itemIDs)
 		{
-			if (clueInstance.getClueIds().isEmpty())
-			{
-				clueInstance.setClueIds(clueIds);
-				break;
-			}
+			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
+			ClueText clueInfo = ClueText.getById(clueIds.get(0));
+			if (clueInfo == null) continue;
+			if (!Objects.equals(clueInfo.getClueTier(), itemID)) continue;
+			clueInstance.setClueIds(clueIds);
+			break;
 		}
     }
 
-    public Collection<ClueInstance> getTrackedClues()
-    {
-        return trackedCluesInInventory.values();
-    }
+	public ClueInstance getTrackedClueByClueId(Integer clueItemID)
+	{
+		return trackedCluesInInventory.get(clueItemID);
+	}
 
     public boolean hasTrackedClues()
     {

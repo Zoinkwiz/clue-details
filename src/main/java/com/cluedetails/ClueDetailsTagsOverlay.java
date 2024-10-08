@@ -71,9 +71,8 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 				if ((itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER)
 					&& clueDetailsPlugin.getClueInventoryManager().hasTrackedClues())
 				{
-					ClueInstance[] readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClues().toArray(new ClueInstance[0]);
-					if (readClues.length == 0) return;
-					List<Integer> ids = readClues[0].getClueIds();
+					ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueId(itemId);
+					List<Integer> ids = readClues.getClueIds();
 
 					boolean isFirst = true;
 					StringBuilder text = new StringBuilder();

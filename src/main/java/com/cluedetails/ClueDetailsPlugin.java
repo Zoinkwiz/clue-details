@@ -28,6 +28,7 @@ import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import javax.inject.Inject;
+import javax.inject.Named;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -112,6 +113,11 @@ public class ClueDetailsPlugin extends Plugin
 	private ItemManager itemManager;
 
 	@Getter
+	@Inject
+	@Named("developerMode")
+	private boolean developerMode;
+
+	@Getter
 	private ClueInventoryManager clueInventoryManager;
 
 	@Getter
@@ -139,6 +145,7 @@ public class ClueDetailsPlugin extends Plugin
 
 		cluePreferenceManager = new CluePreferenceManager(configManager);
 		clueGroundManager = new ClueGroundManager(client, configManager);
+		infoOverlay.startUp(clueGroundManager, developerMode);
 		clueInventoryManager = new ClueInventoryManager(client, configManager, clueGroundManager, chatboxPanelManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
@@ -176,7 +183,6 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
-		System.out.println("ITEM CONTAIENR CHANGED!");
 		if (event.getContainerId() != InventoryID.INVENTORY.getId())
 		{
 			return;

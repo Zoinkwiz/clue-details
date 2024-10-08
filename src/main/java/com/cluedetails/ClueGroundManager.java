@@ -40,8 +40,9 @@ public class ClueGroundManager
     private final Client client;
 	@Getter
 	private final ClueGroundSaveDataManager clueGroundSaveDataManager;
-    private final Map<WorldPoint, List<ClueInstance>> groundClues = new HashMap<>();
-    private final List<PendingGroundClue> pendingGroundClues = new ArrayList<>();
+	@Getter
+	private final Map<WorldPoint, List<ClueInstance>> groundClues = new HashMap<>();
+	private final List<PendingGroundClue> pendingGroundClues = new ArrayList<>();
 	private final Set<WorldPoint> fullyKnownTiles = new HashSet<>();
 
 	@Getter
