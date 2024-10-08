@@ -248,45 +248,33 @@ public class ClueGroundManager
 		sortedGroundClues.removeIf((tileItem -> tileItem.getDespawnTime() > sortedStoredClues.get(sortedGroundClues.size() - 1).getDespawnTick()));
 		sortedGroundClues.sort(Comparator.comparingInt(TileItem::getDespawnTime));
 
-		// Want to generate expected diffs
-		List<DespawnDiff> despawnDiffsStoredClues = new ArrayList<>();
-		for (int i=0; i < sortedStoredClues.size() - 1; i++)
-		{
-			for (int j=i+1; j < sortedStoredClues.size(); j++)
-			{
-				despawnDiffsStoredClues.add(new DespawnDiff(sortedStoredClues.get(i), sortedStoredClues.get(j)));
-			}
-		}
-
-		List<DespawnDiff> despawnDiffsGroundClues = new ArrayList<>();
-		for (int i=0; i < sortedGroundClues.size() - 1; i++)
-		{
-			for (int j=i+1; j < sortedGroundClues.size(); j++)
-			{
-				despawnDiffsGroundClues.add(new DespawnDiff(sortedGroundClues.get(i), sortedGroundClues.get(j)));
-			}
-		}
-
 		List<ClueInstance> foundClues = new ArrayList<>();
 
 		// Need to loop diffs, and see matches in each.
-		for (DespawnDiff despawnDiffsStoredClue : despawnDiffsStoredClues)
+		// For items with the same ID, no matter what item you click in a stack, you will always pick up the first item dropped in the stack
+		// This means we don't need to worry about considering gaps where a clue has been taken from the middle of a stack.
+		for (int i=0; i < sortedStoredClues.size() - 1; i++)
 		{
-			// Find all with matching diffs
-			for (DespawnDiff despawnDiffsGroundClue : despawnDiffsGroundClues)
+			int currentStoredClueDiff = sortedStoredClues.get(i+1).getDespawnTick() - sortedStoredClues.get(i).getDespawnTick();
+			for (int j=0; j < sortedGroundClues.size() - 1; j++)
 			{
+				int currentGroundClueDiff = sortedGroundClues.get(j+1).getDespawnTime() - sortedGroundClues.get(j).getDespawnTime();
 				// Same diff, probs same thing
-				if (despawnDiffsGroundClue.getDespawnDiff() != despawnDiffsStoredClue.getDespawnDiff()) continue;
+				if (currentGroundClueDiff != currentStoredClueDiff) continue;
 				// If item will despawn later than the stored clue, it can't be it.
-				if (despawnDiffsGroundClue.getDespawn1() > despawnDiffsStoredClue.getDespawn1()) continue;
-				if (despawnDiffsGroundClue.getDespawn2() > despawnDiffsStoredClue.getDespawn2()) continue;
+				if (sortedGroundClues.get(j).getDespawnTime() > sortedStoredClues.get(i).getDespawnTick()) continue;
+				if (sortedGroundClues.get(j+1).getDespawnTime() > sortedStoredClues.get(i+1).getDespawnTick()) continue;
 
 				// Else assume it's right. Currently overwrites a few times but probs okay?
-				despawnDiffsStoredClue.getClue1().setTileItem(despawnDiffsGroundClue.getTileItem1());
-				despawnDiffsStoredClue.getClue2().setTileItem(despawnDiffsGroundClue.getTileItem2());
-				foundClues.add(despawnDiffsStoredClue.getClue1());
-				foundClues.add(despawnDiffsStoredClue.getClue2());
+				sortedStoredClues.get(i).setTileItem(sortedGroundClues.get(j));
+				sortedStoredClues.get(i+1).setTileItem(sortedGroundClues.get(j+1));
 			}
+		}
+
+		for (ClueInstance storedClue : sortedStoredClues)
+		{
+			if (storedClue.getTileItem() == null) continue;
+			foundClues.add(storedClue);
 		}
 
 		return foundClues;
