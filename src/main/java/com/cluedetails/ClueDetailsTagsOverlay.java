@@ -74,17 +74,35 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueId(itemId);
 					List<Integer> ids = readClues.getClueIds();
 
+					if (ids.isEmpty()) return;
+
 					boolean isFirst = true;
 					StringBuilder text = new StringBuilder();
+					StringBuilder tag = new StringBuilder();
 					for (Integer id : ids)
 					{
-						ClueText clueDetails = ClueText.getById(id);
-						if (!isFirst) text.append("<br>");
-						text.append(clueDetails == null ? "error" : clueDetails.getTag());
+						BeginnerMasterClues clueDetails = BeginnerMasterClues.getById(id);
+						if (!isFirst)
+						{
+							text.append("<br>");
+							tag.append("<br>");
+						}
+						text.append(clueDetails == null ? "error" : clueDetails.getText());
+						tag.append(clueDetails == null ? "error" : clueDetails.getTag());
 						isFirst = false;
 					}
 
-					itemTag = text.toString();
+					// Handle three step cryptic clues
+					final ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(text.toString());
+					if (threeStepCrypticClue != null)
+					{
+						threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
+						itemTag = threeStepCrypticClue.getDisplayText();
+					}
+					else
+					{
+						itemTag = tag.toString();
+					}
 				}
 			}
 			renderText(graphics, widgetItem.getCanvasBounds(), itemTag);

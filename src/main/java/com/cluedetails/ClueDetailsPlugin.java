@@ -41,6 +41,7 @@ import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.api.widgets.WidgetInfo;
@@ -194,7 +195,12 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
-		if (event.getGroupId() == WidgetID.CLUE_SCROLL_GROUP_ID)
+		if (event.getGroupId() >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
+			&& event.getGroupId() <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER)
+		{
+			clueInventoryManager.updateClueText(event.getGroupId());
+		}
+		else if (event.getGroupId() == WidgetID.CLUE_SCROLL_GROUP_ID)
 		{
 			clientThread.invokeLater(() ->
 			{

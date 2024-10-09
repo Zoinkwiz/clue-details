@@ -6,10 +6,10 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *	  list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ *	  this list of conditions and the following disclaimer in the documentation
+ *	  and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -45,41 +45,41 @@ import net.runelite.client.game.chatbox.ChatboxPanelManager;
 @Singleton
 public class ClueInventoryManager
 {
-    private final Client client;
+	private final Client client;
 	private final ConfigManager configManager;
 	private final ClueGroundManager clueGroundManager;
 	private final ChatboxPanelManager chatboxPanelManager;
-    private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
-    private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
+	private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
+	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
 
-    private static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
-        ItemID.CLUE_SCROLL_MASTER,
+	private static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
+		ItemID.CLUE_SCROLL_MASTER,
 		ItemID.CLUE_SCROLL_BEGINNER,
 		ItemID.TORN_CLUE_SCROLL_PART_1,
 		ItemID.TORN_CLUE_SCROLL_PART_2,
 		ItemID.TORN_CLUE_SCROLL_PART_3
-    );
+	);
 
-    public ClueInventoryManager(Client client, ConfigManager configManager, ClueGroundManager clueGroundManager, ChatboxPanelManager chatboxPanelManager)
-    {
-        this.client = client;
+	public ClueInventoryManager(Client client, ConfigManager configManager, ClueGroundManager clueGroundManager, ChatboxPanelManager chatboxPanelManager)
+	{
+		this.client = client;
 		this.configManager = configManager;
 		this.clueGroundManager = clueGroundManager;
 		this.chatboxPanelManager = chatboxPanelManager;
-    }
+	}
 
-    public void updateInventory(ItemContainer inventoryContainer)
-    {
-        // Copy current tracked clues to previous
-        previousTrackedCluesInInventory.clear();
-        previousTrackedCluesInInventory.putAll(trackedCluesInInventory);
+	public void updateInventory(ItemContainer inventoryContainer)
+	{
+		// Copy current tracked clues to previous
+		previousTrackedCluesInInventory.clear();
+		previousTrackedCluesInInventory.putAll(trackedCluesInInventory);
 
-        // Clear current tracked clues
-        trackedCluesInInventory.clear();
+		// Clear current tracked clues
+		trackedCluesInInventory.clear();
 
-        Item[] inventoryItems = inventoryContainer.getItems();
+		Item[] inventoryItems = inventoryContainer.getItems();
 
-        for (Item item : inventoryItems)
+		for (Item item : inventoryItems)
 		{
 			if (item == null || !TRACKED_CLUE_IDS.contains(item.getId())) continue;
 			int itemId = item.getId();
@@ -112,61 +112,85 @@ public class ClueInventoryManager
 
 		clueGroundManager.getDespawnedClueQueue().clear();
 
-        // Compare previous and current to find removed clues
-        for (Integer itemId : previousTrackedCluesInInventory.keySet())
-        {
-            if (!trackedCluesInInventory.containsKey(itemId))
-            {
-                // Clue was removed from inventory (possibly dropped)
-                ClueInstance removedClue = previousTrackedCluesInInventory.get(itemId);
-                if (removedClue != null)
-                {
+		// Compare previous and current to find removed clues
+		for (Integer itemId : previousTrackedCluesInInventory.keySet())
+		{
+			if (!trackedCluesInInventory.containsKey(itemId))
+			{
+				// Clue was removed from inventory (possibly dropped)
+				ClueInstance removedClue = previousTrackedCluesInInventory.get(itemId);
+				if (removedClue != null)
+				{
 					clueGroundManager.processPendingGroundCluesFromInventoryChanged(removedClue);
-                }
-            }
-        }
-    }
+				}
+			}
+		}
+	}
 
-    public void updateClueText(String clueText)
-    {
+	public void updateClueText(String clueText)
+	{
 		List<Integer> clueIds = new ArrayList<>();
 
 		ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(clueText);
 		if (threeStepCrypticClue != null)
 		{
-			for (Map.Entry<ClueText, Boolean> clueStep : threeStepCrypticClue.getClueSteps())
+			for (Map.Entry<BeginnerMasterClues, Boolean> clueStep : threeStepCrypticClue.getClueSteps())
 			{
 				clueIds.add(clueStep.getKey().getFakeId());
 			}
 		}
 		else
 		{
-			clueIds.add(ClueText.forTextGetId(clueText));
+			clueIds.add(BeginnerMasterClues.forTextGetId(clueText));
 		}
 
 		Set<Integer> itemIDs = trackedCluesInInventory.keySet();
 		for (Integer itemID : itemIDs)
 		{
 			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
-			ClueText clueInfo = ClueText.getById(clueIds.get(0));
+			BeginnerMasterClues clueInfo = BeginnerMasterClues.getById(clueIds.get(0));
 			if (clueInfo == null) continue;
-			if (!Objects.equals(clueInfo.getClueTier(), itemID)) continue;
+			if (!Objects.equals(clueInfo.getClueID(), itemID)) continue;
 			clueInstance.setClueIds(clueIds);
 			break;
 		}
-    }
+	}
+
+	// Only used for Beginner Map Clues
+	public void updateClueText(Integer widgetId)
+	{
+		List<Integer> clueIds = new ArrayList<>();
+
+		// Beginner Map Clues all use the same ItemID, but the WidgetID used to display them is unique
+		clueIds.add(widgetId);
+
+		// TODO: This should actually use the itemID expected for the clue text
+		for (ClueInstance clueInstance : trackedCluesInInventory.values())
+		{
+			if (clueInstance.getClueIds().isEmpty())
+			{
+				clueInstance.setClueIds(clueIds);
+				break;
+			}
+		}
+	}
+
+	public Set<Integer> getTrackedCluesInInventory()
+	{
+		return trackedCluesInInventory.keySet();
+	}
 
 	public ClueInstance getTrackedClueByClueId(Integer clueItemID)
 	{
 		return trackedCluesInInventory.get(clueItemID);
 	}
 
-    public boolean hasTrackedClues()
-    {
-        return !trackedCluesInInventory.isEmpty();
-    }
+	public boolean hasTrackedClues()
+	{
+		return !trackedCluesInInventory.isEmpty();
+	}
 
-    public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
+	public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
 	{
 		if (!client.isKeyPressed(KeyCode.KC_SHIFT))
 		{
@@ -205,7 +229,8 @@ public class ClueInventoryManager
 				Clues clue = Clues.get(itemId);
 				chatboxPanelManager.openTextInput("Enter new clue text:")
 					.value(clue.getDisplayText(configManager))
-					.onDone((newTag) -> {
+					.onDone((newTag) ->
+					{
 						configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
 						panel.refresh();
 					})
