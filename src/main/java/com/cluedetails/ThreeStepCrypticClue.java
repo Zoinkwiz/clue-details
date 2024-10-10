@@ -24,44 +24,36 @@
  */
 package com.cluedetails;
 
-import java.util.*;
-
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_1;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_2;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_3;
 import net.runelite.client.util.Text;
 
 @Getter
+@RequiredArgsConstructor
 public class ThreeStepCrypticClue
 {
-	private final List<Map.Entry<ClueText, Boolean>> clueSteps;
-	private String tag;
-
-	public ThreeStepCrypticClue(List<Map.Entry<ClueText, Boolean>> clueSteps, String tag)
-	{
-		this.clueSteps = clueSteps;
-		this.tag = tag;
-	}
+	private final List<Map.Entry<BeginnerMasterClues, Boolean>> clueSteps;
+	private final String text;
 
 	public static ThreeStepCrypticClue forText(String text)
 	{
-		if (text == null)
-		{
-			return null;
-		}
-
-		final String[] split = text.split("<br>\\s*<br>");
-		final List<Map.Entry<ClueText, Boolean>> steps = new ArrayList<>(split.length);
-
-		StringBuilder tag = new StringBuilder();
+		final String[] split = text.split("<br>");
+		final List<Map.Entry<BeginnerMasterClues, Boolean>> steps = new ArrayList<>(split.length);
 
 		for (String part : split)
 		{
 			boolean isDone = part.contains("<str>");
 			final String rawText = Text.sanitizeMultilineText(part);
 
-			for (ClueText clue : ClueText.CLUES)
+			for (BeginnerMasterClues clue : BeginnerMasterClues.CLUES)
 			{
 				if (!rawText.equalsIgnoreCase(clue.getText()))
 				{
@@ -69,7 +61,6 @@ public class ThreeStepCrypticClue
 				}
 
 				steps.add(new AbstractMap.SimpleEntry<>(clue, isDone));
-				tag.append(clue.getTag()).append("<br>");
 				break;
 			}
 		}
@@ -79,43 +70,42 @@ public class ThreeStepCrypticClue
 			return null;
 		}
 
-		return new ThreeStepCrypticClue(steps, tag.toString());
+		return new ThreeStepCrypticClue(steps, text);
 	}
 
-	public String makeHint()
+	public void update(Set<Integer> trackedClues)
 	{
-		StringBuilder tag = new StringBuilder();
-
-		for (final Map.Entry<ClueText, Boolean> e : clueSteps)
-		{
-			if (!e.getValue())
-			{
-				ClueText c = e.getKey();
-				tag.append(c.getTag()).append("<br>");
-			}
-		}
-		return tag.toString();
+		checkForPart(trackedClues, TORN_CLUE_SCROLL_PART_1, 0);
+		checkForPart(trackedClues, TORN_CLUE_SCROLL_PART_2, 1);
+		checkForPart(trackedClues, TORN_CLUE_SCROLL_PART_3, 2);
 	}
 
-	public void update(final Collection<ClueInstance> clues)
-	{
-		checkForPart(clues, TORN_CLUE_SCROLL_PART_1, 0);
-		checkForPart(clues, TORN_CLUE_SCROLL_PART_2, 1);
-		checkForPart(clues, TORN_CLUE_SCROLL_PART_3, 2);
-		this.tag = makeHint();
-	}
-
-	private void checkForPart(final Collection<ClueInstance> clues, int clueScrollPart, int index)
+	private void checkForPart(final Set<Integer> trackedClues, int clueScrollPart, int index)
 	{
 		// If we have the part then that step is done
-		if (clues.stream().anyMatch((clue) -> clue.getItemId() == clueScrollPart))
+		if (trackedClues.contains(clueScrollPart))
 		{
-			final Map.Entry<ClueText, Boolean> entry = clueSteps.get(index);
+			final Map.Entry<BeginnerMasterClues, Boolean> entry = clueSteps.get(index);
 
 			if (!entry.getValue())
 			{
 				entry.setValue(true);
 			}
 		}
+	}
+
+	public String getDisplayText()
+	{
+		StringBuilder text = new StringBuilder();
+
+		for (final Map.Entry<BeginnerMasterClues, Boolean> e : clueSteps)
+		{
+			if (!e.getValue())
+			{
+				String tag = e.getKey().getTag();
+				text.append(tag).append("<br>");
+			}
+		}
+		return text.toString();
 	}
 }

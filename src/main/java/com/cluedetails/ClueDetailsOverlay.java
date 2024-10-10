@@ -38,9 +38,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 
-import com.google.gson.Gson;
-import javax.inject.Named;
-import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
@@ -155,7 +152,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 						StringBuilder text = new StringBuilder();
 						for (Integer clueId : clue.getClueIds())
 						{
-							text.append(ClueText.getById(clueId).getText()).append(": ");
+							text.append(BeginnerMasterClues.getById(clueId).getText()).append(": ");
 						}
 						drawText(graphics, lp, text.toString(), a * STRING_GAP);
 					}
@@ -340,13 +337,13 @@ public class ClueDetailsOverlay extends OverlayPanel
 		{
 			tileHighlights.clear();
 		}
-    
+
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
 			addItemTiles();
 		}
 	}
-  
+
 	@Subscribe
 	public void onItemSpawned(ItemSpawned itemSpawned)
 	{
