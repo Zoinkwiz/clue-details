@@ -43,6 +43,8 @@ public class ClueInstanceData
         this.clueIds = clue.getClueIds();
         this.itemId = clue.getItemId();
         this.despawnTick = clue.getTicksToDespawnConsideringTileItem(currentTick);
+		if (clue.getLocation() == null) return;
+
         this.x = clue.getLocation().getX();
         this.y = clue.getLocation().getY();
         this.plane = clue.getLocation().getPlane();

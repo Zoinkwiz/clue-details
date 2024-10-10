@@ -48,11 +48,12 @@ public class ClueInventoryManager
 	private final Client client;
 	private final ConfigManager configManager;
 	private final ClueGroundManager clueGroundManager;
+	private final ClueBankManager clueBankManager;
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
 
-	private static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
+	public static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
 		ItemID.CLUE_SCROLL_MASTER,
 		ItemID.CLUE_SCROLL_BEGINNER,
 		ItemID.TORN_CLUE_SCROLL_PART_1,
@@ -60,11 +61,12 @@ public class ClueInventoryManager
 		ItemID.TORN_CLUE_SCROLL_PART_3
 	);
 
-	public ClueInventoryManager(Client client, ConfigManager configManager, ClueGroundManager clueGroundManager, ChatboxPanelManager chatboxPanelManager)
+	public ClueInventoryManager(Client client, ConfigManager configManager, ClueGroundManager clueGroundManager, ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
 	{
 		this.client = client;
 		this.configManager = configManager;
 		this.clueGroundManager = clueGroundManager;
+		this.clueBankManager = clueBankManager;
 		this.chatboxPanelManager = chatboxPanelManager;
 	}
 
@@ -122,6 +124,7 @@ public class ClueInventoryManager
 				if (removedClue != null)
 				{
 					clueGroundManager.processPendingGroundCluesFromInventoryChanged(removedClue);
+					clueBankManager.addToRemovedClues(removedClue);
 				}
 			}
 		}

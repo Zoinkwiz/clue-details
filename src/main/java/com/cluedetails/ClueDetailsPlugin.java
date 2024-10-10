@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
+import net.runelite.api.ItemContainer;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -124,6 +125,8 @@ public class ClueDetailsPlugin extends Plugin
 	@Getter
 	private ClueGroundManager clueGroundManager;
 
+	private ClueBankManager clueBankManager;
+
 	private CluePreferenceManager cluePreferenceManager;
 
 	@Getter
@@ -146,8 +149,10 @@ public class ClueDetailsPlugin extends Plugin
 
 		cluePreferenceManager = new CluePreferenceManager(configManager);
 		clueGroundManager = new ClueGroundManager(client, configManager);
+		clueBankManager = new ClueBankManager(client, configManager);
 		infoOverlay.startUp(clueGroundManager, developerMode);
-		clueInventoryManager = new ClueInventoryManager(client, configManager, clueGroundManager, chatboxPanelManager);
+		clueInventoryManager = new ClueInventoryManager(client, configManager, clueGroundManager, clueBankManager, chatboxPanelManager);
+		clueBankManager.startUp(clueInventoryManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -179,17 +184,21 @@ public class ClueDetailsPlugin extends Plugin
 		clientToolbar.removeNavigation(navButton);
 
 		clueGroundManager.saveStateToConfig();
+		clueBankManager.saveStateToConfig();
 	}
 
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
-		if (event.getContainerId() != InventoryID.INVENTORY.getId())
+		if (event.getContainerId() == InventoryID.INVENTORY.getId())
 		{
-			return;
+			clueInventoryManager.updateInventory(event.getItemContainer());
+		}
+		else if (event.getContainerId() == InventoryID.BANK.getId())
+		{
+			clueBankManager.handleBankChange(event.getItemContainer());
 		}
 
-		clueInventoryManager.updateInventory(event.getItemContainer());
 	}
 
 	@Subscribe
@@ -220,6 +229,7 @@ public class ClueDetailsPlugin extends Plugin
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
 			clueGroundManager.saveStateToConfig();
+			clueBankManager.saveStateToConfig();
 			profileChanged = true;
 		}
 
@@ -227,6 +237,7 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			profileChanged = false;
 			clueGroundManager.loadStateFromConfig();
+			clueBankManager.loadStateFromConfig();
 		}
 	}
 
@@ -292,6 +303,7 @@ public class ClueDetailsPlugin extends Plugin
 	private void onClientShutdown(ClientShutdown event)
 	{
 		clueGroundManager.saveStateToConfig();
+		clueBankManager.saveStateToConfig();
 	}
 
 	@Provides
