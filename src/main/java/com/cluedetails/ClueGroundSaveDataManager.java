@@ -60,11 +60,12 @@ public class ClueGroundSaveDataManager
 
 	private void updateData(Client client, Map<WorldPoint, List<ClueInstance>> groundClues)
 	{
+		int currentTick = client.getTickCount();
+
 		List<ClueInstanceData> newData = new ArrayList<>();
 		for (Map.Entry<WorldPoint, List<ClueInstance>> entry : groundClues.entrySet())
 		{
 			List<ClueInstance> clueDataList = entry.getValue();
-			int currentTick = client.getTickCount();
 			for (ClueInstance data : clueDataList)
 			{
 				newData.add(new ClueInstanceData(data, currentTick));
@@ -90,14 +91,13 @@ public class ClueGroundSaveDataManager
 
 				List<ClueInstanceData> loadedGroundCluesData = gson.fromJson(groundCluesJson, groundCluesType);
 
-				int currentTick = client.getTickCount();
 				// Convert ClueInstanceData back to ClueInstance
 				for (ClueInstanceData clueData : loadedGroundCluesData)
 				{
 					clueInstanceData.add(clueData);
 
 					WorldPoint location = clueData.getLocation();
-					ClueInstance clue = new ClueInstance(clueData, currentTick);
+					ClueInstance clue = new ClueInstance(clueData);
 					if (groundClues.containsKey(location))
 					{
 						groundClues.get(location).add(clue);

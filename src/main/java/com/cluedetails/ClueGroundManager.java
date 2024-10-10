@@ -43,6 +43,7 @@ public class ClueGroundManager
 	@Getter
 	private final Map<WorldPoint, List<ClueInstance>> groundClues = new HashMap<>();
 	private final List<PendingGroundClue> pendingGroundClues = new ArrayList<>();
+	private final PriorityQueue<ClueInstance> despawnQueue;
 	private final Set<WorldPoint> fullyKnownTiles = new HashSet<>();
 
 	@Getter
@@ -54,6 +55,9 @@ public class ClueGroundManager
         this.client = client;
 		this.clueGroundSaveDataManager = new ClueGroundSaveDataManager(configManager);
 		clueGroundSaveDataManager.loadStateFromConfig(client);
+
+	    Comparator<ClueInstance> comparator = Comparator.comparingInt(clue -> clue.getDespawnTick(client.getTickCount()));
+		despawnQueue = new PriorityQueue<>(11, comparator);
     }
 
     public void onItemSpawned(ItemSpawned event)
@@ -90,13 +94,20 @@ public class ClueGroundManager
 		if (cluesAtLocation.isEmpty())
 		{
 			groundClues.remove(location);
+			despawnQueue.removeIf((clue) -> clue.getLocation().distanceTo(location) == 0);
 		}
 	}
 
     private void addClue(ClueInstance clue)
     {
         groundClues.computeIfAbsent(clue.getLocation(), k -> new ArrayList<>()).add(clue);
+	    despawnQueue.add(clue);
     }
+
+	private void removeClue(ClueInstance clue)
+	{
+		groundClues.get(clue.getLocation()).remove(clue);
+	}
 
     private boolean isTrackedClue(int itemId)
     {
@@ -112,8 +123,9 @@ public class ClueGroundManager
 
 		for (ClueInstance clueInstance : knownItemsOnTile)
 		{
+			int currentTick = client.getTickCount();
 			// For some reason this is always off by 1? IDK, but need to allow for it
-			if (Math.abs(clueInstance.getDespawnTick() - tileItem.getDespawnTime()) <= 1)
+			if (Math.abs(clueInstance.getDespawnTick(currentTick) - tileItem.getDespawnTime()) <= 1)
 			{
 				clueInstance.setTileItem(tileItem);
 				return;
@@ -125,7 +137,19 @@ public class ClueGroundManager
     {
 		processPendingGroundCluesOnGameTick();
 		scanTilesForClueAssociation();
+		processDespawnQueue();
     }
+
+	private void processDespawnQueue()
+	{
+		int currentTick = client.getTickCount();
+
+		while (!despawnQueue.isEmpty() && despawnQueue.peek().getDespawnTick(currentTick) <= currentTick)
+		{
+			ClueInstance clue = despawnQueue.poll();
+			if (clue != null) removeClue(clue);
+		}
+	}
 
     public void processPendingGroundCluesFromInventoryChanged(ClueInstance removedClue)
 	{
@@ -156,22 +180,43 @@ public class ClueGroundManager
 
 	public void processPendingGroundCluesOnGameTick()
 	{
+		// Remove any with TileItem matching a properly tracked tile item
+		pendingGroundClues.removeIf(pendingGroundClue ->
+		{
+			List<ClueInstance> groundCluesOnTile = groundClues.get(pendingGroundClue.getLocation());
+			if (groundCluesOnTile == null) return false;
+			return groundCluesOnTile
+				.stream()
+				.anyMatch(clueInstance -> clueInstance.getTileItem() == pendingGroundClue.getItem());
+		});
+
 		// Remove from pending clues. We will work them out when we're checking tiles for missing clues as well.
-		pendingGroundClues.removeIf(pendingGroundClue -> pendingGroundClue.getSpawnTick() + 5 < client.getTickCount());
+		pendingGroundClues.removeIf(pendingGroundClue ->
+		{
+			// Include unknown clues, so we can still use them for relative despawn considerations
+			if (pendingGroundClue.getSpawnTick() + 2 < client.getTickCount())
+			{
+				ClueInstance groundClueInstance = new ClueInstance(
+					List.of(),
+					pendingGroundClue.getItem().getId(),
+					pendingGroundClue.getLocation(),
+					pendingGroundClue.getItem()
+				);
+
+				addClue(groundClueInstance);
+				return true;
+			}
+			return false;
+		});
 	}
 
 	private void scanTilesForClueAssociation()
 	{
-		// All known clue tiles are accounted for, stop
-		if (groundClues.entrySet().size() == fullyKnownTiles.size()) return;
-
 		Iterator<Map.Entry<WorldPoint, List<ClueInstance>>> iterator = groundClues.entrySet().iterator();
 		while (iterator.hasNext())
 		{
 			Map.Entry<WorldPoint, List<ClueInstance>> entry = iterator.next();
 			WorldPoint location = entry.getKey();
-
-			if (fullyKnownTiles.contains(location)) continue;
 
 			if (!isTileWithinRenderDistance(location))
 			{
@@ -183,9 +228,6 @@ public class ClueGroundManager
 			{
 				continue;
 			}
-
-			// At this point onwards, we'll resolve the known clues for the tile, and remove ones we don't know
-			fullyKnownTiles.add(location);
 
 			List<ClueInstance> storedClues = entry.getValue();
 			if (storedClues.isEmpty())
@@ -203,6 +245,11 @@ public class ClueGroundManager
 				continue;
 			}
 
+			// At this point onwards, we'll resolve the known clues for the tile, and remove ones we don't know
+			if (fullyKnownTiles.contains(location)) continue;
+			fullyKnownTiles.add(location);
+
+			// TODO: Do we need this to not be here, so we will update tileIDs on load?
 			if (storedClues.stream().allMatch((clue) -> clue.getTileItem() != null)) continue;
 
 			List<ClueInstance> updatedStoredClues = generateNewCluesOnTile(storedClues, groundClues);
@@ -219,15 +266,20 @@ public class ClueGroundManager
 
 				// Update the stored clues
 				entry.setValue(updatedStoredClues);
+				despawnQueue.removeIf((clue) -> clue.getLocation().distanceTo(location) == 0);
+				despawnQueue.addAll(entry.getValue());
 			}
 		}
 	}
 
 	private List<ClueInstance> generateNewCluesOnTile(List<ClueInstance> storedClues, List<TileItem> groundClues)
 	{
+		// ISSUE: If we place down an unknown clue in a stack, it won't be saved. This means it will fail. We should still catch it and keep in order
+		int currentTick = client.getTickCount();
+
 		if (storedClues.size() == 1 && groundClues.size() == 1)
 		{
-			if (storedClues.get(0).getDespawnTick() > groundClues.get(0).getDespawnTime())
+			if (storedClues.get(0).getDespawnTick(currentTick) > groundClues.get(0).getDespawnTime())
 			{
 				storedClues.get(0).setTileItem(groundClues.get(0));
 				return storedClues;
@@ -235,7 +287,7 @@ public class ClueGroundManager
 		}
 
 		List<ClueInstance> sortedStoredClues = new ArrayList<>(storedClues);
-		sortedStoredClues.sort(Comparator.comparingInt(ClueInstance::getDespawnTick));
+		sortedStoredClues.sort(Comparator.comparingInt(ClueInstance::getTimeToDespawnFromDataInTicks));
 
 		// If only 1 of either but not both, less certainty as can't use diffs.
 		// Could assume things like last clue expired, probs let's just assume nothing
@@ -246,7 +298,7 @@ public class ClueGroundManager
 
 		// Sort ground clues by despawn time ascending
 		List<TileItem> sortedGroundClues = new ArrayList<>(groundClues);
-		sortedGroundClues.removeIf((tileItem -> tileItem.getDespawnTime() > sortedStoredClues.get(sortedGroundClues.size() - 1).getDespawnTick()));
+		sortedGroundClues.removeIf((tileItem -> tileItem.getDespawnTime() > sortedStoredClues.get(sortedStoredClues.size() - 1).getDespawnTick(currentTick)));
 		sortedGroundClues.sort(Comparator.comparingInt(TileItem::getDespawnTime));
 
 		List<ClueInstance> foundClues = new ArrayList<>();
@@ -256,15 +308,16 @@ public class ClueGroundManager
 		// This means we don't need to worry about considering gaps where a clue has been taken from the middle of a stack.
 		for (int i=0; i < sortedStoredClues.size() - 1; i++)
 		{
-			int currentStoredClueDiff = sortedStoredClues.get(i+1).getDespawnTick() - sortedStoredClues.get(i).getDespawnTick();
+			int currentStoredClueDiff = sortedStoredClues.get(i+1).getTimeToDespawnFromDataInTicks() - sortedStoredClues.get(i).getTimeToDespawnFromDataInTicks();
 			for (int j=0; j < sortedGroundClues.size() - 1; j++)
 			{
+				// Should go j=0,1 as well
 				int currentGroundClueDiff = sortedGroundClues.get(j+1).getDespawnTime() - sortedGroundClues.get(j).getDespawnTime();
 				// Same diff, probs same thing
 				if (currentGroundClueDiff != currentStoredClueDiff) continue;
 				// If item will despawn later than the stored clue, it can't be it.
-				if (sortedGroundClues.get(j).getDespawnTime() > sortedStoredClues.get(i).getDespawnTick()) continue;
-				if (sortedGroundClues.get(j+1).getDespawnTime() > sortedStoredClues.get(i+1).getDespawnTick()) continue;
+				if (sortedGroundClues.get(j).getDespawnTime() > sortedStoredClues.get(i).getDespawnTick(currentTick)) continue;
+				if (sortedGroundClues.get(j+1).getDespawnTime() > sortedStoredClues.get(i+1).getDespawnTick(currentTick)) continue;
 
 				// Else assume it's right. Currently overwrites a few times but probs okay?
 				sortedStoredClues.get(i).setTileItem(sortedGroundClues.get(j));
@@ -322,7 +375,12 @@ public class ClueGroundManager
 	public void loadStateFromConfig()
 	{
 		groundClues.clear();
+		despawnQueue.clear();
 		groundClues.putAll(clueGroundSaveDataManager.loadStateFromConfig(client));
+		despawnQueue.addAll(groundClues.values()
+			.stream()
+			.flatMap(List::stream)
+			.collect(Collectors.toList()));
 		fullyKnownTiles.clear();
 	}
 }

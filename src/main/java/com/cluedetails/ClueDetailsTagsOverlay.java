@@ -72,6 +72,10 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					&& clueDetailsPlugin.getClueInventoryManager().hasTrackedClues())
 				{
 					ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueId(itemId);
+					if (readClues == null)
+					{
+						return;
+					}
 					List<Integer> ids = readClues.getClueIds();
 
 					if (ids.isEmpty()) return;
