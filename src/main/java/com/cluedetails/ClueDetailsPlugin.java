@@ -27,25 +27,35 @@ package com.cluedetails;
 import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Collection;
 import javax.inject.Inject;
+import javax.inject.Named;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.KeyCode;
-import net.runelite.api.MenuAction;
-import net.runelite.api.MenuEntry;
+import net.runelite.api.GameState;
+import net.runelite.api.InventoryID;
+import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
+import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.api.events.ItemDespawned;
+import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuEntryAdded;
-import net.runelite.api.events.MenuOpened;
+import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetUtil;
+import net.runelite.api.widgets.WidgetID;
+import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.client.events.ClientShutdown;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
-import net.runelite.client.game.chatbox.ChatboxPanelManager;
+import net.runelite.client.events.RuneScapeProfileChanged;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -55,14 +65,17 @@ import net.runelite.client.util.ImageUtil;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Clue Details",
-	description = "Provides details and highlighting for clues on the floor",
-	tags = { "clue", "overlay" }
+		name = "Clue Details",
+		description = "Provides details and highlighting for clues on the floor",
+		tags = {"clue", "overlay"}
 )
 public class ClueDetailsPlugin extends Plugin
 {
 	@Inject
 	private Client client;
+
+	@Inject
+	private ClientThread clientThread;
 
 	@Inject
 	private ClueDetailsConfig config;
@@ -89,18 +102,36 @@ public class ClueDetailsPlugin extends Plugin
 	private ChatboxPanelManager chatboxPanelManager;
 
 	@Inject
-	public ClueDetailsSharingManager clueDetailsSharingManager;
+	private ClueDetailsSharingManager clueDetailsSharingManager;
 
 	@Inject
-	ConfigManager configManager;
+	private ConfigManager configManager;
 
-	public ClueDetailsParentPanel panel;
+	@Inject
+	private KeyManager keyManager;
 
-	NavigationButton navButton;
+	@Inject
+	private ItemManager itemManager;
 
-	CluePreferenceManager cluePreferenceManager;
+	@Getter
+	@Inject
+	@Named("developerMode")
+	private boolean developerMode;
 
-	private final Collection<String> configEvents = Arrays.asList("filterListByTier", "filterListByRegion", "orderListBy", "onlyShowMarkedClues");
+	@Getter
+	private ClueInventoryManager clueInventoryManager;
+
+	@Getter
+	private ClueGroundManager clueGroundManager;
+
+	private CluePreferenceManager cluePreferenceManager;
+
+	@Getter
+	private ClueDetailsParentPanel panel;
+
+	private NavigationButton navButton;
+
+	private boolean profileChanged;
 
 	@Override
 	protected void startUp() throws Exception
@@ -114,16 +145,19 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.register(widgetOverlay);
 
 		cluePreferenceManager = new CluePreferenceManager(configManager);
+		clueGroundManager = new ClueGroundManager(client, configManager);
+		infoOverlay.startUp(clueGroundManager, developerMode);
+		clueInventoryManager = new ClueInventoryManager(client, configManager, clueGroundManager, chatboxPanelManager);
 
-		final BufferedImage icon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/icon.png");
+		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
 		panel = new ClueDetailsParentPanel(configManager, cluePreferenceManager, config, chatboxPanelManager, clueDetailsSharingManager);
 		navButton = NavigationButton.builder()
-			.tooltip("Clue Details")
-			.icon(icon)
-			.priority(7)
-			.panel(panel)
-			.build();
+				.tooltip("Clue Details")
+				.icon(icon)
+				.priority(7)
+				.panel(panel)
+				.build();
 
 		if (config.showSidebar())
 		{
@@ -143,12 +177,87 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.unregister(widgetOverlay);
 
 		clientToolbar.removeNavigation(navButton);
+
+		clueGroundManager.saveStateToConfig();
 	}
 
-	@Provides
-	ClueDetailsConfig provideConfig(ConfigManager configManager)
+	@Subscribe
+	public void onItemContainerChanged(ItemContainerChanged event)
 	{
-		return configManager.getConfig(ClueDetailsConfig.class);
+		if (event.getContainerId() != InventoryID.INVENTORY.getId())
+		{
+			return;
+		}
+
+		clueInventoryManager.updateInventory(event.getItemContainer());
+	}
+
+	@Subscribe
+	public void onWidgetLoaded(WidgetLoaded event)
+	{
+		if (event.getGroupId() >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
+			&& event.getGroupId() <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER)
+		{
+			clueInventoryManager.updateClueText(event.getGroupId());
+		}
+		else if (event.getGroupId() == WidgetID.CLUE_SCROLL_GROUP_ID)
+		{
+			clientThread.invokeLater(() ->
+			{
+				Widget clueScrollText = client.getWidget(WidgetInfo.CLUE_SCROLL_TEXT);
+				if (clueScrollText != null)
+				{
+					String text = clueScrollText.getText();
+					clueInventoryManager.updateClueText(text);
+				}
+			});
+		}
+	}
+
+	@Subscribe
+	public void onGameStateChanged(GameStateChanged event)
+	{
+		if (event.getGameState() == GameState.LOGIN_SCREEN)
+		{
+			clueGroundManager.saveStateToConfig();
+			profileChanged = true;
+		}
+
+		if (event.getGameState() == GameState.LOGGED_IN && profileChanged)
+		{
+			profileChanged = false;
+			clueGroundManager.loadStateFromConfig();
+		}
+	}
+
+	@Subscribe
+	public void onRuneScapeProfileChanged(RuneScapeProfileChanged event)
+	{
+		profileChanged = true;
+	}
+
+	@Subscribe
+	public void onGameTick(GameTick event)
+	{
+		clueGroundManager.onGameTick();
+	}
+
+	@Subscribe
+	public void onItemSpawned(ItemSpawned event)
+	{
+		clueGroundManager.onItemSpawned(event);
+	}
+
+	@Subscribe
+	public void onItemDespawned(ItemDespawned event)
+	{
+		clueGroundManager.onItemDespawned(event);
+	}
+
+	@Subscribe
+	public void onMenuEntryAdded(MenuEntryAdded event)
+	{
+		clueInventoryManager.onMenuEntryAdded(event, cluePreferenceManager, panel);
 	}
 
 	@Subscribe
@@ -176,83 +285,18 @@ public class ClueDetailsPlugin extends Plugin
 			}
 		}
 
-		if (configEvents.contains(event.getKey()))
-		{
-			panel.refresh();
-		}
+		panel.refresh();
 	}
 
-	@Subscribe
-	public void onMenuEntryAdded(MenuEntryAdded event)
+	@Subscribe(priority = 100)
+	private void onClientShutdown(ClientShutdown event)
 	{
-		final boolean hotKeyPressed = client.isKeyPressed(KeyCode.KC_SHIFT);
-		if (hotKeyPressed && event.getTarget().contains("Clue scroll"))
-		{
-			if (!infoOverlay.isTakeClue(event.getMenuEntry()) && !infoOverlay.isReadClue(event.getMenuEntry()))
-			{
-				return;
-			}
-
-			int identifier = event.getIdentifier();
-			if (infoOverlay.isReadClue(event.getMenuEntry()))
-			{
-				identifier = event.getMenuEntry().getItemId();
-			}
-
-			boolean isMarked = cluePreferenceManager.getPreference(identifier);
-
-			client.createMenuEntry(-1)
-				.setOption(isMarked ? "Unmark" : "Mark")
-				.setTarget(event.getTarget())
-				.setIdentifier(identifier)
-				.setType(MenuAction.RUNELITE)
-				.onClick(e ->
-				{
-					boolean currentValue = cluePreferenceManager.getPreference(e.getIdentifier());
-					cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
-					panel.refresh();
-				});
-		}
+		clueGroundManager.saveStateToConfig();
 	}
 
-	@Subscribe
-	public void onMenuOpened(final MenuOpened event)
+	@Provides
+	ClueDetailsConfig provideConfig(ConfigManager configManager)
 	{
-		if (!client.isKeyPressed(KeyCode.KC_SHIFT))
-		{
-			return;
-		}
-
-		final MenuEntry[] entries = event.getMenuEntries();
-		for (int idx = entries.length - 1; idx >= 0; --idx)
-		{
-			final MenuEntry entry = entries[idx];
-			final Widget w = entry.getWidget();
-
-			if (w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY
-					&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10
-					&& (w.getName().contains("Clue scroll")
-					|| w.getName().contains("Challenge scroll")
-					|| w.getName().contains("Key (")))
-			{
-				final int itemId = w.getItemId();
-
-				client.createMenuEntry(idx)
-					.setOption("Clue details")
-					.setTarget(entry.getTarget())
-					.setType(MenuAction.RUNELITE)
-					.onClick(e ->
-					{
-						Clues clue = Clues.get(itemId);
-						chatboxPanelManager.openTextInput("Enter new clue text:")
-							.value(clue.getDisplayText(configManager))
-							.onDone((newTag) -> {
-								configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
-								panel.refresh();
-							})
-							.build();
-					});
-			}
-		}
+		return configManager.getConfig(ClueDetailsConfig.class);
 	}
 }

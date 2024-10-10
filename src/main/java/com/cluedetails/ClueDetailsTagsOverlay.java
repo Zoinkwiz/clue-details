@@ -24,11 +24,13 @@
  */
 package com.cluedetails;
 
+import java.util.List;
 import javax.inject.Inject;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import net.runelite.api.ItemID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.FontManager;
@@ -37,12 +39,14 @@ import net.runelite.client.ui.overlay.components.TextComponent;
 
 public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 {
+	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
 
 	@Inject
-	public ClueDetailsTagsOverlay(ClueDetailsConfig config, ConfigManager configManager)
+	public ClueDetailsTagsOverlay(ClueDetailsPlugin clueDetailsPlugin, ClueDetailsConfig config, ConfigManager configManager)
 	{
+		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.config = config;
 		this.configManager = configManager;
 		showOnInventory();
@@ -52,36 +56,114 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 	@Override
 	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem)
 	{
-		Clues clue = Clues.get(itemId);
-		if (config.showInventoryClueTags() && clue != null)
+		if (config.showInventoryClueTags())
 		{
-			graphics.setFont(FontManager.getRunescapeSmallFont());
-			renderText(graphics, widgetItem.getCanvasBounds(), clue.getDisplayText(configManager));
+			Clues clue = Clues.get(itemId);
+			String itemTag = null;
+
+			if (clue != null)
+			{
+				itemTag = clue.getDisplayText(configManager);
+			}
+			// If clue can't be found by Clue ID, check if it can be found by Clue text
+			else
+			{
+				if ((itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER)
+					&& clueDetailsPlugin.getClueInventoryManager().hasTrackedClues())
+				{
+					ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueId(itemId);
+					List<Integer> ids = readClues.getClueIds();
+
+					if (ids.isEmpty()) return;
+
+					boolean isFirst = true;
+					StringBuilder text = new StringBuilder();
+					StringBuilder tag = new StringBuilder();
+					for (Integer id : ids)
+					{
+						BeginnerMasterClues clueDetails = BeginnerMasterClues.getById(id);
+						if (!isFirst)
+						{
+							text.append("<br>");
+							tag.append("<br>");
+						}
+						text.append(clueDetails == null ? "error" : clueDetails.getText());
+						tag.append(clueDetails == null ? "error" : clueDetails.getTag());
+						isFirst = false;
+					}
+
+					// Handle three step cryptic clues
+					final ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(text.toString());
+					if (threeStepCrypticClue != null)
+					{
+						threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
+						itemTag = threeStepCrypticClue.getDisplayText();
+					}
+					else
+					{
+						itemTag = tag.toString();
+					}
+				}
+			}
+			renderText(graphics, widgetItem.getCanvasBounds(), itemTag);
 		}
 	}
 
-	// Draw the text bottom left if true, top left if false
-	public boolean bottomText(int i) {
-		return (i == 1 && config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT)
-				|| config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.BOTTOM;
+	public int textPosition(Graphics2D graphics, Rectangle bounds, int i, int tagCount)
+	{
+		// Middle of item
+		if (tagCount == 3 && i == 1)
+		{
+			return (bounds.height + graphics.getFontMetrics().getHeight()) / 2;
+		}
+
+		// Bottom of item
+		if ((config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT && i == 1)
+			|| (tagCount == 2 && i == 1)
+			|| config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.BOTTOM && tagCount == 1
+			|| i == 2)
+		{
+			return bounds.height;
+		}
+
+		// Top of item
+		return graphics.getFontMetrics().getHeight();
 	}
 
 	private void renderText(Graphics2D graphics, Rectangle bounds, String itemTag)
 	{
+		if (itemTag == null)
+		{
+			return;
+		}
+
+		graphics.setFont(FontManager.getRunescapeSmallFont());
+
 		final TextComponent textComponent = new TextComponent();
 		textComponent.setColor(Color.white);
 
 		String[] itemTags = new String [] {itemTag};
+		// Handle Three Step Cryptic Clues
+		if (itemTag.contains("<br>"))
+		{
+			itemTags = itemTag.split("<br>");
+		}
+
+		// Handle split
 		if (config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT
-				&& !config.clueTagSplit().isEmpty()){
-			itemTags = itemTag.split(config.clueTagSplit(), 2);
+			&& !config.clueTagSplit().isEmpty()
+			&& itemTags.length == 1)
+		{
+			itemTags = itemTags[0].split(config.clueTagSplit(), 3);
 		}
 
 		int i = 0;
-		for (String tag : itemTags){
+		int tagCount = itemTags.length;
+		for (String tag : itemTags)
+		{
 			textComponent.setPosition(new Point(
 				bounds.x - 1,
-				bounds.y - 1 + (bottomText(i) ? bounds.height : graphics.getFontMetrics().getHeight())
+				bounds.y - 1 + textPosition(graphics, bounds, i, tagCount)
 			));
 			textComponent.setText(tag);
 			textComponent.render(graphics);
