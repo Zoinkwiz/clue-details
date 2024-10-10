@@ -131,6 +131,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		if (developerMode)
 		{
+			int OFFSET = 50;
 			Set<WorldPoint> wps = clueGroundManager.getGroundClues().keySet();
 			for (WorldPoint wp : wps)
 			{
@@ -140,21 +141,22 @@ public class ClueDetailsOverlay extends OverlayPanel
 				LocalPoint lp = LocalPoint.fromWorld(client.getTopLevelWorldView(), wp);
 				if (lp == null) continue;
 
-				drawText(graphics, lp, "CLUES ON TILE", 0);
+				drawText(graphics, lp, "CLUES ON TILE", OFFSET);
 				for (ClueInstance clue : cluesOnTile)
 				{
 					if (clue.getClueIds().isEmpty())
 					{
-						drawText(graphics, lp, "UNKNOWN", a * STRING_GAP);
+						drawText(graphics, lp, "UNKNOWN", OFFSET + (a * STRING_GAP));
 					}
 					else
 					{
 						StringBuilder text = new StringBuilder();
 						for (Integer clueId : clue.getClueIds())
 						{
-							text.append(BeginnerMasterClues.getById(clueId).getText()).append(": ");
+							BeginnerMasterClues clueDetails = BeginnerMasterClues.getById(clueId);
+							text.append(clueDetails.getTag()).append(": ");
 						}
-						drawText(graphics, lp, text.toString(), a * STRING_GAP);
+						drawText(graphics, lp, text.toString(), OFFSET + (a * STRING_GAP));
 					}
 					a++;
 				}
