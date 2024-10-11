@@ -326,7 +326,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		regionFilterDropdown.setSelectedItem(config.filterListByRegion());
 		orderDropdown.setSelectedItem(config.orderListBy());
 
-		List<Clues> filteredClues = Arrays.stream(Clues.CLUES.toArray(new Clues[0]))
+		List<Clues> filteredClues = Clues.CLUES.stream()
 			.filter(config.filterListByTier())
 			.filter(config.filterListByRegion())
 			.filter(this::filterUnmarkedClues)
