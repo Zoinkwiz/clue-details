@@ -151,6 +151,7 @@ public class ClueInventoryManager
 		for (Integer itemID : itemIDs)
 		{
 			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
+			// Check that at least one part of the clue text matches the clue tier we're looking at
 			Clues clueInfo = Clues.forItemId(clueIds.get(0));
 			if (clueInfo == null) continue;
 			if (!Objects.equals(clueInfo.getItemID(), itemID)) continue;

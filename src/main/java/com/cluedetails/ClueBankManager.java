@@ -58,8 +58,6 @@ public class ClueBankManager
 
 	public void handleBankChange(ItemContainer bankContainer)
 	{
-		if (lastBankItems != null) System.out.println(lastBankItems.length);
-		System.out.println(bankContainer.size());
 		if (lastBankItems == null)
 		{
 			lastBankItems = bankContainer.getItems();

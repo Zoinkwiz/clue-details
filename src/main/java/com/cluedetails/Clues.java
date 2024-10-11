@@ -991,11 +991,6 @@ public class Clues
 
 	public static Clues forItemId(int itemId)
 	{
-		if (itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER)
-		{
-			return null;
-		}
-
 		for (Clues clue : CLUES)
 		{
 			if (clue.getClueID() == itemId)
