@@ -77,7 +77,7 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 
 		for (Item item : inventory.getItems())
 		{
-			Clues clue = Clues.get(item.getId());
+			Clues clue = Clues.forItemId(item.getId());
 			if (clue != null && !Arrays.asList(
 					ClueTier.MEDIUM_CHALLENGE,
 					ClueTier.HARD_CHALLENGE,

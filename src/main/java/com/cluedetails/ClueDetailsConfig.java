@@ -44,7 +44,7 @@ public interface ClueDetailsConfig extends Config
 		/**
 		 * Sort clues in alphabetical order
 		 */
-		TIER(ClueOrders.sortByTier(), ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.MEDIUM_KEY, ClueTierFilter.HARD, ClueTierFilter.ELITE),
+		TIER(ClueOrders.sortByTier(), ClueTierFilter.BEGINNER, ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.MEDIUM_KEY, ClueTierFilter.HARD, ClueTierFilter.ELITE, ClueTierFilter.MASTER),
 		REGION(ClueOrders.sortByRegion(), ClueRegionFilter.MISTHALIN, ClueRegionFilter.ASGARNIA, ClueRegionFilter.KARAMJA, ClueRegionFilter.KANDARIN, ClueRegionFilter.FREMENNIK_PROVINCE, ClueRegionFilter.KHARIDIAN_DESERT,
 			ClueRegionFilter.MORYTANIA, ClueRegionFilter.TIRANNWN, ClueRegionFilter.WILDERNESS, ClueRegionFilter.KOUREND, ClueRegionFilter.VARLAMORE);
 
@@ -93,11 +93,13 @@ public interface ClueDetailsConfig extends Config
 	enum ClueTierFilter implements ClueFilter
 	{
 		SHOW_ALL(c -> true, "Show All"),
+		BEGINNER(c -> c.getClueTier() == ClueTier.BEGINNER, "Beginner"),
 		EASY(c -> c.getClueTier() == ClueTier.EASY, "Easy"),
 		MEDIUM(c -> c.getClueTier() == ClueTier.MEDIUM, "Medium"),
 		MEDIUM_KEY(c -> c.getClueTier() == ClueTier.MEDIUM_KEY, "Medium Key"),
 		HARD(c -> c.getClueTier() == ClueTier.HARD, "Hard"),
-		ELITE(c -> c.getClueTier() == ClueTier.ELITE, "Elite");
+		ELITE(c -> c.getClueTier() == ClueTier.ELITE, "Elite"),
+		MASTER(c -> c.getClueTier() == ClueTier.MASTER, "Master");
 
 		private final Predicate<Clues> predicate;
 		private final BaseClueFilter baseClueFilter;
@@ -185,7 +187,7 @@ public interface ClueDetailsConfig extends Config
 		TOP(false, "Top"),
 		BOTTOM(false, "Bottom");
 
-        ClueTagLocation(Object selected, String displayName) {}
+		ClueTagLocation(Object selected, String displayName) {}
 	}
 
 	@ConfigItem(

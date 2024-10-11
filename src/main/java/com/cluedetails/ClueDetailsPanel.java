@@ -26,21 +26,15 @@ package com.cluedetails;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import net.runelite.client.config.ConfigManager;
@@ -74,7 +68,7 @@ public class ClueDetailsPanel extends PluginPanel
 		questStepsPanel.setLayout(new BoxLayout(questStepsPanel, BoxLayout.Y_AXIS));
 		questStepsPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 
-		for (Clues clue : Clues.values())
+		for (Clues clue : Clues.CLUES)
 		{
 			questStepsPanel.add(createClueToggle(clue));
 			questStepsPanel.add(new JSeparator(JSeparator.HORIZONTAL));
@@ -86,7 +80,7 @@ public class ClueDetailsPanel extends PluginPanel
 
 	private void loadState()
 	{
-		for (Clues clue : Clues.values())
+		for (Clues clue : Clues.CLUES)
 		{
 			boolean state = Boolean.TRUE.equals(configManager.getConfiguration("clue-details-highlights", String.valueOf(clue.getClueID()), Boolean.class));
 			clueStates.put(clue.getClueID(), state);
@@ -95,10 +89,7 @@ public class ClueDetailsPanel extends PluginPanel
 
 	public String generateText(String clueText)
 	{
-		StringBuilder text = new StringBuilder();
-		text.append(clueText);
-
-		return "<html><body style='text-align:left'>" + text + "</body></html>";
+		return "<html><body style='text-align:left'>" + clueText + "</body></html>";
 	}
 
 	private JLabel createClueToggle(Clues clue)

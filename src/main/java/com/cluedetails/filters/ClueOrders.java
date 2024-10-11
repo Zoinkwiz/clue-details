@@ -31,11 +31,13 @@ import java.util.List;
 public class ClueOrders
 {
 	static List<ClueTier> tierOrder = List.of(
+		ClueTier.BEGINNER,
 		ClueTier.EASY,
 		ClueTier.MEDIUM,
 		ClueTier.MEDIUM_KEY,
 		ClueTier.HARD,
-		ClueTier.ELITE
+		ClueTier.ELITE,
+		ClueTier.MASTER
 	);
 
 	static List<ClueRegion> regionOrder = List.of(

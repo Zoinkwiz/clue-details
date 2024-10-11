@@ -153,8 +153,8 @@ public class ClueDetailsOverlay extends OverlayPanel
 						StringBuilder text = new StringBuilder();
 						for (Integer clueId : clue.getClueIds())
 						{
-							BeginnerMasterClues clueDetails = BeginnerMasterClues.getById(clueId);
-							text.append(clueDetails.getTag()).append(": ");
+							Clues clueDetails = Clues.forItemId(clueId);
+							text.append(clueDetails.getClueDetail()).append(": ");
 						}
 						drawText(graphics, lp, text.toString(), OFFSET + (a * STRING_GAP));
 					}
@@ -170,10 +170,10 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 	private void drawText(Graphics2D graphics, LocalPoint lp, String text, int offset)
 	{
-		Point canvasTextLocation = Perspective.getCanvasTextLocation(client, graphics, lp, text.toString(), offset);
+		Point canvasTextLocation = Perspective.getCanvasTextLocation(client, graphics, lp, text, offset);
 		if (canvasTextLocation != null)
 		{
-			OverlayUtil.renderTextLocation(graphics, canvasTextLocation, text.toString(), Color.CYAN);
+			OverlayUtil.renderTextLocation(graphics, canvasTextLocation, text, Color.CYAN);
 		}
 	}
 
@@ -225,7 +225,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 				for (int i = currentMenuEntries.length - 1; i >= 0; i--)
 				{
 					MenuEntry hoveredEntry = currentMenuEntries[i];
-					Clues clue = Clues.get(hoveredEntry.getIdentifier());
+					Clues clue = Clues.forItemId(hoveredEntry.getIdentifier());
 					if (clue == null || !isTakeOrMarkClue(hoveredEntry)) continue;
 					String regex = "Clue scroll \\(.*?\\)";
 
@@ -323,7 +323,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		{
 			scrollID = menuEntry.getItemId();
 		}
-		Clues matchingClue = Clues.get(scrollID);
+		Clues matchingClue = Clues.forItemId(scrollID);
 		if (matchingClue == null)
 		{
 			return null;

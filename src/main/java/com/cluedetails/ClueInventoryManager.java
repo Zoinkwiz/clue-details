@@ -137,23 +137,23 @@ public class ClueInventoryManager
 		ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(clueText);
 		if (threeStepCrypticClue != null)
 		{
-			for (Map.Entry<BeginnerMasterClues, Boolean> clueStep : threeStepCrypticClue.getClueSteps())
+			for (Map.Entry<Clues, Boolean> clueStep : threeStepCrypticClue.getClueSteps())
 			{
-				clueIds.add(clueStep.getKey().getFakeId());
+				clueIds.add(clueStep.getKey().getClueID());
 			}
 		}
 		else
 		{
-			clueIds.add(BeginnerMasterClues.forTextGetId(clueText));
+			clueIds.add(Clues.forTextGetId(clueText));
 		}
 
 		Set<Integer> itemIDs = trackedCluesInInventory.keySet();
 		for (Integer itemID : itemIDs)
 		{
 			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
-			BeginnerMasterClues clueInfo = BeginnerMasterClues.getById(clueIds.get(0));
+			Clues clueInfo = Clues.forItemId(clueIds.get(0));
 			if (clueInfo == null) continue;
-			if (!Objects.equals(clueInfo.getClueID(), itemID)) continue;
+			if (!Objects.equals(clueInfo.getItemID(), itemID)) continue;
 			clueInstance.setClueIds(clueIds);
 			break;
 		}
@@ -229,7 +229,7 @@ public class ClueInventoryManager
 			.setType(MenuAction.RUNELITE)
 			.onClick(e ->
 			{
-				Clues clue = Clues.get(itemId);
+				Clues clue = Clues.forItemId(itemId);
 				chatboxPanelManager.openTextInput("Enter new clue text:")
 					.value(clue.getDisplayText(configManager))
 					.onDone((newTag) ->

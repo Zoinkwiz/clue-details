@@ -58,7 +58,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 	{
 		if (config.showInventoryClueTags())
 		{
-			Clues clue = Clues.get(itemId);
+			Clues clue = Clues.forItemId(itemId);
 			String itemTag = null;
 
 			if (clue != null)
@@ -85,14 +85,14 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					StringBuilder tag = new StringBuilder();
 					for (Integer id : ids)
 					{
-						BeginnerMasterClues clueDetails = BeginnerMasterClues.getById(id);
+						Clues clueDetails = Clues.forItemId(id);
 						if (!isFirst)
 						{
 							text.append("<br>");
 							tag.append("<br>");
 						}
-						text.append(clueDetails == null ? "error" : clueDetails.getText());
-						tag.append(clueDetails == null ? "error" : clueDetails.getTag());
+						text.append(clueDetails == null ? "error" : clueDetails.getClueText());
+						tag.append(clueDetails == null ? "error" : clueDetails.getClueDetail());
 						isFirst = false;
 					}
 
