@@ -92,7 +92,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 							tag.append("<br>");
 						}
 						text.append(clueDetails == null ? "error" : clueDetails.getClueText());
-						tag.append(clueDetails == null ? "error" : clueDetails.getClueDetail());
+						tag.append(clueDetails == null ? "error" : clueDetails.getDisplayText(configManager));
 						isFirst = false;
 					}
 
@@ -101,7 +101,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					if (threeStepCrypticClue != null)
 					{
 						threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
-						itemTag = threeStepCrypticClue.getDisplayText();
+						itemTag = threeStepCrypticClue.getDisplayText(configManager);
 					}
 					else
 					{

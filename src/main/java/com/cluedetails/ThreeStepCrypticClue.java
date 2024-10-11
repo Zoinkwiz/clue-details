@@ -34,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_1;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_2;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_3;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.util.Text;
 
 @Getter
@@ -94,7 +95,7 @@ public class ThreeStepCrypticClue
 		}
 	}
 
-	public String getDisplayText()
+	public String getDisplayText(ConfigManager configManager)
 	{
 		StringBuilder text = new StringBuilder();
 
@@ -102,7 +103,8 @@ public class ThreeStepCrypticClue
 		{
 			if (!e.getValue())
 			{
-				String tag = e.getKey().getClueDetail();
+				Clues clue = e.getKey();
+				String tag = clue.getDisplayText(configManager);
 				text.append(tag).append("<br>");
 			}
 		}

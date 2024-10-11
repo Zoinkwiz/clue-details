@@ -210,18 +210,39 @@ public class ClueInventoryManager
 		int itemId = isInventoryMenu ? event.getItemId() : event.getIdentifier();
 		boolean isMarked = cluePreferenceManager.getPreference(itemId);
 
-		client.getMenu().createMenuEntry(-1)
-			.setOption(isMarked ? "Unmark" : "Mark")
-			.setTarget(event.getTarget())
-			.setIdentifier(itemId)
-			.setType(MenuAction.RUNELITE)
-			.onClick(e ->
-			{
-				boolean currentValue = cluePreferenceManager.getPreference(e.getIdentifier());
-				cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
-				panel.refresh();
-			});
+		final int clueId;
 
+		if (TRACKED_CLUE_IDS.contains(itemId))
+		{
+			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
+			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
+
+			// If isn't a master three step cryptic
+			if (clueSelected.getClueIds().size() == 1)
+			{
+				clueId = clueSelected.getClueIds().get(0);
+			}
+			else
+			{
+				clueId = itemId;
+			}
+		}
+		else
+		{
+			clueId = itemId;
+			// We don't want to have marking on masters I think
+			client.getMenu().createMenuEntry(-1)
+				.setOption(isMarked ? "Unmark" : "Mark")
+				.setTarget(event.getTarget())
+				.setIdentifier(itemId)
+				.setType(MenuAction.RUNELITE)
+				.onClick(e ->
+				{
+					boolean currentValue = cluePreferenceManager.getPreference(e.getIdentifier());
+					cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
+					panel.refresh();
+				});
+		}
 		if (!isInventoryMenu) return;
 
 		client.getMenu().createMenuEntry(-1)
@@ -230,7 +251,13 @@ public class ClueInventoryManager
 			.setType(MenuAction.RUNELITE)
 			.onClick(e ->
 			{
-				Clues clue = Clues.forItemId(itemId);
+				Clues clue = Clues.forItemId(clueId);
+				if (clue == null)
+				{
+					System.out.println("Failed to find clue " + clueId);
+					return;
+				}
+
 				chatboxPanelManager.openTextInput("Enter new clue text:")
 					.value(clue.getDisplayText(configManager))
 					.onDone((newTag) ->
