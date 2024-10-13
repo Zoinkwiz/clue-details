@@ -36,6 +36,7 @@ import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
@@ -152,6 +153,7 @@ public class ClueInventoryManager
 		{
 			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
 			// Check that at least one part of the clue text matches the clue tier we're looking at
+			// TODO: Produces NullPointerException when trying to update incorrect text
 			Clues clueInfo = Clues.forItemId(clueIds.get(0));
 			if (clueInfo == null) continue;
 			if (!Objects.equals(clueInfo.getItemID(), itemID)) continue;
@@ -275,5 +277,19 @@ public class ClueInventoryManager
 		String target = entry.getTarget();
 		String option = entry.getOption();
 		return Arrays.stream(textOptions).anyMatch(target::contains) && option.equals("Examine");
+	}
+
+	public void onGameTick()
+	{
+		// Reset clue when receiving a new beginner or master clue
+		// These clues use a single item ID, so we cannot detect step changes based on the item ID changing
+		final Widget chatDialogClueItem = client.getWidget(ComponentID.DIALOG_SPRITE_SPRITE);
+		if (chatDialogClueItem != null
+			&& (chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_BEGINNER
+			|| chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_MASTER))
+		{
+			// TODO: Beginner/Master clue reset
+			System.out.println("Beginner/Master Step Reset");
+		}
 	}
 }
