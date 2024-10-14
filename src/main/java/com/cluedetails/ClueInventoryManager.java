@@ -96,7 +96,7 @@ public class ClueInventoryManager
 			}
 
 			// Wasn't in inventory. Now see if it was an item we picked up we know about
-			for (ClueInstance clueFromFloor : clueGroundManager.getDespawnedClueQueue())
+			for (ClueInstance clueFromFloor : clueGroundManager.getDespawnedClueQueueForInventoryCheck())
 			{
 				if (clueFromFloor.getItemId() == item.getId())
 				{
@@ -113,7 +113,7 @@ public class ClueInventoryManager
 			trackedCluesInInventory.put(itemId, clueInstance);
 		}
 
-		clueGroundManager.getDespawnedClueQueue().clear();
+		clueGroundManager.getDespawnedClueQueueForInventoryCheck().clear();
 
 		// Compare previous and current to find removed clues
 		for (Integer itemId : previousTrackedCluesInInventory.keySet())

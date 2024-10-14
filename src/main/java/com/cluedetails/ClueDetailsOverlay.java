@@ -135,6 +135,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			Set<WorldPoint> wps = clueGroundManager.getGroundClues().keySet();
 			for (WorldPoint wp : wps)
 			{
+				if (clueGroundManager.getGroundClues().get(wp).isEmpty()) continue;
 				int a = 1;
 				int STRING_GAP = 15;
 				List<ClueInstance> cluesOnTile = clueGroundManager.getGroundClues().get(wp);
