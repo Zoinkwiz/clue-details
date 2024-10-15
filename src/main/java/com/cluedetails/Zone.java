@@ -35,12 +35,12 @@ public class Zone
 	public Zone(WorldPoint wp)
 	{
 		x = wp.getX() / 8;
-		y = wp.getX() / 8;
+		y = wp.getY() / 8;
 		plane = wp.getPlane();
 	}
 
-	public int minDistanceTo(Zone zone)
+	public int maxDistanceTo(Zone zone)
 	{
-		return Math.min(Math.abs(zone.x - x), Math.abs(zone.y - y));
+		return Math.max(Math.abs(zone.x - x), Math.abs(zone.y - y));
 	}
 }

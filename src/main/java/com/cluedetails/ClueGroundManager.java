@@ -110,8 +110,8 @@ public class ClueGroundManager
 		// We know it's 2 if we've gone from 5 zones distance to 4 zones distance
 		Zone clueZone = new Zone(location);
 		Zone currentZone = new Zone(client.getLocalPlayer().getWorldLocation());
-		int distFromLastZone = clueZone.minDistanceTo(lastZone);
-		int distFromCurrentZone = clueZone.minDistanceTo(currentZone);
+		int distFromLastZone = clueZone.maxDistanceTo(lastZone);
+		int distFromCurrentZone = clueZone.maxDistanceTo(currentZone);
 		if (distFromLastZone == 4 && distFromCurrentZone == 3)
 		{
 			return;
@@ -195,7 +195,7 @@ public class ClueGroundManager
 
 			Zone clueZone = new Zone(tile.getWorldLocation());
 			// Item won't have potentially spawned if too far, so don't remove
-			int zonesDistance = clueZone.minDistanceTo(currentZone);
+			int zonesDistance = clueZone.maxDistanceTo(currentZone);
 			if (zonesDistance >= 4) return false;
 			return tile.getGroundItems() == null || tile.getGroundItems().isEmpty();
 		});
