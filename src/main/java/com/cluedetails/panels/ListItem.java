@@ -22,36 +22,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.cluedetails.filters;
+package com.cluedetails.panels;
 
 import com.cluedetails.Clues;
-import java.util.Comparator;
-import java.util.List;
+import lombok.Getter;
 
-public class ClueOrders
+@Getter
+public class ListItem
 {
-	static List<ClueTier> tierOrder = List.of(
-		ClueTier.BEGINNER,
-		ClueTier.EASY,
-		ClueTier.MEDIUM,
-		ClueTier.MEDIUM_KEY,
-		ClueTier.HARD,
-		ClueTier.ELITE,
-		ClueTier.MASTER
-	);
+	private Clues clue;
+	private String header;
 
-	static List<ClueRegion> regionOrder = List.of(
-		ClueRegion.MISTHALIN, ClueRegion.ASGARNIA, ClueRegion.KARAMJA, ClueRegion.KANDARIN, ClueRegion.FREMENNIK_PROVINCE, ClueRegion.KHARIDIAN_DESERT,
-		ClueRegion.MORYTANIA, ClueRegion.TIRANNWN, ClueRegion.WILDERNESS, ClueRegion.KOUREND, ClueRegion.VARLAMORE
-	);
-
-	public static Comparator<Clues> sortByTier()
+	public ListItem(Clues clue)
 	{
-		return Comparator.comparing(q -> tierOrder.indexOf(q));
+		this.clue = clue;
 	}
 
-	public static Comparator<Clues> sortByRegion()
+	public ListItem(String header)
 	{
-		return Comparator.comparing(q -> regionOrder.indexOf(q));
+		this.header = header;
+	}
+
+	public boolean isHeader()
+	{
+		return header != null;
 	}
 }

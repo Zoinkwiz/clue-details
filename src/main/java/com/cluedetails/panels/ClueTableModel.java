@@ -22,36 +22,62 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.cluedetails.filters;
+package com.cluedetails.panels;
 
-import com.cluedetails.Clues;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.table.AbstractTableModel;
 
-public class ClueOrders
+public class ClueTableModel extends AbstractTableModel
 {
-	static List<ClueTier> tierOrder = List.of(
-		ClueTier.BEGINNER,
-		ClueTier.EASY,
-		ClueTier.MEDIUM,
-		ClueTier.MEDIUM_KEY,
-		ClueTier.HARD,
-		ClueTier.ELITE,
-		ClueTier.MASTER
-	);
+	private static final int COLUMN_COUNT = 1;
+	private int editableRow = -1;
 
-	static List<ClueRegion> regionOrder = List.of(
-		ClueRegion.MISTHALIN, ClueRegion.ASGARNIA, ClueRegion.KARAMJA, ClueRegion.KANDARIN, ClueRegion.FREMENNIK_PROVINCE, ClueRegion.KHARIDIAN_DESERT,
-		ClueRegion.MORYTANIA, ClueRegion.TIRANNWN, ClueRegion.WILDERNESS, ClueRegion.KOUREND, ClueRegion.VARLAMORE
-	);
+	private List<ListItem> items = new ArrayList<>();
 
-	public static Comparator<Clues> sortByTier()
+	public void setItems(List<ListItem> items)
 	{
-		return Comparator.comparing(q -> tierOrder.indexOf(q));
+		this.items = items;
+		fireTableDataChanged();
 	}
 
-	public static Comparator<Clues> sortByRegion()
+	@Override
+	public int getRowCount()
 	{
-		return Comparator.comparing(q -> regionOrder.indexOf(q));
+		return items.size();
+	}
+
+	@Override
+	public int getColumnCount()
+	{
+		return COLUMN_COUNT;
+	}
+
+	@Override
+	public Object getValueAt(int rowIndex, int columnIndex)
+	{
+		return items.get(rowIndex);
+	}
+
+	public void setEditableRow(int row)
+	{
+		this.editableRow = row;
+		fireTableCellUpdated(row, 0);
+	}
+
+	public void resetEditableRow()
+	{
+		int previousEditableRow = this.editableRow;
+		this.editableRow = -1;
+		if (previousEditableRow != -1)
+		{
+			fireTableCellUpdated(previousEditableRow, 0);
+		}
+	}
+
+	@Override
+	public boolean isCellEditable(int rowIndex, int columnIndex)
+	{
+		return rowIndex == editableRow;
 	}
 }

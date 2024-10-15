@@ -27,6 +27,7 @@ package com.cluedetails.filters;
 public enum ClueTier
 {
 	SHOW_ALL,
+	BEGINNER,
 	EASY,
 	MEDIUM,
 	MEDIUM_CHALLENGE,
@@ -34,5 +35,6 @@ public enum ClueTier
 	HARD,
 	HARD_CHALLENGE,
 	ELITE,
-	ELITE_CHALLENGE
+	ELITE_CHALLENGE,
+	MASTER
 }

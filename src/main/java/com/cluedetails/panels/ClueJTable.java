@@ -22,36 +22,38 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.cluedetails.filters;
+package com.cluedetails.panels;
 
-import com.cluedetails.Clues;
-import java.util.Comparator;
-import java.util.List;
+import java.awt.Dimension;
+import java.util.EventObject;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.TableModel;
 
-public class ClueOrders
+public class ClueJTable extends JTable
 {
-	static List<ClueTier> tierOrder = List.of(
-		ClueTier.BEGINNER,
-		ClueTier.EASY,
-		ClueTier.MEDIUM,
-		ClueTier.MEDIUM_KEY,
-		ClueTier.HARD,
-		ClueTier.ELITE,
-		ClueTier.MASTER
-	);
-
-	static List<ClueRegion> regionOrder = List.of(
-		ClueRegion.MISTHALIN, ClueRegion.ASGARNIA, ClueRegion.KARAMJA, ClueRegion.KANDARIN, ClueRegion.FREMENNIK_PROVINCE, ClueRegion.KHARIDIAN_DESERT,
-		ClueRegion.MORYTANIA, ClueRegion.TIRANNWN, ClueRegion.WILDERNESS, ClueRegion.KOUREND, ClueRegion.VARLAMORE
-	);
-
-	public static Comparator<Clues> sortByTier()
+	public ClueJTable(TableModel tableModel)
 	{
-		return Comparator.comparing(q -> tierOrder.indexOf(q));
+		super(tableModel);
+		getColumnModel().getColumn(0).setPreferredWidth(10);
+		setRowHeight(30);
+		setShowGrid(false);
+		setIntercellSpacing(new Dimension(0, 0));
+		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		setTableHeader(null);
+
+		setSurrendersFocusOnKeystroke(false);
+		setCellSelectionEnabled(false);
+		setFocusable(false);
 	}
 
-	public static Comparator<Clues> sortByRegion()
+	@Override
+	public boolean editCellAt(int row, int column, EventObject e)
 	{
-		return Comparator.comparing(q -> regionOrder.indexOf(q));
+		if (dataModel.isCellEditable(row, column))
+		{
+			return super.editCellAt(row, column, e);
+		}
+		return false;
 	}
 }

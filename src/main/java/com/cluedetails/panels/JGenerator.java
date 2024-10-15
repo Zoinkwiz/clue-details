@@ -22,36 +22,38 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.cluedetails.filters;
+package com.cluedetails.panels;
 
-import com.cluedetails.Clues;
-import java.util.Comparator;
-import java.util.List;
+import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
 
-public class ClueOrders
+public class JGenerator
 {
-	static List<ClueTier> tierOrder = List.of(
-		ClueTier.BEGINNER,
-		ClueTier.EASY,
-		ClueTier.MEDIUM,
-		ClueTier.MEDIUM_KEY,
-		ClueTier.HARD,
-		ClueTier.ELITE,
-		ClueTier.MASTER
-	);
-
-	static List<ClueRegion> regionOrder = List.of(
-		ClueRegion.MISTHALIN, ClueRegion.ASGARNIA, ClueRegion.KARAMJA, ClueRegion.KANDARIN, ClueRegion.FREMENNIK_PROVINCE, ClueRegion.KHARIDIAN_DESERT,
-		ClueRegion.MORYTANIA, ClueRegion.TIRANNWN, ClueRegion.WILDERNESS, ClueRegion.KOUREND, ClueRegion.VARLAMORE
-	);
-
-	public static Comparator<Clues> sortByTier()
+	public static JTextArea makeJTextArea()
 	{
-		return Comparator.comparing(q -> tierOrder.indexOf(q));
+		JTextArea jTextArea = new JTextArea();
+		jTextArea.setLineWrap(true);
+		jTextArea.setWrapStyleWord(true);
+		jTextArea.setOpaque(false);
+		jTextArea.setEditable(false);
+		jTextArea.setFocusable(false);
+		jTextArea.setBackground(null);
+		jTextArea.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+		return jTextArea;
 	}
 
-	public static Comparator<Clues> sortByRegion()
+	public static JTextArea makeJTextArea(String text)
 	{
-		return Comparator.comparing(q -> regionOrder.indexOf(q));
+		JTextArea jTextArea = new JTextArea(text);
+		jTextArea.setLineWrap(true);
+		jTextArea.setWrapStyleWord(true);
+		jTextArea.setOpaque(false);
+		jTextArea.setEditable(false);
+		jTextArea.setFocusable(false);
+		jTextArea.setBackground(null);
+		jTextArea.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+		return jTextArea;
 	}
 }

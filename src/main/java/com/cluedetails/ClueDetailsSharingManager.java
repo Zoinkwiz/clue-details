@@ -61,7 +61,7 @@ public class ClueDetailsSharingManager
 
 	@Inject
 	private ClueDetailsSharingManager(ClueDetailsPlugin plugin, Client client, MenuManager menuManager,
-									   ChatMessageManager chatMessageManager, ChatboxPanelManager chatboxPanelManager, Gson gson, ConfigManager configManager)
+									ChatMessageManager chatMessageManager, ChatboxPanelManager chatboxPanelManager, Gson gson, ConfigManager configManager)
 	{
 		this.plugin = plugin;
 		this.client = client;
@@ -75,7 +75,7 @@ public class ClueDetailsSharingManager
 	public void exportClueDetails()
 	{
 		List<ClueIdToText> clueIdToTextList = new ArrayList<>();
-		for (Clues clue : Clues.values())
+		for (Clues clue : Clues.CLUES)
 		{
 			int id = clue.getClueID();
 			String clueText = configManager.getConfiguration("clue-details-text", String.valueOf(id));
@@ -158,7 +158,7 @@ public class ClueDetailsSharingManager
 		}
 
 		sendChatMessage(importPoints.size() + " clue details were imported from the clipboard.");
-		plugin.panel.refresh();
+		plugin.getPanel().refresh();
 	}
 
 	private void sendChatMessage(final String message)

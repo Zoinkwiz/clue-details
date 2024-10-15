@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Adam <Adam@sigterm.info>
+ * Copyright (c) 2024, Zoinkwiz <https://github.com/Zoinkwiz>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,36 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.cluedetails.panels;
+package com.cluedetails;
 
-import java.awt.Dimension;
-import javax.swing.JPanel;
-import net.runelite.client.ui.PluginPanel;
+import java.util.List;
+import lombok.Data;
+import net.runelite.api.coords.WorldPoint;
 
-public class FixedWidthPanel extends JPanel
+@Data
+public class ClueInstanceData
 {
-	@Override
-	public Dimension getPreferredSize()
-	{
-		return new Dimension(PluginPanel.PANEL_WIDTH, super.getPreferredSize().height);
-	}
+    private List<Integer> clueIds;
+    private int itemId;
+    private int despawnTick;
+    private int x;
+    private int y;
+    private int plane;
+
+    public ClueInstanceData(ClueInstance clue, int currentTick)
+    {
+        this.clueIds = clue.getClueIds();
+        this.itemId = clue.getItemId();
+        this.despawnTick = clue.getTicksToDespawnConsideringTileItem(currentTick);
+		if (clue.getLocation() == null) return;
+
+        this.x = clue.getLocation().getX();
+        this.y = clue.getLocation().getY();
+        this.plane = clue.getLocation().getPlane();
+    }
+
+    public WorldPoint getLocation()
+    {
+        return new WorldPoint(x, y, plane);
+    }
 }
