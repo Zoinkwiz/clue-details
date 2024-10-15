@@ -288,14 +288,17 @@ public class ClueInventoryManager
 		// These clues use a single item ID, so we cannot detect step changes based on the item ID changing
 		final Widget headModelWidget = client.getWidget(ComponentID.DIALOG_NPC_HEAD_MODEL);
 		final Widget chatDialogClueItemWidget = client.getWidget(ComponentID.DIALOG_SPRITE_SPRITE);
+		final Widget npcChatWidget = client.getWidget(ComponentID.DIALOG_NPC_TEXT);
 
-		if (isNewBeginnerClue(chatDialogClueItemWidget) || isUriBeginnerClue(headModelWidget))
+		if (isNewBeginnerClue(chatDialogClueItemWidget)
+			|| (isUriBeginnerClue(headModelWidget) && isUriStandardDialogue(npcChatWidget)))
 		{
 			ClueInstance clue = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
 			if (clue == null) return;
 			clue.setClueIds(List.of());
 		}
-		else if (isNewMasterClue(chatDialogClueItemWidget) || isUriMasterClue(headModelWidget))
+		else if (isNewMasterClue(chatDialogClueItemWidget)
+			|| (isUriMasterClue(headModelWidget) && isUriStandardDialogue(npcChatWidget)))
 		{
 			ClueInstance clue =  trackedCluesInInventory.get(ItemID.CLUE_SCROLL_MASTER);
 			if (clue == null) return;
@@ -313,6 +316,13 @@ public class ClueInventoryManager
 	{
 		if (headModel == null) return false;
 		return headModel.getModelId() == NpcID.URI_7311;
+	}
+
+	private boolean isUriStandardDialogue(Widget npcChat)
+	{
+		if (npcChat == null) return false;
+		// Check if speaking with another player's Uri or with incorrect attire
+		return !npcChat.getText().contains("I do not believe we have any business, Comrade.");
 	}
 
 	private boolean isNewBeginnerClue(Widget chatDialogClueItem)
