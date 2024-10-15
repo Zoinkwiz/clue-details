@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Adam <Adam@sigterm.info>
+ * Copyright (c) 2024, Zoinkwiz <https://github.com/Zoinkwiz>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,15 +24,36 @@
  */
 package com.cluedetails.panels;
 
-import java.awt.Dimension;
-import javax.swing.JPanel;
-import net.runelite.client.ui.PluginPanel;
+import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
 
-public class FixedWidthPanel extends JPanel
+public class JGenerator
 {
-	@Override
-	public Dimension getPreferredSize()
+	public static JTextArea makeJTextArea()
 	{
-		return new Dimension(PluginPanel.PANEL_WIDTH, super.getPreferredSize().height);
+		JTextArea jTextArea = new JTextArea();
+		jTextArea.setLineWrap(true);
+		jTextArea.setWrapStyleWord(true);
+		jTextArea.setOpaque(false);
+		jTextArea.setEditable(false);
+		jTextArea.setFocusable(false);
+		jTextArea.setBackground(null);
+		jTextArea.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+		return jTextArea;
+	}
+
+	public static JTextArea makeJTextArea(String text)
+	{
+		JTextArea jTextArea = new JTextArea(text);
+		jTextArea.setLineWrap(true);
+		jTextArea.setWrapStyleWord(true);
+		jTextArea.setOpaque(false);
+		jTextArea.setEditable(false);
+		jTextArea.setFocusable(false);
+		jTextArea.setBackground(null);
+		jTextArea.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+		return jTextArea;
 	}
 }

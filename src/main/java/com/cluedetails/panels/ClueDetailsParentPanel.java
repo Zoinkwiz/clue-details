@@ -32,19 +32,23 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import lombok.Getter;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
@@ -52,17 +56,20 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
 import net.runelite.client.util.ImageUtil;
-import net.runelite.client.util.Text;
 
 public class ClueDetailsParentPanel extends PluginPanel
 {
-	private final IconTextField searchBar = new IconTextField();
 	JPanel searchCluesPanel = new JPanel();
-	JPanel clueListPanel = new JPanel();
-	private final JComboBox<Enum> tierFilterDropdown, regionFilterDropdown, orderDropdown;
+	private JComboBox<Enum> tierFilterDropdown, regionFilterDropdown, orderDropdown;
 
 	public static final int DROPDOWN_HEIGHT = 26;
-	private final ArrayList<ClueSelectLabel> clueSelectLabels = new ArrayList<>();
+
+	private ClueTableModel clueTableModel;
+	private JTable clueTable;
+	@Getter
+	private int hoveredRow = -1;
+	private final IconTextField searchBar = new IconTextField();
+	private List<ListItem> allClues = new ArrayList<>();
 
 	private ConfigManager configManager;
 
@@ -73,7 +80,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private final ClueDetailsConfig config;
 
 	private final JScrollPane scrollableContainer;
-	private final FixedWidthPanel clueListWrapper = new FixedWidthPanel();
 
 	private final JPanel allDropdownSections = new JPanel();
 
@@ -110,19 +116,193 @@ public class ClueDetailsParentPanel extends PluginPanel
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 		setLayout(new BorderLayout());
 
+		setupTable();
+
 		/* Setup overview panel */
+		JPanel titlePanel = setupTitlePanel();
+
+		titlePanel.add(setupImportExportButtons(), BorderLayout.EAST);
+
+		setupSearchBar();
+
+		showMatchingClues("");
+
+		// Filters
+		setupFilters();
+
+		scrollableContainer = new JScrollPane(clueTable);
+		scrollableContainer.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+		JPanel introDetailsPanel = new JPanel();
+		introDetailsPanel.setLayout(new BorderLayout());
+		introDetailsPanel.add(titlePanel, BorderLayout.NORTH);
+		introDetailsPanel.add(searchCluesPanel, BorderLayout.CENTER);
+
+		add(introDetailsPanel, BorderLayout.NORTH);
+		add(scrollableContainer, BorderLayout.CENTER);
+
+		refresh();
+	}
+
+	private void setupTable()
+	{
+		clueTableModel = new ClueTableModel();
+		clueTable = new ClueJTable(clueTableModel);
+
+		clueTable.setDefaultRenderer(Object.class, new ClueTableCellRenderer(this, cluePreferenceManager, configManager));
+		clueTable.setDefaultEditor(Object.class, new ClueTableCellEditor(configManager, clueTable));
+
+		clueTable.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				int row = clueTable.rowAtPoint(e.getPoint());
+				int column = clueTable.columnAtPoint(e.getPoint());
+
+				if (row < 0 || column < 0) return;
+
+				ListItem item = (ListItem) clueTableModel.getValueAt(row, column);
+				if (item.isHeader()) return;
+
+				Clues clue = item.getClue();
+				if (!clickedOnTextBox(e, row)) return;
+
+				if (e.getButton() == MouseEvent.BUTTON1)
+				{
+					boolean currentState = cluePreferenceManager.getPreference(clue.getClueID());
+					boolean newState = !currentState;
+					cluePreferenceManager.savePreference(clue.getClueID(), newState);
+					clueTable.repaint();
+				}
+				else if (e.getButton() == MouseEvent.BUTTON3)
+				{
+					openPopup(e, row);
+				}
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				if (hoveredRow != -1)
+				{
+					int previousHoveredRow = hoveredRow;
+					hoveredRow = -1;
+					clueTable.repaint(clueTable.getCellRect(previousHoveredRow, 0, true));
+				}
+			}
+		});
+		clueTable.addMouseMotionListener(new MouseMotionAdapter()
+		{
+			@Override
+			public void mouseMoved(MouseEvent e)
+			{
+				int row = clueTable.rowAtPoint(e.getPoint());
+
+				if (row != hoveredRow)
+				{
+					int previousHoveredRow = hoveredRow;
+					hoveredRow = row;
+
+					if (previousHoveredRow != -1)
+					{
+						clueTable.repaint(clueTable.getCellRect(previousHoveredRow, 0, true));
+					}
+					if (hoveredRow != -1)
+					{
+						clueTable.repaint(clueTable.getCellRect(hoveredRow, 0, true));
+					}
+				}
+			}
+		});
+	}
+
+	private boolean clickedOnTextBox(MouseEvent e, int row)
+	{
+		Rectangle cellRect = clueTable.getCellRect(row, 0, false);
+
+		int cellX = e.getX() - cellRect.x;
+		int cellY = e.getY() - cellRect.y;
+
+		Insets cellInsets = new Insets(5, 5, 0, 5);
+
+		int textAreaX = cellInsets.left;
+		int textAreaY = cellInsets.top;
+		int textAreaWidth = cellRect.width - cellInsets.left - cellInsets.right;
+		int textAreaHeight = cellRect.height - cellInsets.top - cellInsets.bottom;
+
+		return cellX >= textAreaX && cellX <= textAreaX + textAreaWidth &&
+			cellY >= textAreaY && cellY <= textAreaY + textAreaHeight;
+	}
+
+	private void openPopup(MouseEvent e, int row)
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+
+		JMenuItem inputItem = new JMenuItem("Edit text for clue");
+		inputItem.addActionListener(event -> {
+			clueTableModel.setEditableRow(row);
+			clueTable.editCellAt(row, 0);
+			Component editorComponent = clueTable.getEditorComponent();
+			if (editorComponent != null)
+			{
+				editorComponent.requestFocusInWindow();
+			}
+		});
+
+		popupMenu.add(inputItem);
+		popupMenu.show(e.getComponent(), e.getX(), e.getY());
+	}
+
+	private JPanel setupTitlePanel()
+	{
 		JPanel titlePanel = new JPanel();
 		titlePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		titlePanel.setLayout(new BorderLayout());
 
-		JLabel title = new JLabel();
-		title.setText("Clue Details");
+		JTextArea title = JGenerator.makeJTextArea("Clue Details");
 		title.setForeground(Color.WHITE);
 		titlePanel.add(title, BorderLayout.WEST);
 
+		return titlePanel;
+	}
+	private void setupSearchBar()
+	{
+		/* Search bar */
+		searchBar.setIcon(IconTextField.Icon.SEARCH);
+		searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
+		searchBar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		searchBar.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);
+		searchBar.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+			public void insertUpdate(DocumentEvent e)
+			{
+				onSearchBarChanged();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e)
+			{
+				onSearchBarChanged();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e)
+			{
+				onSearchBarChanged();
+			}
+		});
+
+		searchCluesPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+		searchCluesPanel.setLayout(new BorderLayout(0, BORDER_OFFSET));
+		searchCluesPanel.add(searchBar, BorderLayout.CENTER);
+	}
+
+	private JPanel setupImportExportButtons()
+	{
 		// Import/Export Options
 		JPanel markerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 7, 3));
-		titlePanel.add(markerButtons, BorderLayout.EAST);
 
 		copyMarkers.setToolTipText("Export details to your clipboard");
 		copyMarkers.addMouseListener(new MouseAdapter()
@@ -171,46 +351,11 @@ public class ClueDetailsParentPanel extends PluginPanel
 		markerButtons.add(pasteMarkers);
 		markerButtons.add(copyMarkers);
 
-		// Options
-		final JPanel viewControls = new JPanel(new GridLayout(1, 3, 10, 0));
-		viewControls.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		return markerButtons;
+	}
 
-		/* Search bar */
-		searchBar.setIcon(IconTextField.Icon.SEARCH);
-		searchBar.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 30));
-		searchBar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		searchBar.setHoverBackgroundColor(ColorScheme.DARK_GRAY_HOVER_COLOR);
-		searchBar.getDocument().addDocumentListener(new DocumentListener()
-		{
-			@Override
-			public void insertUpdate(DocumentEvent e)
-			{
-				onSearchBarChanged();
-			}
-
-			@Override
-			public void removeUpdate(DocumentEvent e)
-			{
-				onSearchBarChanged();
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e)
-			{
-				onSearchBarChanged();
-			}
-		});
-
-		searchCluesPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-		searchCluesPanel.setLayout(new BorderLayout(0, BORDER_OFFSET));
-		searchCluesPanel.add(searchBar, BorderLayout.CENTER);
-
-		clueListPanel.setBorder(new EmptyBorder(8, 10, 0, 10));
-		clueListPanel.setLayout(new DynamicPaddedGridLayout(0, 1, 0, 5));
-		clueListPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		showMatchingClues("");
-
-		// Filters
+	private void setupFilters()
+	{
 		tierFilterDropdown = makeNewDropdown(ClueDetailsConfig.ClueTierFilter.displayFilters(), "filterListByTier");
 		JPanel filtersTierPanel = makeDropdownPanel(tierFilterDropdown, "Tier");
 		filtersTierPanel.setPreferredSize(new Dimension(PANEL_WIDTH, DROPDOWN_HEIGHT));
@@ -230,22 +375,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 		allDropdownSections.add(orderPanel);
 
 		searchCluesPanel.add(allDropdownSections, BorderLayout.NORTH);
-
-		clueListWrapper.setLayout(new BorderLayout());
-		clueListWrapper.add(clueListPanel, BorderLayout.NORTH);
-
-		scrollableContainer = new JScrollPane(clueListWrapper);
-		scrollableContainer.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-		JPanel introDetailsPanel = new JPanel();
-		introDetailsPanel.setLayout(new BorderLayout());
-		introDetailsPanel.add(titlePanel, BorderLayout.NORTH);
-		introDetailsPanel.add(searchCluesPanel, BorderLayout.CENTER);
-
-		add(introDetailsPanel, BorderLayout.NORTH);
-		add(scrollableContainer, BorderLayout.CENTER);
-
-		refresh();
 	}
 
 	private JComboBox<Enum> makeNewDropdown(Enum[] values, String key)
@@ -270,7 +399,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private JPanel makeDropdownPanel(JComboBox dropdown, String name)
 	{
 		// Filters
-		JLabel filterName = new JLabel(name);
+		JTextArea filterName = JGenerator.makeJTextArea(name);
 		filterName.setForeground(Color.WHITE);
 
 		JPanel filtersPanel = new JPanel();
@@ -283,78 +412,104 @@ public class ClueDetailsParentPanel extends PluginPanel
 		return filtersPanel;
 	}
 
-	private void showMatchingClues(String text)
+	private void showMatchingClues(String searchText)
 	{
-		if (text.isEmpty())
+		final String[] searchTerms = searchText.toLowerCase().split("\\s+");
+
+		List<ListItem> filteredItems = new ArrayList<>();
+		for (ListItem item : allClues)
 		{
-			clueSelectLabels.forEach(clueListPanel::add);
-			return;
+			if (item.isHeader())
+			{
+				filteredItems.add(item);
+			}
+			else
+			{
+				Clues clue = item.getClue();
+				List<String> keywords = new ArrayList<>();
+				keywords.add(clue.getDisplayText(configManager).toLowerCase());
+				keywords.add(Integer.toString(clue.getClueID()));
+
+				boolean matches = Arrays.stream(searchTerms)
+					.allMatch(term -> keywords.stream().anyMatch(keyword -> keyword.contains(term)));
+
+				if (matches)
+				{
+					filteredItems.add(item);
+				}
+			}
 		}
 
-		final String[] searchTerms = text.toLowerCase().split(" ");
-
-		clueSelectLabels.forEach(listItem ->
-		{
-			List<String> keywords = new ArrayList<>(listItem.getKeywords());
-			if (listItem.clue != null)
-			{
-				keywords.add(Integer.toString(listItem.clue.getClueID()));
-			}
-			if (Text.matchesSearchTerms(Arrays.asList(searchTerms), keywords))
-			{
-				clueListPanel.add(listItem);
-			}
-		});
+		updateClueList(filteredItems);
 	}
 
 	private void onSearchBarChanged()
 	{
 		final String text = searchBar.getText();
-
-		clueSelectLabels.forEach(clueListPanel::remove);
 		showMatchingClues(text);
-
-		revalidate();
 	}
 
 	public void refresh()
 	{
-		clueSelectLabels.forEach(clueListPanel::remove);
-		clueSelectLabels.clear();
-
-		tierFilterDropdown.setSelectedItem(config.filterListByTier());
-		regionFilterDropdown.setSelectedItem(config.filterListByRegion());
-		orderDropdown.setSelectedItem(config.orderListBy());
-
-		List<Clues> filteredClues = Clues.CLUES.stream()
-			.filter(config.filterListByTier())
-			.filter(config.filterListByRegion())
-			.filter(this::filterUnmarkedClues)
-			.sorted(config.orderListBy())
-			.collect(Collectors.toList());
-
-		ClueFilter[] sections = config.orderListBy().getSections();
-
-		for (ClueFilter section : sections)
+		SwingWorker<List<ListItem>, Void> worker = new SwingWorker<>()
 		{
-			List<Clues> filterList = filteredClues.stream()
-				.filter(section)
-				.collect(Collectors.toList());
-
-			if (!filterList.isEmpty())
+			@Override
+			protected List<ListItem> doInBackground()
 			{
-				clueSelectLabels.add(new ClueSelectLabel(section.getDisplayName()));
+				List<Clues> filteredClues = Clues.CLUES.stream()
+					.filter(config.filterListByTier())
+					.filter(config.filterListByRegion())
+					.filter(ClueDetailsParentPanel.this::filterUnmarkedClues)
+					.sorted(config.orderListBy())
+					.collect(Collectors.toList());
+
+				ClueFilter[] sections = config.orderListBy().getSections();
+
+				List<ListItem> items = new ArrayList<>();
+
+				for (ClueFilter section : sections)
+				{
+					List<Clues> filterList = filteredClues.stream()
+						.filter(section)
+						.collect(Collectors.toList());
+
+					if (!filterList.isEmpty())
+					{
+						items.add(new ListItem(section.getDisplayName()));
+						for (Clues clue : filterList)
+						{
+							items.add(new ListItem(clue));
+						}
+					}
+				}
+				return items;
 			}
-			for (Clues clue : filterList)
+
+			@Override
+			protected void done()
 			{
-				clueSelectLabels.add(new ClueSelectLabel(cluePreferenceManager, clue, chatboxPanelManager, configManager));
+				try
+				{
+					List<ListItem> items = get();
+					allClues = items;
+					String searchText = searchBar.getText() != null ? searchBar.getText() : "";
+					showMatchingClues(searchText);
+				}
+				catch (InterruptedException | ExecutionException e)
+				{
+					e.printStackTrace();
+				}
 			}
-		}
+		};
+		worker.execute();
+	}
 
-		showMatchingClues(searchBar.getText() != null ? searchBar.getText() : "");
-
-		repaint();
-		revalidate();
+	private void updateClueList(List<ListItem> items)
+	{
+		SwingUtilities.invokeLater(() ->
+		{
+			clueTableModel.setItems(items);
+		});
 	}
 
 	public boolean filterUnmarkedClues(Clues clue)
