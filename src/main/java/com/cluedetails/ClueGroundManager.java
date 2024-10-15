@@ -148,7 +148,7 @@ public class ClueGroundManager
 
     private boolean isTrackedClue(int itemId)
     {
-        return itemId == ItemID.DAEYALT_ESSENCE || ItemID.CLUE_SCROLL_MASTER == itemId || ItemID.CLUE_SCROLL_BEGINNER == itemId ||
+        return ItemID.CLUE_SCROLL_MASTER == itemId || ItemID.CLUE_SCROLL_BEGINNER == itemId ||
                 ItemID.TORN_CLUE_SCROLL_PART_1 == itemId || ItemID.TORN_CLUE_SCROLL_PART_2 == itemId ||
                 ItemID.TORN_CLUE_SCROLL_PART_3 == itemId;
     }
