@@ -49,14 +49,14 @@ public class ClueGroundManager
 	private final List<ClueInstance> despawnedClueQueueForInventoryCheck = new ArrayList<>();
 	private final Map<ClueInstance, Integer> pendingCluesToDespawn = new HashMap<>();
 	private final int MAX_DESPAWN_TIMER = 6100;
+	private Zone lastZone;
+	private Zone currentZone;
 
     public ClueGroundManager(Client client, ConfigManager configManager)
     {
         this.client = client;
 		this.clueGroundSaveDataManager = new ClueGroundSaveDataManager(configManager);
 		clueGroundSaveDataManager.loadStateFromConfig(client);
-
-	    Comparator<ClueInstance> comparator = Comparator.comparingInt(clue -> clue.getDespawnTick(client.getTickCount()));
     }
 
     public void onItemSpawned(ItemSpawned event)
@@ -66,7 +66,6 @@ public class ClueGroundManager
 	    // Main issue is we don't want to create a new groundClue if it was dropped, as we will then also be doing another new one after.
 	    TileItem item = event.getItem();
 	    if (!isTrackedClue(item.getId())) return;
-
 		if (checkIfItemMatchesKnownItem(item, event.getTile().getWorldLocation())) return;
 	    if (checkIfItemMatchesDespawnedItem(item)) return;
 
@@ -86,7 +85,6 @@ public class ClueGroundManager
 	{
 		TileItem item = event.getItem();
 		if (!isTrackedClue(item.getId())) return;
-
 		WorldPoint location = event.getTile().getWorldLocation();
 		List<ClueInstance> cluesAtLocation = groundClues.get(location);
 
@@ -102,10 +100,7 @@ public class ClueGroundManager
 			optionalClue.ifPresent(this::removeClue);
 			return;
 		}
-
-		// If we've moved away, causing it to dissapear, then do nothing as it's not really gone
-		// Note this doesn't seem to happen, it seems to only count as a despawn in scenarios where a scene
-		// Load occurs with the item still in the new scene
+		
 		if (getTileAtWorldPoint(location) == null)
 		{
 			return;
@@ -114,6 +109,17 @@ public class ClueGroundManager
 		// If despawned on a tile still in the scene, AND hasn't timed out, we might have:
 		// 1. Picked up the clue
 		// 2. Done nothing, clue is still there just with a new ID
+		// We know it's 2 if we've gone from 5 zones distance to 4 zones distance
+		Zone clueZone = new Zone(location);
+		Zone currentZone = new Zone(client.getLocalPlayer().getWorldLocation());
+		int distFromLastZone = clueZone.minDistanceTo(lastZone);
+		int distFromCurrentZone = clueZone.minDistanceTo(currentZone);
+		if (distFromLastZone == 4 && distFromCurrentZone == 3)
+		{
+			return;
+		}
+
+		// Not gone over a zone to load, probably picked up
 		Optional<ClueInstance> optionalClue = cluesAtLocation.stream()
 			.filter((clue) -> clue.getTileItem() == item)
 			.findFirst();
@@ -190,6 +196,7 @@ public class ClueGroundManager
 
     public void onGameTick()
     {
+		currentZone = new Zone(client.getLocalPlayer().getWorldLocation());
 		processPendingGroundCluesOnGameTick();
 		processEmptyTiles();
 
@@ -199,13 +206,21 @@ public class ClueGroundManager
 	    }
 		itemHasSpawnedOnTileThisTick.clear();
 		removeDespawnedClues();
+
+	    lastZone = currentZone;
     }
 
 	private void processEmptyTiles()
 	{
 		groundClues.entrySet().removeIf(entry -> {
 			Tile tile = getTileAtWorldPoint(entry.getKey());
-			return tile != null && (tile.getGroundItems() == null || tile.getGroundItems().isEmpty());
+			if (tile == null) return false;
+
+			Zone clueZone = new Zone(tile.getWorldLocation());
+			// Item won't have potentially spawned if too far, so don't remove
+			int zonesDistance = clueZone.minDistanceTo(currentZone);
+			if (zonesDistance >= 4) return false;
+			return tile.getGroundItems() == null || tile.getGroundItems().isEmpty();
 		});
 	}
 
