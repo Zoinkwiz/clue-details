@@ -83,16 +83,23 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private final JPanel allDropdownSections = new JPanel();
 
+	private static final ImageIcon RESET_ICON;
+	private static final ImageIcon RESET_HOVER_ICON;
 	private static final ImageIcon COPY_ICON;
 	private static final ImageIcon COPY_HOVER_ICON;
 	private static final ImageIcon PASTE_ICON;
 	private static final ImageIcon PASTE_HOVER_ICON;
 
+	private final JLabel resetMarkers = new JLabel(RESET_ICON);
 	private final JLabel copyMarkers = new JLabel(COPY_ICON);
 	private final JLabel pasteMarkers = new JLabel(PASTE_ICON);
 
 	static
 	{
+		final BufferedImage resetIcon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/reset_icon.png");
+		RESET_ICON = new ImageIcon(resetIcon);
+		RESET_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(resetIcon, 0.53f));
+
 		final BufferedImage copyIcon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/copy_icon.png");
 		COPY_ICON = new ImageIcon(copyIcon);
 		COPY_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(copyIcon, 0.53f));
@@ -254,6 +261,17 @@ public class ClueDetailsParentPanel extends PluginPanel
 		popupMenu.show(e.getComponent(), e.getX(), e.getY());
 	}
 
+	private void openResetPopup(MouseEvent e)
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+
+		JMenuItem inputItem = new JMenuItem("Reset customised clue details");
+		inputItem.addActionListener(event -> clueDetailsSharingManager.resetClueDetails());
+
+		popupMenu.add(inputItem);
+		popupMenu.show(e.getComponent(), e.getX(), e.getY());
+	}
+
 	private JPanel setupTitlePanel()
 	{
 		JPanel titlePanel = new JPanel();
@@ -304,6 +322,28 @@ public class ClueDetailsParentPanel extends PluginPanel
 		// Import/Export Options
 		JPanel markerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 7, 3));
 
+		resetMarkers.setToolTipText("Reset customised details");
+		resetMarkers.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				openResetPopup(e);
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				resetMarkers.setIcon(RESET_HOVER_ICON);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				resetMarkers.setIcon(RESET_ICON);
+			}
+		});
+
 		copyMarkers.setToolTipText("Export details to your clipboard");
 		copyMarkers.addMouseListener(new MouseAdapter()
 		{
@@ -348,6 +388,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		});
 
+		markerButtons.add(resetMarkers);
 		markerButtons.add(pasteMarkers);
 		markerButtons.add(copyMarkers);
 
