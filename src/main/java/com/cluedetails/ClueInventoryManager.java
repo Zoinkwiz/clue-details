@@ -121,7 +121,7 @@ public class ClueInventoryManager
 		// Compare previous and current to find removed clues
 		for (Integer itemId : previousTrackedCluesInInventory.keySet())
 		{
-			if (!trackedCluesInInventory.containsKey(itemId) && trackedCluesInInventory.get(itemId) != previousTrackedCluesInInventory.get(itemId))
+			if (!trackedCluesInInventory.containsKey(itemId) || trackedCluesInInventory.get(itemId) != previousTrackedCluesInInventory.get(itemId))
 			{
 				// Clue was removed from inventory (possibly dropped)
 				ClueInstance removedClue = previousTrackedCluesInInventory.get(itemId);
