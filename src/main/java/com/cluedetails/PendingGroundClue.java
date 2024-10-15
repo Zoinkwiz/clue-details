@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Zoinkwiz <https://github.com/Zoinkwiz>
+ * Copyright (c) 2024, Zoinkwiz <https://www.github.com/Zoinkwiz>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,19 +22,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.cluedetails.filters;
+package com.cluedetails;
 
-public enum ClueTier
+import lombok.Getter;
+import net.runelite.api.TileItem;
+import net.runelite.api.coords.WorldPoint;
+
+@Getter
+public class PendingGroundClue
 {
-	SHOW_ALL,
-	BEGINNER,
-	EASY,
-	MEDIUM,
-	MEDIUM_CHALLENGE,
-	MEDIUM_KEY,
-	HARD,
-	HARD_CHALLENGE,
-	ELITE,
-	ELITE_CHALLENGE,
-	MASTER
+    private final TileItem item;
+    private final WorldPoint location;
+	private final int spawnTick;
+
+    public PendingGroundClue(TileItem item, WorldPoint location, int spawnTick)
+	{
+		this.item = item;
+		this.location = location;
+		this.spawnTick = spawnTick;
+	}
 }

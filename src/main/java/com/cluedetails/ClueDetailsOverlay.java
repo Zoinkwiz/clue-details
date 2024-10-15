@@ -27,18 +27,18 @@ package com.cluedetails;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
+
+import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Menu;
@@ -50,6 +50,7 @@ import net.runelite.api.Point;
 import net.runelite.api.Tile;
 import net.runelite.api.TileItem;
 import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
@@ -60,6 +61,7 @@ import net.runelite.client.ui.JagexColors;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.OverlayUtil;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
@@ -75,6 +77,9 @@ public class ClueDetailsOverlay extends OverlayPanel
 	private final ConfigManager configManager;
 
 	private final Notifier notifier;
+	private ClueGroundManager clueGroundManager;
+	@Setter
+	private boolean developerMode;
 
 	protected Multimap<Tile, Integer> tileHighlights = ArrayListMultimap.create();
 
@@ -103,6 +108,12 @@ public class ClueDetailsOverlay extends OverlayPanel
 		}
 	}
 
+	public void startUp(ClueGroundManager clueGroundManager, boolean developerMode)
+	{
+		this.clueGroundManager = clueGroundManager;
+		this.developerMode = developerMode;
+	}
+
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
@@ -118,9 +129,52 @@ public class ClueDetailsOverlay extends OverlayPanel
 			}
 		}
 
+		if (developerMode)
+		{
+			int OFFSET = 50;
+			Set<WorldPoint> wps = clueGroundManager.getGroundClues().keySet();
+			for (WorldPoint wp : wps)
+			{
+				int a = 1;
+				int STRING_GAP = 15;
+				List<ClueInstance> cluesOnTile = clueGroundManager.getGroundClues().get(wp);
+				LocalPoint lp = LocalPoint.fromWorld(client.getTopLevelWorldView(), wp);
+				if (lp == null) continue;
+
+				drawText(graphics, lp, "CLUES ON TILE", OFFSET);
+				for (ClueInstance clue : cluesOnTile)
+				{
+					if (clue.getClueIds().isEmpty())
+					{
+						drawText(graphics, lp, "UNKNOWN", OFFSET + (a * STRING_GAP));
+					}
+					else
+					{
+						StringBuilder text = new StringBuilder();
+						for (Integer clueId : clue.getClueIds())
+						{
+							BeginnerMasterClues clueDetails = BeginnerMasterClues.getById(clueId);
+							text.append(clueDetails.getTag()).append(": ");
+						}
+						drawText(graphics, lp, text.toString(), OFFSET + (a * STRING_GAP));
+					}
+					a++;
+				}
+			}
+		}
+
 		tileHighlights.keySet().forEach(tile -> checkAllTilesForHighlighting(tile, tileHighlights.get(tile)));
 
 		return super.render(graphics);
+	}
+
+	private void drawText(Graphics2D graphics, LocalPoint lp, String text, int offset)
+	{
+		Point canvasTextLocation = Perspective.getCanvasTextLocation(client, graphics, lp, text.toString(), offset);
+		if (canvasTextLocation != null)
+		{
+			OverlayUtil.renderTextLocation(graphics, canvasTextLocation, text.toString(), Color.CYAN);
+		}
 	}
 
 	private void showHoveredItem()
@@ -285,13 +339,13 @@ public class ClueDetailsOverlay extends OverlayPanel
 		{
 			tileHighlights.clear();
 		}
-    
+
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
 			addItemTiles();
 		}
 	}
-  
+
 	@Subscribe
 	public void onItemSpawned(ItemSpawned itemSpawned)
 	{

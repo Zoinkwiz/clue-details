@@ -22,19 +22,36 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.cluedetails.filters;
+package com.cluedetails;
 
-public enum ClueTier
+import java.util.List;
+import lombok.Data;
+import net.runelite.api.coords.WorldPoint;
+
+@Data
+public class ClueInstanceData
 {
-	SHOW_ALL,
-	BEGINNER,
-	EASY,
-	MEDIUM,
-	MEDIUM_CHALLENGE,
-	MEDIUM_KEY,
-	HARD,
-	HARD_CHALLENGE,
-	ELITE,
-	ELITE_CHALLENGE,
-	MASTER
+    private List<Integer> clueIds;
+    private int itemId;
+    private int despawnTick;
+    private int x;
+    private int y;
+    private int plane;
+
+    public ClueInstanceData(ClueInstance clue, int currentTick)
+    {
+        this.clueIds = clue.getClueIds();
+        this.itemId = clue.getItemId();
+        this.despawnTick = clue.getTicksToDespawnConsideringTileItem(currentTick);
+		if (clue.getLocation() == null) return;
+
+        this.x = clue.getLocation().getX();
+        this.y = clue.getLocation().getY();
+        this.plane = clue.getLocation().getPlane();
+    }
+
+    public WorldPoint getLocation()
+    {
+        return new WorldPoint(x, y, plane);
+    }
 }
