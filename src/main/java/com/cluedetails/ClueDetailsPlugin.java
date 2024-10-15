@@ -27,8 +27,6 @@ package com.cluedetails;
 import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.Collection;
 import javax.inject.Inject;
 import javax.inject.Named;
 import lombok.Getter;
@@ -205,30 +203,6 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
-		final Collection<Integer> URI_IDS = Arrays.asList(
-			7311,
-			8638
-		);
-
-		if (event.getGroupId() == InterfaceID.DIALOG_NPC)
-		{
-			Widget npcChatText = client.getWidget(WidgetInfo.DIALOG_NPC_TEXT);
-			Widget npcChatHead = client.getWidget(WidgetInfo.DIALOG_NPC_HEAD_MODEL);
-			clientThread.invokeLater(() ->
-			{
-				if (npcChatText == null || npcChatHead == null)
-				{
-					return;
-				}
-				if (URI_IDS.contains(npcChatHead.getModelId())
-					&& !npcChatText.getText().contains("I do not believe we have any business, Comrade."))
-				{
-					// TODO: Beginner/Master clue reset
-					System.out.println("Beginner/Master Uri Reset");
-				}
-			});
-		}
-
 		if (event.getGroupId() >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
 			&& event.getGroupId() <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER)
 		{
