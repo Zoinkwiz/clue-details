@@ -154,7 +154,7 @@ public class ClueInventoryManager
 		{
 			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
 			// Check that at least one part of the clue text matches the clue tier we're looking at
-			// TODO: Produces NullPointerException when trying to update incorrect text
+			if (clueInstance == null) continue;
 			Clues clueInfo = Clues.forItemId(clueIds.get(0));
 			if (clueInfo == null) continue;
 			if (!Objects.equals(clueInfo.getItemID(), itemID)) continue;
@@ -289,11 +289,15 @@ public class ClueInventoryManager
 
 		if (isNewBeginnerClue(chatDialogClueItemWidget) || isUriBeginnerClue(headModelWidget))
 		{
-			trackedCluesInInventory.put(ItemID.CLUE_SCROLL_BEGINNER, null);
+			ClueInstance clue = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
+			if (clue == null) return;
+			clue.setClueIds(List.of());
 		}
 		else if (isNewMasterClue(chatDialogClueItemWidget) || isUriMasterClue(headModelWidget))
 		{
-			trackedCluesInInventory.put(ItemID.CLUE_SCROLL_MASTER, null);
+			ClueInstance clue =  trackedCluesInInventory.get(ItemID.CLUE_SCROLL_MASTER);
+			if (clue == null) return;
+			clue.setClueIds(List.of());
 		}
 	}
 
