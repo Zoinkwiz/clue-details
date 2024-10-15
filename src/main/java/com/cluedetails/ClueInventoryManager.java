@@ -88,22 +88,24 @@ public class ClueInventoryManager
 			if (item == null || !TRACKED_CLUE_IDS.contains(item.getId())) continue;
 			int itemId = item.getId();
 
-			// If clue is already in previous, keep the same ClueInstance
-			ClueInstance clueInstance = previousTrackedCluesInInventory.get(itemId);
+			ClueInstance clueInstance = null;
+			// If we have a clue we've picked up this tick, we've probably dropped and picked up a clue same tick
+			for (ClueInstance clueFromFloor : clueGroundManager.getDespawnedClueQueueForInventoryCheck())
+			{
+				if (clueFromFloor.getItemId() == item.getId())
+				{
+					clueInstance = new ClueInstance(clueFromFloor.getClueIds(), itemId);
+					break;
+				}
+			}
 			if (clueInstance != null)
 			{
 				trackedCluesInInventory.put(itemId, clueInstance);
 				continue;
 			}
 
-			// Wasn't in inventory. Now see if it was an item we picked up we know about
-			for (ClueInstance clueFromFloor : clueGroundManager.getDespawnedClueQueueForInventoryCheck())
-			{
-				if (clueFromFloor.getItemId() == item.getId())
-				{
-					clueInstance = new ClueInstance(clueFromFloor.getClueIds(), itemId);
-				}
-			}
+			// If clue is already in previous, keep the same ClueInstance
+			clueInstance = previousTrackedCluesInInventory.get(itemId);
 			if (clueInstance != null)
 			{
 				trackedCluesInInventory.put(itemId, clueInstance);
@@ -119,7 +121,7 @@ public class ClueInventoryManager
 		// Compare previous and current to find removed clues
 		for (Integer itemId : previousTrackedCluesInInventory.keySet())
 		{
-			if (!trackedCluesInInventory.containsKey(itemId))
+			if (!trackedCluesInInventory.containsKey(itemId) && trackedCluesInInventory.get(itemId) != previousTrackedCluesInInventory.get(itemId))
 			{
 				// Clue was removed from inventory (possibly dropped)
 				ClueInstance removedClue = previousTrackedCluesInInventory.get(itemId);
