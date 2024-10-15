@@ -47,7 +47,6 @@ public class ClueGroundManager
 
 	@Getter
 	private final List<ClueInstance> despawnedClueQueueForInventoryCheck = new ArrayList<>();
-	private final Map<ClueInstance, Integer> pendingCluesToDespawn = new HashMap<>();
 	private final int MAX_DESPAWN_TIMER = 6100;
 	private Zone lastZone;
 	private Zone currentZone;
@@ -67,7 +66,6 @@ public class ClueGroundManager
 	    TileItem item = event.getItem();
 	    if (!isTrackedClue(item.getId())) return;
 		if (checkIfItemMatchesKnownItem(item, event.getTile().getWorldLocation())) return;
-	    if (checkIfItemMatchesDespawnedItem(item)) return;
 
 		// New despawn timer, probably been dropped. Track to see what it was.
 	    if (item.getDespawnTime() - client.getTickCount() >= MAX_DESPAWN_TIMER - 1)
@@ -100,7 +98,7 @@ public class ClueGroundManager
 			optionalClue.ifPresent(this::removeClue);
 			return;
 		}
-		
+
 		if (getTileAtWorldPoint(location) == null)
 		{
 			return;
@@ -124,7 +122,6 @@ public class ClueGroundManager
 			.filter((clue) -> clue.getTileItem() == item)
 			.findFirst();
 		optionalClue.ifPresent(despawnedClueQueueForInventoryCheck::add);
-		optionalClue.ifPresent((clue) -> pendingCluesToDespawn.put(clue, client.getTickCount()));
 
 		// Remove the clue with matching tileItem
 		cluesAtLocation.removeIf(clue -> clue.getTileItem() == item);
@@ -168,26 +165,6 @@ public class ClueGroundManager
 			if (Math.abs(tileItem.getDespawnTime() - clueInstance.getDespawnTick(currentTick)) <= 1)
 			{
 				clueInstance.setTileItem(tileItem);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean checkIfItemMatchesDespawnedItem(TileItem tileItem)
-	{
-		Iterator<ClueInstance> clueInstanceIterator = pendingCluesToDespawn.keySet().iterator();
-
-		while (clueInstanceIterator.hasNext())
-		{
-			ClueInstance despawnedClueInstance = clueInstanceIterator.next();
-			int currentTick = client.getTickCount();
-			// For some reason this is always off by 1? IDK, but need to allow for it
-			if (Math.abs(tileItem.getDespawnTime() - despawnedClueInstance.getDespawnTick(currentTick)) <= 1)
-			{
-				despawnedClueInstance.setTileItem(tileItem);
-				addClue(despawnedClueInstance);
-				clueInstanceIterator.remove();
 				return true;
 			}
 		}
@@ -281,9 +258,6 @@ public class ClueGroundManager
 			}
 			return false;
 		});
-
-		pendingCluesToDespawn.entrySet().removeIf(pendingClueToRemove ->
-			pendingClueToRemove.getValue() + 2 < client.getTickCount());
 	}
 
 	private void removeDespawnedClues()
