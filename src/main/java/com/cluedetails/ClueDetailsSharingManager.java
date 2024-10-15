@@ -72,6 +72,15 @@ public class ClueDetailsSharingManager
 		this.configManager = configManager;
 	}
 
+	public void resetClueDetails()
+	{
+		for (Clues clue : Clues.CLUES)
+		{
+			int id = clue.getClueID();
+			configManager.unsetConfiguration("clue-details-text", String.valueOf(id));
+		}
+	}
+
 	public void exportClueDetails()
 	{
 		List<ClueIdToText> clueIdToTextList = new ArrayList<>();
