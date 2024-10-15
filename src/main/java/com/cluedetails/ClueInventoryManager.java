@@ -35,6 +35,7 @@ import net.runelite.api.ItemID;
 import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.NpcID;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
@@ -283,13 +284,40 @@ public class ClueInventoryManager
 	{
 		// Reset clue when receiving a new beginner or master clue
 		// These clues use a single item ID, so we cannot detect step changes based on the item ID changing
-		final Widget chatDialogClueItem = client.getWidget(ComponentID.DIALOG_SPRITE_SPRITE);
-		if (chatDialogClueItem != null
-			&& (chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_BEGINNER
-			|| chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_MASTER))
+		final Widget headModelWidget = client.getWidget(ComponentID.DIALOG_NPC_HEAD_MODEL);
+		final Widget chatDialogClueItemWidget = client.getWidget(ComponentID.DIALOG_SPRITE_SPRITE);
+
+		if (isNewBeginnerClue(chatDialogClueItemWidget) || isUriBeginnerClue(headModelWidget))
 		{
-			// TODO: Beginner/Master clue reset
-			System.out.println("Beginner/Master Step Reset");
+			trackedCluesInInventory.put(ItemID.CLUE_SCROLL_BEGINNER, null);
 		}
+		else if (isNewMasterClue(chatDialogClueItemWidget) || isUriMasterClue(headModelWidget))
+		{
+			trackedCluesInInventory.put(ItemID.CLUE_SCROLL_MASTER, null);
+		}
+	}
+
+	private boolean isUriMasterClue(Widget headModel)
+	{
+		if (headModel == null) return false;
+		return headModel.getModelId() == NpcID.URI_8638;
+	}
+
+	private boolean isUriBeginnerClue(Widget headModel)
+	{
+		if (headModel == null) return false;
+		return headModel.getModelId() == NpcID.URI_7311;
+	}
+
+	private boolean isNewBeginnerClue(Widget chatDialogClueItem)
+	{
+		if (chatDialogClueItem == null) return false;
+		return chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_BEGINNER;
+	}
+
+	private boolean isNewMasterClue(Widget chatDialogClueItem)
+	{
+		if (chatDialogClueItem == null) return false;
+		return chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_MASTER;
 	}
 }
