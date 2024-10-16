@@ -68,7 +68,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 			// If clue can't be found by Clue ID, check if it can be found by Clue text
 			else
 			{
-				if ((itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER)
+				if ((itemId == ItemID.DAEYALT_ESSENCE || itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER)
 					&& clueDetailsPlugin.getClueInventoryManager().hasTrackedClues())
 				{
 					ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueId(itemId);
