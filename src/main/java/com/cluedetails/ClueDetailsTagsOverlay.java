@@ -31,6 +31,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import net.runelite.api.ItemID;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.FontManager;
@@ -50,7 +51,6 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		this.config = config;
 		this.configManager = configManager;
 		showOnInventory();
-		showOnBank();
 	}
 
 	@Override
@@ -61,7 +61,9 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 			Clues clue = Clues.forItemId(itemId);
 			String itemTag = null;
 
-			if (clue != null)
+			if (clue != null
+				&& !(itemId >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
+					&& itemId <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER))
 			{
 				itemTag = clue.getDisplayText(configManager);
 			}
