@@ -149,9 +149,10 @@ public class ClueDetailsPlugin extends Plugin
 		cluePreferenceManager = new CluePreferenceManager(configManager);
 		clueGroundManager = new ClueGroundManager(client, configManager);
 		clueBankManager = new ClueBankManager(client, configManager);
-		infoOverlay.startUp(clueGroundManager, developerMode);
 		clueInventoryManager = new ClueInventoryManager(client, configManager, clueGroundManager, clueBankManager, chatboxPanelManager);
 		clueBankManager.startUp(clueInventoryManager);
+
+		infoOverlay.startUp(clueGroundManager, clueInventoryManager);
 		widgetOverlay.setClueInventoryManager(clueInventoryManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");

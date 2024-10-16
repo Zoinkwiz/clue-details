@@ -109,10 +109,5 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 					.build());
 			}
 		}
-
-		for (Integer integer : clueInventoryManager.getTrackedCluesInInventory())
-		{
-			clueInventoryManager.getTrackedCluesInInventory();
-		}
 	}
 }

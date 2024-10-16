@@ -146,7 +146,7 @@ public class ClueGroundManager
 		groundClues.get(clue.getLocation()).remove(clue);
 	}
 
-	private boolean isTrackedClue(int itemId)
+	public boolean isTrackedClue(int itemId)
 	{
 		return ItemID.CLUE_SCROLL_MASTER == itemId || ItemID.CLUE_SCROLL_BEGINNER == itemId ||
 			ItemID.TORN_CLUE_SCROLL_PART_1 == itemId || ItemID.TORN_CLUE_SCROLL_PART_2 == itemId ||
