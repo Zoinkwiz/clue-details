@@ -56,6 +56,7 @@ public class ClueInventoryManager
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
 
 	public static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
+		ItemID.DAEYALT_ESSENCE,
 		ItemID.CLUE_SCROLL_MASTER,
 		ItemID.CLUE_SCROLL_BEGINNER,
 		ItemID.TORN_CLUE_SCROLL_PART_1,
@@ -74,6 +75,7 @@ public class ClueInventoryManager
 
 	public void updateInventory(ItemContainer inventoryContainer)
 	{
+		System.out.println("INV CHANGED " + client.getTickCount());
 		// Copy current tracked clues to previous
 		previousTrackedCluesInInventory.clear();
 		previousTrackedCluesInInventory.putAll(trackedCluesInInventory);
@@ -116,6 +118,15 @@ public class ClueInventoryManager
 			trackedCluesInInventory.put(itemId, clueInstance);
 		}
 
+		if (trackedCluesInInventory.get(ItemID.DAEYALT_ESSENCE) == null)
+		{
+			System.out.println("NO ESSENCE IN INVENTORY");
+		}
+		if (trackedCluesInInventory.get(ItemID.DAEYALT_ESSENCE) == previousTrackedCluesInInventory.get(ItemID.DAEYALT_ESSENCE))
+		{
+			System.out.println("NOOOO");
+		}
+
 		clueGroundManager.getDespawnedClueQueueForInventoryCheck().clear();
 
 		// Compare previous and current to find removed clues
@@ -138,6 +149,8 @@ public class ClueInventoryManager
 	{
 		List<Integer> clueIds = new ArrayList<>();
 
+		ClueInstance daeyaltClue = new ClueInstance(List.of(Clues.CLUES.get((int) (Math.random() * 20)).getClueID()), ItemID.DAEYALT_ESSENCE);
+		trackedCluesInInventory.put(ItemID.DAEYALT_ESSENCE, daeyaltClue);
 		ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(clueText);
 		if (threeStepCrypticClue != null)
 		{

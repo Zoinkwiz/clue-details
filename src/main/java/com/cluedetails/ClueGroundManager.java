@@ -65,10 +65,10 @@ public class ClueGroundManager
 	    // Main issue is we don't want to create a new groundClue if it was dropped, as we will then also be doing another new one after.
 	    TileItem item = event.getItem();
 	    if (!isTrackedClue(item.getId())) return;
-		if (checkIfItemMatchesKnownItem(item, event.getTile().getWorldLocation())) return;
+		if (checkIfItemMatchesKnownItem(event.getTile(), item, event.getTile().getWorldLocation())) return;
 
 		// New despawn timer, probably been dropped. Track to see what it was.
-	    if (item.getDespawnTime() - client.getTickCount() >= MAX_DESPAWN_TIMER - 1)
+	    if (item.getDespawnTime() - client.getTickCount() >= MAX_DESPAWN_TIMER)
 	    {
 		    pendingGroundClues.add(new PendingGroundClue(item, event.getTile().getWorldLocation(), client.getTickCount()));
 	    }
@@ -153,7 +153,7 @@ public class ClueGroundManager
                 ItemID.TORN_CLUE_SCROLL_PART_3 == itemId;
     }
 
-	public boolean checkIfItemMatchesKnownItem(TileItem tileItem, WorldPoint tileWp)
+	public boolean checkIfItemMatchesKnownItem(Tile tile, TileItem tileItem, WorldPoint tileWp)
 	{
 		List<ClueInstance> knownItemsOnTile = groundClues.get(tileWp);
 		if (knownItemsOnTile == null) return false;
@@ -161,6 +161,8 @@ public class ClueGroundManager
 		for (ClueInstance clueInstance : knownItemsOnTile)
 		{
 			int currentTick = client.getTickCount();
+			if (getTrackedItemsAtTile(tile).contains(clueInstance.getTileItem())) continue;
+
 			// For some reason this is always off by 1? IDK, but need to allow for it
 			if (Math.abs(tileItem.getDespawnTime() - clueInstance.getDespawnTick(currentTick)) <= 1)
 			{
@@ -244,7 +246,7 @@ public class ClueGroundManager
 		pendingGroundClues.removeIf(pendingGroundClue ->
 		{
 			// Include unknown clues, so we can still use them for relative despawn considerations
-			if (pendingGroundClue.getSpawnTick() + 2 < client.getTickCount())
+			if (pendingGroundClue.getSpawnTick() < client.getTickCount())
 			{
 				ClueInstance groundClueInstance = new ClueInstance(
 					List.of(),
