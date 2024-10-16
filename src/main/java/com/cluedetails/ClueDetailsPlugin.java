@@ -152,6 +152,7 @@ public class ClueDetailsPlugin extends Plugin
 		infoOverlay.startUp(clueGroundManager, developerMode);
 		clueInventoryManager = new ClueInventoryManager(client, configManager, clueGroundManager, clueBankManager, chatboxPanelManager);
 		clueBankManager.startUp(clueInventoryManager);
+		widgetOverlay.setClueInventoryManager(clueInventoryManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 

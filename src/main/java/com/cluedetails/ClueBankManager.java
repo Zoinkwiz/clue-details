@@ -100,7 +100,7 @@ public class ClueBankManager
 		ClueInstance clueFromBank = cluesInBank.get(trackedClueId);
 		if (clueFromBank == null) return;
 
-		ClueInstance clue = clueInventoryManager.getTrackedClueByClueId(trackedClueId);
+		ClueInstance clue = clueInventoryManager.getTrackedClueByClueItemId(trackedClueId);
 		clue.setClueIds(clueFromBank.getClueIds());
 
 		cluesInBank.remove(trackedClueId);

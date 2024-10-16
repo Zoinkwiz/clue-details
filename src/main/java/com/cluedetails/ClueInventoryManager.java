@@ -190,7 +190,7 @@ public class ClueInventoryManager
 		return trackedCluesInInventory.keySet();
 	}
 
-	public ClueInstance getTrackedClueByClueId(Integer clueItemID)
+	public ClueInstance getTrackedClueByClueItemId(Integer clueItemID)
 	{
 		return trackedCluesInInventory.get(clueItemID);
 	}

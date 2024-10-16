@@ -45,6 +45,7 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 	private final Client client;
 	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
+	private ClueInventoryManager clueInventoryManager;
 
 	private static final Color TITLED_CONTENT_COLOR = new Color(190, 190, 190);
 
@@ -57,6 +58,11 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 		this.client = client;
 		this.config = config;
 		this.configManager = configManager;
+	}
+
+	public void setClueInventoryManager(ClueInventoryManager clueInventoryManager)
+	{
+		this.clueInventoryManager = clueInventoryManager;
 	}
 
 	@Override
@@ -79,15 +85,34 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 		{
 			Clues clue = Clues.forItemId(item.getId());
 			if (clue != null && !Arrays.asList(
-					ClueTier.MEDIUM_CHALLENGE,
-					ClueTier.HARD_CHALLENGE,
-					ClueTier.ELITE_CHALLENGE).contains(clue.getClueTier()))
+				ClueTier.MEDIUM_CHALLENGE,
+				ClueTier.HARD_CHALLENGE,
+				ClueTier.ELITE_CHALLENGE).contains(clue.getClueTier()))
 			{
 				panelComponent.getChildren().add(LineComponent.builder()
 					.left(clue.getDisplayText(configManager))
 					.leftColor(TITLED_CONTENT_COLOR)
 					.build());
 			}
+
+			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(item.getId());
+			if (clueInstance == null || clueInstance.getClueIds().isEmpty()) continue;
+
+			for (Integer clueId : clueInstance.getClueIds())
+			{
+				Clues cluePart = Clues.forItemId(clueId);
+				if (cluePart == null) continue;
+
+				panelComponent.getChildren().add(LineComponent.builder()
+					.left(cluePart.getDisplayText(configManager))
+					.leftColor(TITLED_CONTENT_COLOR)
+					.build());
+			}
+		}
+
+		for (Integer integer : clueInventoryManager.getTrackedCluesInInventory())
+		{
+			clueInventoryManager.getTrackedCluesInInventory();
 		}
 	}
 }
