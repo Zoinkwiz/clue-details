@@ -261,7 +261,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		// We want to keep track from soonest to despawn to most recently dropped
 		for (int i = menuEntries.length - 1; i >= 0; i--)
 		{
-			if(!isTakeClue(menuEntries[i]) || !clueGroundManager.isTrackedClue(menuEntries[i].getIdentifier())) continue;
+			if (!isTakeClue(menuEntries[i]) || !clueGroundManager.isTrackedClue(menuEntries[i].getIdentifier())) continue;
 			int x = menuEntries[i].getParam0() * SCENE_TO_LOCAL;
 			int y = menuEntries[i].getParam1() * SCENE_TO_LOCAL;
 			int wv = menuEntries[i].getWorldViewId();
@@ -340,9 +340,24 @@ public class ClueDetailsOverlay extends OverlayPanel
 		}
 
 		ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(scrollID);
-		if (clueInstance == null || clueInstance.getClueIds().isEmpty()) return null;
+		if (clueInstance != null && !clueInstance.getClueIds().isEmpty())
+		{
+			return clueInstance.getCombinedClueText(configManager);
+		}
 
-		return clueInstance.getCombinedClueText(configManager);
+		MenuEntry[] currentMenuEntries = {menuEntry};
+		Map<WorldPoint, List<MenuEntry>> entriesByTile = new HashMap<>();
+		if (Arrays.stream(currentMenuEntries).anyMatch(this::isTakeClue))
+		{
+			entriesByTile = getEntriesByTile(currentMenuEntries);
+		}
+
+		if (!entriesByTile.isEmpty())
+		{
+			return getTextForTrackedClue(menuEntry, entriesByTile);
+		}
+
+		return null;
 	}
 
 	@Subscribe
