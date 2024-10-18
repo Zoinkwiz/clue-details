@@ -28,11 +28,13 @@ import com.cluedetails.panels.ClueDetailsParentPanel;
 
 import java.util.*;
 import javax.inject.Singleton;
+import javax.swing.SwingUtilities;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import net.runelite.api.KeyCode;
+import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NpcID;
@@ -218,18 +220,20 @@ public class ClueInventoryManager
 
 		final int clueId;
 
+		// Mark Option
 		if (TRACKED_CLUE_IDS.contains(itemId))
 		{
 			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
 
-			// If isn't a master three step cryptic
+			// If isn't a master three-step cryptic
 			if (clueSelected.getClueIds().size() == 1)
 			{
 				clueId = clueSelected.getClueIds().get(0);
 			}
 			else
 			{
+				// Used in below TRACKED_CLUE_IDS check
 				clueId = itemId;
 			}
 		}
@@ -251,28 +255,69 @@ public class ClueInventoryManager
 		}
 		if (!isInventoryMenu) return;
 
-		client.getMenu().createMenuEntry(-1)
-			.setOption("Clue details")
-			.setTarget(entry.getTarget())
-			.setType(MenuAction.RUNELITE)
-			.onClick(e ->
+		// Clue Details Option
+		if (TRACKED_CLUE_IDS.contains(clueId))
+		{
+			ClueInstance clueSelected = trackedCluesInInventory.get(clueId);
+			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
+
+			MenuEntry parent = client.getMenu().createMenuEntry(-1)
+				.setOption("Clue details")
+				.setTarget(entry.getTarget())
+				.setType(MenuAction.RUNELITE);
+
+			Menu submenu = parent.createSubMenu();
+
+			// TODO: Doesn't update when torn parts obtained
+			for (int id : clueSelected.getClueIds())
 			{
-				Clues clue = Clues.forItemId(clueId);
+				Clues clue = Clues.forItemId(id);
 				if (clue == null)
 				{
-					System.out.println("Failed to find clue " + clueId);
+					System.out.println("Failed to find clue " + id);
 					return;
 				}
 
-				chatboxPanelManager.openTextInput("Enter new clue text:")
-					.value(clue.getDisplayText(configManager))
-					.onDone((newTag) ->
+				submenu.createMenuEntry(-1)
+					.setOption(clue.getClueDetail())
+					.setType(MenuAction.RUNELITE)
+					.onClick(e ->
+						SwingUtilities.invokeLater(() ->
+							chatboxPanelManager.openTextInput("Enter new clue text:")
+								.value(clue.getDisplayText(configManager))
+								.onDone((newTag) ->
+								{
+									configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
+									panel.refresh();
+								})
+								.build()));
+			}
+		}
+		else
+		{
+			client.getMenu().createMenuEntry(-1)
+				.setOption("Clue details")
+				.setTarget(entry.getTarget())
+				.setType(MenuAction.RUNELITE)
+				.onClick(e ->
+				{
+					Clues clue = Clues.forItemId(clueId);
+					if (clue == null)
 					{
-						configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
-						panel.refresh();
-					})
-					.build();
-			});
+						System.out.println("Failed to find clue " + clueId);
+						return;
+					}
+
+					chatboxPanelManager.openTextInput("Enter new clue text:")
+						.value(clue.getDisplayText(configManager))
+						.onDone((newTag) ->
+						{
+							configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
+							panel.refresh();
+						})
+						.build();
+				});
+		}
 	}
 
 	public boolean isExamineClue(MenuEntry entry)

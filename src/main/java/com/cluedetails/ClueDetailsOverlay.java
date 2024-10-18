@@ -201,6 +201,23 @@ public class ClueDetailsOverlay extends OverlayPanel
 					Pattern pattern = Pattern.compile(regex);
 					Matcher matcher = pattern.matcher(hoveredEntry.getTarget());
 
+					// Handle master three-step cryptic
+					String[] newTexts = newText.split("<br>");
+
+					// TODO: Text doesn't update after details changed
+					// TODO: Doesn't update when torn parts obtained
+					if (newTexts.length > 1)
+					{
+						Menu submenu = hoveredEntry.createSubMenu();
+
+						for (String text : newTexts)
+						{
+							submenu.createMenuEntry(-1)
+								.setOption(text)
+								.setType(MenuAction.RUNELITE);
+						}
+						newText = "Three-step (master)";
+					}
 					// Replace the matched text with the new text
 					String newTarget = matcher.replaceAll(newText);
 
