@@ -110,11 +110,14 @@ public class ClueGroundManager
 		// We know it's 2 if we've gone from 5 zones distance to 4 zones distance
 		Zone clueZone = new Zone(location);
 		Zone currentZone = new Zone(client.getLocalPlayer().getWorldLocation());
-		int distFromLastZone = clueZone.maxDistanceTo(lastZone);
-		int distFromCurrentZone = clueZone.maxDistanceTo(currentZone);
-		if (distFromLastZone == 4 && distFromCurrentZone == 3)
+		if (lastZone != null)
 		{
-			return;
+			int distFromLastZone = clueZone.maxDistanceTo(lastZone);
+			int distFromCurrentZone = clueZone.maxDistanceTo(currentZone);
+			if (distFromLastZone == 4 && distFromCurrentZone == 3)
+			{
+				return;
+			}
 		}
 
 		// Not gone over a zone to load, probably picked up
@@ -324,7 +327,7 @@ public class ClueGroundManager
 
 		// If only 1 of either but not both, less certainty as can't use diffs.
 		// Could assume things like last clue expired, probs let's just assume nothing
-		if (storedClues.size() == 1 || cluesOnTile.size() == 1)
+		if (storedClues.size() <= 1 || cluesOnTile.size() == 1)
 		{
 			List<ClueInstance> actualCluesOnTile = new ArrayList<>();
 			// Set tile's clues to just be unknown for all clues on tile
