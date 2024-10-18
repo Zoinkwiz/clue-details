@@ -34,28 +34,29 @@ import lombok.RequiredArgsConstructor;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_1;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_2;
 import static net.runelite.api.ItemID.TORN_CLUE_SCROLL_PART_3;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.util.Text;
 
 @Getter
 @RequiredArgsConstructor
 public class ThreeStepCrypticClue
 {
-	private final List<Map.Entry<BeginnerMasterClues, Boolean>> clueSteps;
+	private final List<Map.Entry<Clues, Boolean>> clueSteps;
 	private final String text;
 
 	public static ThreeStepCrypticClue forText(String text)
 	{
 		final String[] split = text.split("<br>");
-		final List<Map.Entry<BeginnerMasterClues, Boolean>> steps = new ArrayList<>(split.length);
+		final List<Map.Entry<Clues, Boolean>> steps = new ArrayList<>(split.length);
 
 		for (String part : split)
 		{
 			boolean isDone = part.contains("<str>");
 			final String rawText = Text.sanitizeMultilineText(part);
 
-			for (BeginnerMasterClues clue : BeginnerMasterClues.CLUES)
+			for (Clues clue : Clues.CLUES)
 			{
-				if (!rawText.equalsIgnoreCase(clue.getText()))
+				if (!rawText.equalsIgnoreCase(clue.getClueText()))
 				{
 					continue;
 				}
@@ -85,7 +86,7 @@ public class ThreeStepCrypticClue
 		// If we have the part then that step is done
 		if (trackedClues.contains(clueScrollPart))
 		{
-			final Map.Entry<BeginnerMasterClues, Boolean> entry = clueSteps.get(index);
+			final Map.Entry<Clues, Boolean> entry = clueSteps.get(index);
 
 			if (!entry.getValue())
 			{
@@ -94,15 +95,16 @@ public class ThreeStepCrypticClue
 		}
 	}
 
-	public String getDisplayText()
+	public String getDisplayText(ConfigManager configManager)
 	{
 		StringBuilder text = new StringBuilder();
 
-		for (final Map.Entry<BeginnerMasterClues, Boolean> e : clueSteps)
+		for (final Map.Entry<Clues, Boolean> e : clueSteps)
 		{
 			if (!e.getValue())
 			{
-				String tag = e.getKey().getTag();
+				Clues clue = e.getKey();
+				String tag = clue.getDisplayText(configManager);
 				text.append(tag).append("<br>");
 			}
 		}

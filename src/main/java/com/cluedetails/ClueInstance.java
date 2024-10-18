@@ -28,6 +28,7 @@ import java.util.List;
 import lombok.Data;
 import net.runelite.api.TileItem;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.client.config.ConfigManager;
 
 @Data
 public class ClueInstance
@@ -91,4 +92,26 @@ public class ClueInstance
     {
         this.clueIds = clueIds;
     }
+
+	public String getCombinedClueText(ConfigManager configManager)
+	{
+		StringBuilder returnText = new StringBuilder();
+		boolean isFirst = true;
+		for (Integer clueId : getClueIds())
+		{
+			Clues cluePart = Clues.forItemId(clueId);
+			if (cluePart == null) continue;
+			if (isFirst)
+			{
+				isFirst = false;
+			}
+			else
+			{
+				returnText.append("<br>");
+			}
+			returnText.append(cluePart.getDisplayText(configManager));
+		}
+		if (returnText.length() == 0) return "Unknown, read to track";
+		return returnText.toString();
+	}
 }

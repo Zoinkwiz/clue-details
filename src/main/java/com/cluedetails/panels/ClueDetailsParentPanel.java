@@ -97,7 +97,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	}
 
 	public ClueDetailsParentPanel(ConfigManager configManager, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
-								  ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager)
+								ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager)
 	{
 		super(false);
 
@@ -326,7 +326,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		regionFilterDropdown.setSelectedItem(config.filterListByRegion());
 		orderDropdown.setSelectedItem(config.orderListBy());
 
-		List<Clues> filteredClues = Arrays.stream(Clues.values())
+		List<Clues> filteredClues = Clues.CLUES.stream()
 			.filter(config.filterListByTier())
 			.filter(config.filterListByRegion())
 			.filter(this::filterUnmarkedClues)

@@ -31,6 +31,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import net.runelite.api.ItemID;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.FontManager;
@@ -50,7 +51,6 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		this.config = config;
 		this.configManager = configManager;
 		showOnInventory();
-		showOnBank();
 	}
 
 	@Override
@@ -58,10 +58,12 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 	{
 		if (config.showInventoryClueTags())
 		{
-			Clues clue = Clues.get(itemId);
+			Clues clue = Clues.forItemId(itemId);
 			String itemTag = null;
 
-			if (clue != null)
+			if (clue != null
+				&& !(itemId >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
+					&& itemId <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER))
 			{
 				itemTag = clue.getDisplayText(configManager);
 			}
@@ -71,7 +73,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 				if ((itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER)
 					&& clueDetailsPlugin.getClueInventoryManager().hasTrackedClues())
 				{
-					ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueId(itemId);
+					ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueItemId(itemId);
 					if (readClues == null)
 					{
 						return;
@@ -85,14 +87,14 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					StringBuilder tag = new StringBuilder();
 					for (Integer id : ids)
 					{
-						BeginnerMasterClues clueDetails = BeginnerMasterClues.getById(id);
+						Clues clueDetails = Clues.forItemId(id);
 						if (!isFirst)
 						{
 							text.append("<br>");
 							tag.append("<br>");
 						}
-						text.append(clueDetails == null ? "error" : clueDetails.getText());
-						tag.append(clueDetails == null ? "error" : clueDetails.getTag());
+						text.append(clueDetails == null ? "error" : clueDetails.getClueText());
+						tag.append(clueDetails == null ? "error" : clueDetails.getDisplayText(configManager));
 						isFirst = false;
 					}
 
@@ -101,7 +103,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					if (threeStepCrypticClue != null)
 					{
 						threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
-						itemTag = threeStepCrypticClue.getDisplayText();
+						itemTag = threeStepCrypticClue.getDisplayText(configManager);
 					}
 					else
 					{
