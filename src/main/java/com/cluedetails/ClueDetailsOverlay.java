@@ -205,8 +205,6 @@ public class ClueDetailsOverlay extends OverlayPanel
 					// Handle master three-step cryptic
 					String[] newTexts = newText.split("<br>");
 
-					// TODO: Text doesn't update after details changed
-					// TODO: Doesn't update when torn parts obtained
 					if (newTexts.length > 1)
 					{
 						Menu submenu = hoveredEntry.createSubMenu();

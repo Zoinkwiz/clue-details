@@ -58,7 +58,7 @@ public class ClueInventoryManager
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
 
 	public static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
-		ItemID.DAEYALT_ESSENCE,
+		ItemID.DAEYALT_ESSENCE, // TODO: Remove
 		ItemID.CLUE_SCROLL_MASTER,
 		ItemID.CLUE_SCROLL_BEGINNER,
 		ItemID.TORN_CLUE_SCROLL_PART_1,
@@ -263,7 +263,6 @@ public class ClueInventoryManager
 
 			Menu submenu = parent.createSubMenu();
 
-			// TODO: Doesn't update when torn parts obtained
 			for (int id : clueSelected.getClueIds())
 			{
 				Clues clue = Clues.forClueId(id);
@@ -274,7 +273,7 @@ public class ClueInventoryManager
 				}
 
 				submenu.createMenuEntry(-1)
-					.setOption(clue.getClueDetail())
+					.setOption(clue.getDetail(configManager))
 					.setType(MenuAction.RUNELITE)
 					.onClick(e ->
 						SwingUtilities.invokeLater(() ->
