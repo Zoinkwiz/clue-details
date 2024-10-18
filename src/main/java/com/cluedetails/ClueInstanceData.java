@@ -31,27 +31,27 @@ import net.runelite.api.coords.WorldPoint;
 @Data
 public class ClueInstanceData
 {
-    private List<Integer> clueIds;
-    private int itemId;
-    private int despawnTick;
-    private int x;
-    private int y;
-    private int plane;
+	private List<Integer> clueIds;
+	private int itemId;
+	private int despawnTick;
+	private int x;
+	private int y;
+	private int plane;
 
-    public ClueInstanceData(ClueInstance clue, int currentTick)
-    {
-        this.clueIds = clue.getClueIds();
-        this.itemId = clue.getItemId();
-        this.despawnTick = clue.getTicksToDespawnConsideringTileItem(currentTick);
+	public ClueInstanceData(ClueInstance clue, int currentTick)
+	{
+		this.clueIds = clue.getClueIds();
+		this.itemId = clue.getItemId();
+		this.despawnTick = clue.getTicksToDespawnConsideringTileItem(currentTick);
 		if (clue.getLocation() == null) return;
 
-        this.x = clue.getLocation().getX();
-        this.y = clue.getLocation().getY();
-        this.plane = clue.getLocation().getPlane();
-    }
+		this.x = clue.getLocation().getX();
+		this.y = clue.getLocation().getY();
+		this.plane = clue.getLocation().getPlane();
+	}
 
-    public WorldPoint getLocation()
-    {
-        return new WorldPoint(x, y, plane);
-    }
+	public WorldPoint getLocation()
+	{
+		return new WorldPoint(x, y, plane);
+	}
 }

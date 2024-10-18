@@ -31,11 +31,11 @@ import net.runelite.api.coords.WorldPoint;
 @Getter
 public class PendingGroundClue
 {
-    private final TileItem item;
-    private final WorldPoint location;
+	private final TileItem item;
+	private final WorldPoint location;
 	private final int spawnTick;
 
-    public PendingGroundClue(TileItem item, WorldPoint location, int spawnTick)
+	public PendingGroundClue(TileItem item, WorldPoint location, int spawnTick)
 	{
 		this.item = item;
 		this.location = location;
