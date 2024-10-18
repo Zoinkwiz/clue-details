@@ -152,8 +152,9 @@ public class ClueDetailsOverlay extends OverlayPanel
 		String clueText = getText(menuEntry);
 
 		if (clueText == null) return;
-
-		tooltipManager.add(new Tooltip(clueText));
+		// tooltip only supports </br> for multiline strings
+		String tooltipClueText = clueText.replaceAll("<br>", "</br>");
+		tooltipManager.add(new Tooltip(tooltipClueText));
 	}
 
 	private void showMenuItem()
