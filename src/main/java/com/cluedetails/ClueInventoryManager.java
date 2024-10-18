@@ -176,15 +176,10 @@ public class ClueInventoryManager
 		// Beginner Map Clues all use the same ItemID, but the WidgetID used to display them is unique
 		clueIds.add(widgetId);
 
-		// TODO: This should actually use the itemID expected for the clue text
-		for (ClueInstance clueInstance : trackedCluesInInventory.values())
-		{
-			if (clueInstance.getClueIds().isEmpty())
-			{
-				clueInstance.setClueIds(clueIds);
-				break;
-			}
-		}
+		// Assume can only be beginner for now
+		ClueInstance beginnerClueInInv = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
+		if (beginnerClueInInv == null) return;
+		beginnerClueInInv.setClueIds(clueIds);
 	}
 
 	public Set<Integer> getTrackedCluesInInventory()
