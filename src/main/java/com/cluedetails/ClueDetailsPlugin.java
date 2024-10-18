@@ -34,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
-import net.runelite.api.ItemContainer;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -150,9 +149,11 @@ public class ClueDetailsPlugin extends Plugin
 		cluePreferenceManager = new CluePreferenceManager(configManager);
 		clueGroundManager = new ClueGroundManager(client, configManager);
 		clueBankManager = new ClueBankManager(client, configManager);
-		infoOverlay.startUp(clueGroundManager, developerMode);
 		clueInventoryManager = new ClueInventoryManager(client, configManager, clueGroundManager, clueBankManager, chatboxPanelManager);
 		clueBankManager.startUp(clueInventoryManager);
+
+		infoOverlay.startUp(clueGroundManager, clueInventoryManager);
+		widgetOverlay.setClueInventoryManager(clueInventoryManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -251,6 +252,7 @@ public class ClueDetailsPlugin extends Plugin
 	public void onGameTick(GameTick event)
 	{
 		clueGroundManager.onGameTick();
+		clueInventoryManager.onGameTick();
 	}
 
 	@Subscribe

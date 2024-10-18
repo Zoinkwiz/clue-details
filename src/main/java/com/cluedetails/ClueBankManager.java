@@ -58,8 +58,6 @@ public class ClueBankManager
 
 	public void handleBankChange(ItemContainer bankContainer)
 	{
-		if (lastBankItems != null) System.out.println(lastBankItems.length);
-		System.out.println(bankContainer.size());
 		if (lastBankItems == null)
 		{
 			lastBankItems = bankContainer.getItems();
@@ -102,7 +100,7 @@ public class ClueBankManager
 		ClueInstance clueFromBank = cluesInBank.get(trackedClueId);
 		if (clueFromBank == null) return;
 
-		ClueInstance clue = clueInventoryManager.getTrackedClueByClueId(trackedClueId);
+		ClueInstance clue = clueInventoryManager.getTrackedClueByClueItemId(trackedClueId);
 		clue.setClueIds(clueFromBank.getClueIds());
 
 		cluesInBank.remove(trackedClueId);

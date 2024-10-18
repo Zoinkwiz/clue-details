@@ -31,6 +31,7 @@ import java.util.Arrays;
 import javax.inject.Inject;
 
 import com.cluedetails.filters.ClueTier;
+import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
@@ -45,6 +46,8 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 	private final Client client;
 	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
+	@Setter
+	private ClueInventoryManager clueInventoryManager;
 
 	private static final Color TITLED_CONTENT_COLOR = new Color(190, 190, 190);
 
@@ -77,14 +80,28 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 
 		for (Item item : inventory.getItems())
 		{
-			Clues clue = Clues.get(item.getId());
+			Clues clue = Clues.forItemId(item.getId());
 			if (clue != null && !Arrays.asList(
-					ClueTier.MEDIUM_CHALLENGE,
-					ClueTier.HARD_CHALLENGE,
-					ClueTier.ELITE_CHALLENGE).contains(clue.getClueTier()))
+				ClueTier.MEDIUM_CHALLENGE,
+				ClueTier.HARD_CHALLENGE,
+				ClueTier.ELITE_CHALLENGE).contains(clue.getClueTier()))
 			{
 				panelComponent.getChildren().add(LineComponent.builder()
-					.left(clue.getDisplayText(configManager))
+					.left(clue.getDetail(configManager))
+					.leftColor(TITLED_CONTENT_COLOR)
+					.build());
+			}
+
+			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(item.getId());
+			if (clueInstance == null || clueInstance.getClueIds().isEmpty()) continue;
+
+			for (Integer clueId : clueInstance.getClueIds())
+			{
+				Clues cluePart = Clues.forClueId(clueId);
+				if (cluePart == null) continue;
+
+				panelComponent.getChildren().add(LineComponent.builder()
+					.left(cluePart.getDetail(configManager))
 					.leftColor(TITLED_CONTENT_COLOR)
 					.build());
 			}

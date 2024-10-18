@@ -28,14 +28,18 @@ import com.cluedetails.panels.ClueDetailsParentPanel;
 
 import java.util.*;
 import javax.inject.Singleton;
+import javax.swing.SwingUtilities;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
 import net.runelite.api.KeyCode;
+import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.NpcID;
 import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
@@ -54,6 +58,7 @@ public class ClueInventoryManager
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
 
 	public static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
+		ItemID.DAEYALT_ESSENCE,
 		ItemID.CLUE_SCROLL_MASTER,
 		ItemID.CLUE_SCROLL_BEGINNER,
 		ItemID.TORN_CLUE_SCROLL_PART_1,
@@ -86,22 +91,24 @@ public class ClueInventoryManager
 			if (item == null || !TRACKED_CLUE_IDS.contains(item.getId())) continue;
 			int itemId = item.getId();
 
-			// If clue is already in previous, keep the same ClueInstance
-			ClueInstance clueInstance = previousTrackedCluesInInventory.get(itemId);
+			ClueInstance clueInstance = null;
+			// If we have a clue we've picked up this tick, we've probably dropped and picked up a clue same tick
+			for (ClueInstance clueFromFloor : clueGroundManager.getDespawnedClueQueueForInventoryCheck())
+			{
+				if (clueFromFloor.getItemId() == item.getId())
+				{
+					clueInstance = new ClueInstance(clueFromFloor.getClueIds(), itemId);
+					break;
+				}
+			}
 			if (clueInstance != null)
 			{
 				trackedCluesInInventory.put(itemId, clueInstance);
 				continue;
 			}
 
-			// Wasn't in inventory. Now see if it was an item we picked up we know about
-			for (ClueInstance clueFromFloor : clueGroundManager.getDespawnedClueQueue())
-			{
-				if (clueFromFloor.getItemId() == item.getId())
-				{
-					clueInstance = new ClueInstance(clueFromFloor.getClueIds(), itemId);
-				}
-			}
+			// If clue is already in previous, keep the same ClueInstance
+			clueInstance = previousTrackedCluesInInventory.get(itemId);
 			if (clueInstance != null)
 			{
 				trackedCluesInInventory.put(itemId, clueInstance);
@@ -112,12 +119,12 @@ public class ClueInventoryManager
 			trackedCluesInInventory.put(itemId, clueInstance);
 		}
 
-		clueGroundManager.getDespawnedClueQueue().clear();
+		clueGroundManager.getDespawnedClueQueueForInventoryCheck().clear();
 
 		// Compare previous and current to find removed clues
 		for (Integer itemId : previousTrackedCluesInInventory.keySet())
 		{
-			if (!trackedCluesInInventory.containsKey(itemId))
+			if (!trackedCluesInInventory.containsKey(itemId) || trackedCluesInInventory.get(itemId) != previousTrackedCluesInInventory.get(itemId))
 			{
 				// Clue was removed from inventory (possibly dropped)
 				ClueInstance removedClue = previousTrackedCluesInInventory.get(itemId);
@@ -137,45 +144,42 @@ public class ClueInventoryManager
 		ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(clueText);
 		if (threeStepCrypticClue != null)
 		{
-			for (Map.Entry<BeginnerMasterClues, Boolean> clueStep : threeStepCrypticClue.getClueSteps())
+			for (Map.Entry<Clues, Boolean> clueStep : threeStepCrypticClue.getClueSteps())
 			{
-				clueIds.add(clueStep.getKey().getFakeId());
+				clueIds.add(clueStep.getKey().getClueID());
 			}
 		}
 		else
 		{
-			clueIds.add(BeginnerMasterClues.forTextGetId(clueText));
+			clueIds.add(Clues.forTextGetId(clueText));
 		}
 
 		Set<Integer> itemIDs = trackedCluesInInventory.keySet();
 		for (Integer itemID : itemIDs)
 		{
 			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
-			BeginnerMasterClues clueInfo = BeginnerMasterClues.getById(clueIds.get(0));
+			// Check that at least one part of the clue text matches the clue tier we're looking at
+			if (clueInstance == null) continue;
+			Clues clueInfo = Clues.forClueId(clueIds.get(0));
 			if (clueInfo == null) continue;
-			if (!Objects.equals(clueInfo.getClueID(), itemID)) continue;
+			if (!Objects.equals(clueInfo.getItemID(), itemID)) continue;
 			clueInstance.setClueIds(clueIds);
 			break;
 		}
 	}
 
 	// Only used for Beginner Map Clues
-	public void updateClueText(Integer widgetId)
+	public void updateClueText(Integer interfaceId)
 	{
 		List<Integer> clueIds = new ArrayList<>();
 
-		// Beginner Map Clues all use the same ItemID, but the WidgetID used to display them is unique
-		clueIds.add(widgetId);
+		// Beginner Map Clues all use the same ItemID, but the InterfaceID used to display them is unique
+		clueIds.add(Clues.forInterfaceIdGetId(interfaceId));
 
-		// TODO: This should actually use the itemID expected for the clue text
-		for (ClueInstance clueInstance : trackedCluesInInventory.values())
-		{
-			if (clueInstance.getClueIds().isEmpty())
-			{
-				clueInstance.setClueIds(clueIds);
-				break;
-			}
-		}
+		// Assume can only be beginner for now
+		ClueInstance beginnerClueInInv = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
+		if (beginnerClueInInv == null) return;
+		beginnerClueInInv.setClueIds(clueIds);
 	}
 
 	public Set<Integer> getTrackedCluesInInventory()
@@ -183,7 +187,7 @@ public class ClueInventoryManager
 		return trackedCluesInInventory.keySet();
 	}
 
-	public ClueInstance getTrackedClueByClueId(Integer clueItemID)
+	public ClueInstance getTrackedClueByClueItemId(Integer clueItemID)
 	{
 		return trackedCluesInInventory.get(clueItemID);
 	}
@@ -209,36 +213,106 @@ public class ClueInventoryManager
 		int itemId = isInventoryMenu ? event.getItemId() : event.getIdentifier();
 		boolean isMarked = cluePreferenceManager.getPreference(itemId);
 
-		client.getMenu().createMenuEntry(-1)
-			.setOption(isMarked ? "Unmark" : "Mark")
-			.setTarget(event.getTarget())
-			.setIdentifier(itemId)
-			.setType(MenuAction.RUNELITE)
-			.onClick(e ->
-			{
-				boolean currentValue = cluePreferenceManager.getPreference(e.getIdentifier());
-				cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
-				panel.refresh();
-			});
+		final int clueId;
 
+		// Mark Option
+		if (TRACKED_CLUE_IDS.contains(itemId))
+		{
+			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
+			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
+
+			// If isn't a master three-step cryptic
+			if (clueSelected.getClueIds().size() == 1)
+			{
+				clueId = clueSelected.getClueIds().get(0);
+			}
+			else
+			{
+				// Used in below TRACKED_CLUE_IDS check
+				clueId = itemId;
+			}
+		}
+		else
+		{
+			clueId = itemId;
+			// We don't want to have marking on masters I think
+			client.getMenu().createMenuEntry(-1)
+				.setOption(isMarked ? "Unmark" : "Mark")
+				.setTarget(event.getTarget())
+				.setIdentifier(itemId)
+				.setType(MenuAction.RUNELITE)
+				.onClick(e ->
+				{
+					boolean currentValue = cluePreferenceManager.getPreference(e.getIdentifier());
+					cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
+					panel.refresh();
+				});
+		}
 		if (!isInventoryMenu) return;
 
-		client.getMenu().createMenuEntry(-1)
-			.setOption("Clue details")
-			.setTarget(entry.getTarget())
-			.setType(MenuAction.RUNELITE)
-			.onClick(e ->
+		// Clue Details Option
+		if (TRACKED_CLUE_IDS.contains(clueId))
+		{
+			ClueInstance clueSelected = trackedCluesInInventory.get(clueId);
+			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
+
+			MenuEntry parent = client.getMenu().createMenuEntry(-1)
+				.setOption("Clue details")
+				.setTarget(entry.getTarget())
+				.setType(MenuAction.RUNELITE);
+
+			Menu submenu = parent.createSubMenu();
+
+			// TODO: Doesn't update when torn parts obtained
+			for (int id : clueSelected.getClueIds())
 			{
-				Clues clue = Clues.get(itemId);
-				chatboxPanelManager.openTextInput("Enter new clue text:")
-					.value(clue.getDisplayText(configManager))
-					.onDone((newTag) ->
+				Clues clue = Clues.forClueId(id);
+				if (clue == null)
+				{
+					System.out.println("Failed to find clue " + id);
+					return;
+				}
+
+				submenu.createMenuEntry(-1)
+					.setOption(clue.getClueDetail())
+					.setType(MenuAction.RUNELITE)
+					.onClick(e ->
+						SwingUtilities.invokeLater(() ->
+							chatboxPanelManager.openTextInput("Enter new clue detail:")
+								.value(clue.getDetail(configManager))
+								.onDone((newDetail) ->
+								{
+									configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
+									panel.refresh();
+								})
+								.build()));
+			}
+		}
+		else
+		{
+			client.getMenu().createMenuEntry(-1)
+				.setOption("Clue details")
+				.setTarget(entry.getTarget())
+				.setType(MenuAction.RUNELITE)
+				.onClick(e ->
+				{
+					Clues clue = Clues.forClueId(clueId);
+					if (clue == null)
 					{
-						configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
-						panel.refresh();
-					})
-					.build();
-			});
+						System.out.println("Failed to find clue " + clueId);
+						return;
+					}
+
+					chatboxPanelManager.openTextInput("Enter new clue detail:")
+						.value(clue.getDetail(configManager))
+						.onDone((newDetail) ->
+						{
+							configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
+							panel.refresh();
+						})
+						.build();
+				});
+		}
 	}
 
 	public boolean isExamineClue(MenuEntry entry)
@@ -247,5 +321,60 @@ public class ClueInventoryManager
 		String target = entry.getTarget();
 		String option = entry.getOption();
 		return Arrays.stream(textOptions).anyMatch(target::contains) && option.equals("Examine");
+	}
+
+	public void onGameTick()
+	{
+		// Reset clue when receiving a new beginner or master clue
+		// These clues use a single item ID, so we cannot detect step changes based on the item ID changing
+		final Widget headModelWidget = client.getWidget(ComponentID.DIALOG_NPC_HEAD_MODEL);
+		final Widget chatDialogClueItemWidget = client.getWidget(ComponentID.DIALOG_SPRITE_SPRITE);
+		final Widget npcChatWidget = client.getWidget(ComponentID.DIALOG_NPC_TEXT);
+
+		if (isNewBeginnerClue(chatDialogClueItemWidget)
+			|| (isUriBeginnerClue(headModelWidget) && isUriStandardDialogue(npcChatWidget)))
+		{
+			ClueInstance clue = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
+			if (clue == null) return;
+			clue.setClueIds(List.of());
+		}
+		else if (isNewMasterClue(chatDialogClueItemWidget)
+			|| (isUriMasterClue(headModelWidget) && isUriStandardDialogue(npcChatWidget)))
+		{
+			ClueInstance clue =  trackedCluesInInventory.get(ItemID.CLUE_SCROLL_MASTER);
+			if (clue == null) return;
+			clue.setClueIds(List.of());
+		}
+	}
+
+	private boolean isUriMasterClue(Widget headModel)
+	{
+		if (headModel == null) return false;
+		return headModel.getModelId() == NpcID.URI_8638;
+	}
+
+	private boolean isUriBeginnerClue(Widget headModel)
+	{
+		if (headModel == null) return false;
+		return headModel.getModelId() == NpcID.URI_7311;
+	}
+
+	private boolean isUriStandardDialogue(Widget npcChat)
+	{
+		if (npcChat == null) return false;
+		// Check if speaking with another player's Uri or with incorrect attire
+		return !npcChat.getText().contains("I do not believe we have any business, Comrade.");
+	}
+
+	private boolean isNewBeginnerClue(Widget chatDialogClueItem)
+	{
+		if (chatDialogClueItem == null) return false;
+		return chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_BEGINNER;
+	}
+
+	private boolean isNewMasterClue(Widget chatDialogClueItem)
+	{
+		if (chatDialogClueItem == null) return false;
+		return chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_MASTER;
 	}
 }

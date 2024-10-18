@@ -67,7 +67,7 @@ public class ClueSelectLabel extends JLabel
 	JPanel nameActions = new JPanel(new BorderLayout(3, 0));
 
 	public ClueSelectLabel(CluePreferenceManager cluePreferenceManager, Clues clue,
-						   ChatboxPanelManager chatboxPanelManager, ConfigManager configManager)
+							ChatboxPanelManager chatboxPanelManager, ConfigManager configManager)
 	{
 		this.cluePreferenceManager = cluePreferenceManager;
 		this.clue = clue;
@@ -77,7 +77,7 @@ public class ClueSelectLabel extends JLabel
 		setLayout(new BorderLayout());
 		setHorizontalAlignment(SwingConstants.LEFT);
 		setVerticalAlignment(SwingConstants.TOP);
-		setText(generateText(clue.getDisplayText(configManager)));
+		setText(generateText(clue.getDetail(configManager)));
 		setOpaque(true);
 		boolean isActive = cluePreferenceManager.getPreference(clue.getClueID());
 		setSelected(isActive);
@@ -138,7 +138,7 @@ public class ClueSelectLabel extends JLabel
 		nameActions.add(cancel, BorderLayout.WEST);
 
 		nameInput.setVisible(false);
-		nameInput.setText(clue.getDisplayText(configManager));
+		nameInput.setText(clue.getDetail(configManager));
 		nameInput.setBorder(null);
 		nameInput.setEditable(false);
 		nameInput.setBackground(ColorScheme.DARKER_GRAY_COLOR);
@@ -239,7 +239,7 @@ public class ClueSelectLabel extends JLabel
 	public List<String> getKeywords()
 	{
 		if (clue == null) return List.of();
-		return Arrays.asList(clue.getDisplayText(configManager).toLowerCase().split(" "));
+		return Arrays.asList(clue.getDetail(configManager).toLowerCase().split(" "));
 	}
 
 	private void setSelected(boolean isSelected)
@@ -271,7 +271,7 @@ public class ClueSelectLabel extends JLabel
 	private void save()
 	{
 		configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), nameInput.getText());
-		setText(generateText(clue.getDisplayText(configManager)));
+		setText(generateText(clue.getDetail(configManager)));
 
 		nameInput.setVisible(false);
 		nameInput.setEditable(false);
@@ -283,7 +283,7 @@ public class ClueSelectLabel extends JLabel
 	{
 		nameInput.setVisible(false);
 		nameInput.setEditable(false);
-		nameInput.setText(clue.getDisplayText(configManager));
+		nameInput.setText(clue.getDetail(configManager));
 		updateNameActions(false);
 		requestFocusInWindow();
 	}

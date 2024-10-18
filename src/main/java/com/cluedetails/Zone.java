@@ -24,34 +24,23 @@
  */
 package com.cluedetails;
 
-import java.util.List;
-import lombok.Data;
 import net.runelite.api.coords.WorldPoint;
 
-@Data
-public class ClueInstanceData
+public class Zone
 {
-	private List<Integer> clueIds;
-	private int itemId;
-	private int despawnTick;
-	private int x;
-	private int y;
-	private int plane;
+	private final int x;
+	private final int y;
+	private final int plane;
 
-	public ClueInstanceData(ClueInstance clue, int currentTick)
+	public Zone(WorldPoint wp)
 	{
-		this.clueIds = clue.getClueIds();
-		this.itemId = clue.getItemId();
-		this.despawnTick = clue.getTicksToDespawnConsideringTileItem(currentTick);
-		if (clue.getLocation() == null) return;
-
-		this.x = clue.getLocation().getX();
-		this.y = clue.getLocation().getY();
-		this.plane = clue.getLocation().getPlane();
+		x = wp.getX() / 8;
+		y = wp.getY() / 8;
+		plane = wp.getPlane();
 	}
 
-	public WorldPoint getLocation()
+	public int maxDistanceTo(Zone zone)
 	{
-		return new WorldPoint(x, y, plane);
+		return Math.max(Math.abs(zone.x - x), Math.abs(zone.y - y));
 	}
 }
