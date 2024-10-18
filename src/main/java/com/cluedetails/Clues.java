@@ -1005,7 +1005,20 @@ public class Clues
 	{
 		for (Clues clue : CLUES)
 		{
-			if (clue.getItemID() == itemId)
+			if (clue.clueID == -1 && clue.getItemID() == itemId)
+			{
+				return clue;
+			}
+		}
+		return null;
+	}
+
+
+	public static Clues forClueId(int clueId)
+	{
+		for (Clues clue : CLUES)
+		{
+			if (clue.getClueID() == clueId)
 			{
 				return clue;
 			}

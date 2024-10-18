@@ -87,7 +87,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					StringBuilder detail = new StringBuilder();
 					for (Integer id : ids)
 					{
-						Clues clueDetails = Clues.forItemId(id);
+						Clues clueDetails = Clues.forClueId(id);
 						if (!isFirst)
 						{
 							text.append("<br>");

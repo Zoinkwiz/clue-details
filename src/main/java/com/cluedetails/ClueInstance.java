@@ -96,7 +96,7 @@ public class ClueInstance
 		boolean isFirst = true;
 		for (Integer clueId : getClueIds())
 		{
-			Clues cluePart = Clues.forItemId(clueId);
+			Clues cluePart = Clues.forClueId(clueId);
 			if (cluePart == null) continue;
 			if (isFirst)
 			{

@@ -97,7 +97,7 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 
 			for (Integer clueId : clueInstance.getClueIds())
 			{
-				Clues cluePart = Clues.forItemId(clueId);
+				Clues cluePart = Clues.forClueId(clueId);
 				if (cluePart == null) continue;
 
 				panelComponent.getChildren().add(LineComponent.builder()
