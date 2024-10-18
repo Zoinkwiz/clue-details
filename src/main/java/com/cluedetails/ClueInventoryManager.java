@@ -169,12 +169,12 @@ public class ClueInventoryManager
 	}
 
 	// Only used for Beginner Map Clues
-	public void updateClueText(Integer widgetId)
+	public void updateClueText(Integer interfaceId)
 	{
 		List<Integer> clueIds = new ArrayList<>();
 
-		// Beginner Map Clues all use the same ItemID, but the WidgetID used to display them is unique
-		clueIds.add(widgetId);
+		// Beginner Map Clues all use the same ItemID, but the InterfaceID used to display them is unique
+		clueIds.add(Clues.forInterfaceIdGetId(interfaceId));
 
 		// Assume can only be beginner for now
 		ClueInstance beginnerClueInInv = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);

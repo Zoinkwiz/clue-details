@@ -1048,6 +1048,19 @@ public class Clues
 		return null;
 	}
 
+	public static Integer forInterfaceIdGetId(int interfaceId)
+	{
+		// Only check beginner map clues
+		for (int i = 21; i < 26; i++)
+		{
+			if (CLUES.get(i).getItemID() == interfaceId)
+			{
+				return CLUES.get(i).getClueID();
+			}
+		}
+		return null;
+	}
+
 	public String getDetail(ConfigManager configManager)
 	{
 		String text = configManager.getConfiguration("clue-details-text", String.valueOf(getClueID()));
