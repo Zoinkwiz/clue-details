@@ -1024,7 +1024,7 @@ public class Clues
 		return null;
 	}
 
-	public String getDisplayText(ConfigManager configManager)
+	public String getDetail(ConfigManager configManager)
 	{
 		String text = configManager.getConfiguration("clue-details-text", String.valueOf(getClueID()));
 		if (text != null) return text;

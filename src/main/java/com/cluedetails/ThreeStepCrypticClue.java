@@ -95,7 +95,7 @@ public class ThreeStepCrypticClue
 		}
 	}
 
-	public String getDisplayText(ConfigManager configManager)
+	public String getDetail(ConfigManager configManager)
 	{
 		StringBuilder text = new StringBuilder();
 
@@ -104,8 +104,8 @@ public class ThreeStepCrypticClue
 			if (!e.getValue())
 			{
 				Clues clue = e.getKey();
-				String tag = clue.getDisplayText(configManager);
-				text.append(tag).append("<br>");
+				String detail = clue.getDetail(configManager);
+				text.append(detail).append("<br>");
 			}
 		}
 		return text.toString();

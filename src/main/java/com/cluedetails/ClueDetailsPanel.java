@@ -103,7 +103,7 @@ public class ClueDetailsPanel extends PluginPanel
 			BorderFactory.createMatteBorder(1, 0, 1, 0, ColorScheme.DARK_GRAY_COLOR.brighter()),
 			BorderFactory.createEmptyBorder(5, 5, 10, 0)
 		));
-		panel.setText(generateText(clue.getDisplayText(configManager)));
+		panel.setText(generateText(clue.getDetail(configManager)));
 		panel.setOpaque(true);
 		boolean isActive = clueStates.getOrDefault(clue.getClueID(), false);
 		panel.setBackground(isActive ? Color.GREEN.darker() : Color.RED.darker());

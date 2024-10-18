@@ -59,13 +59,13 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		if (config.showInventoryClueTags())
 		{
 			Clues clue = Clues.forItemId(itemId);
-			String itemTag = null;
+			String clueDetail = null;
 
 			if (clue != null
 				&& !(itemId >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
 					&& itemId <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER))
 			{
-				itemTag = clue.getDisplayText(configManager);
+				clueDetail = clue.getDetail(configManager);
 			}
 			// If clue can't be found by Clue ID, check if it can be found by Clue text
 			else
@@ -84,17 +84,17 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 
 					boolean isFirst = true;
 					StringBuilder text = new StringBuilder();
-					StringBuilder tag = new StringBuilder();
+					StringBuilder detail = new StringBuilder();
 					for (Integer id : ids)
 					{
 						Clues clueDetails = Clues.forItemId(id);
 						if (!isFirst)
 						{
 							text.append("<br>");
-							tag.append("<br>");
+							detail.append("<br>");
 						}
 						text.append(clueDetails == null ? "error" : clueDetails.getClueText());
-						tag.append(clueDetails == null ? "error" : clueDetails.getDisplayText(configManager));
+						detail.append(clueDetails == null ? "error" : clueDetails.getDetail(configManager));
 						isFirst = false;
 					}
 
@@ -103,30 +103,30 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					if (threeStepCrypticClue != null)
 					{
 						threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
-						itemTag = threeStepCrypticClue.getDisplayText(configManager);
+						clueDetail = threeStepCrypticClue.getDetail(configManager);
 					}
 					else
 					{
-						itemTag = tag.toString();
+						clueDetail = detail.toString();
 					}
 				}
 			}
-			renderText(graphics, widgetItem.getCanvasBounds(), itemTag);
+			renderText(graphics, widgetItem.getCanvasBounds(), clueDetail);
 		}
 	}
 
-	public int textPosition(Graphics2D graphics, Rectangle bounds, int i, int tagCount)
+	public int textPosition(Graphics2D graphics, Rectangle bounds, int i, int detailCount)
 	{
 		// Middle of item
-		if (tagCount == 3 && i == 1)
+		if (detailCount == 3 && i == 1)
 		{
 			return (bounds.height + graphics.getFontMetrics().getHeight()) / 2;
 		}
 
 		// Bottom of item
 		if ((config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT && i == 1)
-			|| (tagCount == 2 && i == 1)
-			|| config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.BOTTOM && tagCount == 1
+			|| (detailCount == 2 && i == 1)
+			|| config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.BOTTOM && detailCount == 1
 			|| i == 2)
 		{
 			return bounds.height;
@@ -136,9 +136,10 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		return graphics.getFontMetrics().getHeight();
 	}
 
-	private void renderText(Graphics2D graphics, Rectangle bounds, String itemTag)
+	// Render Clue Detail in the "Item Tag" style
+	private void renderText(Graphics2D graphics, Rectangle bounds, String clueDetail)
 	{
-		if (itemTag == null)
+		if (clueDetail == null)
 		{
 			return;
 		}
@@ -148,30 +149,30 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		final TextComponent textComponent = new TextComponent();
 		textComponent.setColor(Color.white);
 
-		String[] itemTags = new String [] {itemTag};
+		String[] clueDetails = new String [] {clueDetail};
 		// Handle Three Step Cryptic Clues
-		if (itemTag.contains("<br>"))
+		if (clueDetail.contains("<br>"))
 		{
-			itemTags = itemTag.split("<br>");
+			clueDetails = clueDetail.split("<br>");
 		}
 
 		// Handle split
 		if (config.clueTagLocation() == ClueDetailsConfig.ClueTagLocation.SPLIT
 			&& !config.clueTagSplit().isEmpty()
-			&& itemTags.length == 1)
+			&& clueDetails.length == 1)
 		{
-			itemTags = itemTags[0].split(config.clueTagSplit(), 3);
+			clueDetails = clueDetails[0].split(config.clueTagSplit(), 3);
 		}
 
 		int i = 0;
-		int tagCount = itemTags.length;
-		for (String tag : itemTags)
+		int detailCount = clueDetails.length;
+		for (String detail : clueDetails)
 		{
 			textComponent.setPosition(new Point(
 				bounds.x - 1,
-				bounds.y - 1 + textPosition(graphics, bounds, i, tagCount)
+				bounds.y - 1 + textPosition(graphics, bounds, i, detailCount)
 			));
-			textComponent.setText(tag);
+			textComponent.setText(detail);
 			textComponent.render(graphics);
 			i++;
 		}

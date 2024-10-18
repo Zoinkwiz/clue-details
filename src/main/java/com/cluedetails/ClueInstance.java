@@ -6,10 +6,10 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *	  list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ *	  this list of conditions and the following disclaimer in the documentation
+ *	  and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -26,6 +26,7 @@ package com.cluedetails;
 
 import java.util.List;
 import lombok.Data;
+import lombok.Setter;
 import net.runelite.api.TileItem;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.config.ConfigManager;
@@ -33,23 +34,24 @@ import net.runelite.client.config.ConfigManager;
 @Data
 public class ClueInstance
 {
-    private List<Integer> clueIds; // Fake ID from ClueText
-    private final int itemId; // Clue item ID
-    private final WorldPoint location; // Null if in inventory
+	@Setter
+	private List<Integer> clueIds; // Fake ID from ClueText
+	private final int itemId; // Clue item ID
+	private final WorldPoint location; // Null if in inventory
 	private Integer timeToDespawnFromDataInTicks;
 	private TileItem tileItem;
 
-    // Constructor for clues from config
-    public ClueInstance(ClueInstanceData data)
-    {
-        this.clueIds = data.getClueIds();
-        this.itemId = data.getItemId();
-        this.location = data.getLocation();
+	// Constructor for clues from config
+	public ClueInstance(ClueInstanceData data)
+	{
+		this.clueIds = data.getClueIds();
+		this.itemId = data.getItemId();
+		this.location = data.getLocation();
 		// if had on then turned off in same session, we don't know what happened in meantime.
 		// Ticks go forward even when logged into other game modes. For simplicity we assume when
 		// Loaded we just are starting from the exact same despawn time remaining.
 		this.timeToDespawnFromDataInTicks = data.getDespawnTick();
-    }
+	}
 
 	// Constructor for inventory clues from inventory changed event
 	public ClueInstance(List<Integer> clueIds, int itemId)
@@ -59,14 +61,14 @@ public class ClueInstance
 		this.location = null;
 	}
 
-    // Constructor for ground clues
-    public ClueInstance(List<Integer> clueIds, int itemId, WorldPoint location, TileItem tileItem)
-    {
-        this.clueIds = clueIds;
-        this.itemId = itemId;
-        this.location = location;
-        this.tileItem = tileItem;
-    }
+	// Constructor for ground clues
+	public ClueInstance(List<Integer> clueIds, int itemId, WorldPoint location, TileItem tileItem)
+	{
+		this.clueIds = clueIds;
+		this.itemId = itemId;
+		this.location = location;
+		this.tileItem = tileItem;
+	}
 
 	public int getDespawnTick(int currentTick)
 	{
@@ -88,11 +90,6 @@ public class ClueInstance
 		return timeToDespawnFromDataInTicks == null ? -1 : timeToDespawnFromDataInTicks;
 	}
 
-    public void setClueIds(List<Integer> clueIds)
-    {
-        this.clueIds = clueIds;
-    }
-
 	public String getCombinedClueText(ConfigManager configManager)
 	{
 		StringBuilder returnText = new StringBuilder();
@@ -109,7 +106,7 @@ public class ClueInstance
 			{
 				returnText.append("<br>");
 			}
-			returnText.append(cluePart.getDisplayText(configManager));
+			returnText.append(cluePart.getDetail(configManager));
 		}
 		if (returnText.length() == 0) return "Unknown, read to track";
 		return returnText.toString();

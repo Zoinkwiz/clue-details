@@ -187,7 +187,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 					String newText;
 					if (clue != null)
 					{
-						newText = clue.getDisplayText(configManager);
+						newText = clue.getDetail(configManager);
 					}
 					else
 					{
@@ -353,7 +353,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		Clues matchingClue = Clues.forItemId(scrollID);
 		if (matchingClue != null)
 		{
-			return matchingClue.getDisplayText(configManager);
+			return matchingClue.getDetail(configManager);
 		}
 
 		ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(scrollID);

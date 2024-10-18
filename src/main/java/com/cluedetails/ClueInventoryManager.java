@@ -278,11 +278,11 @@ public class ClueInventoryManager
 					.setType(MenuAction.RUNELITE)
 					.onClick(e ->
 						SwingUtilities.invokeLater(() ->
-							chatboxPanelManager.openTextInput("Enter new clue text:")
-								.value(clue.getDisplayText(configManager))
-								.onDone((newTag) ->
+							chatboxPanelManager.openTextInput("Enter new clue detail:")
+								.value(clue.getDetail(configManager))
+								.onDone((newDetail) ->
 								{
-									configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
+									configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
 									panel.refresh();
 								})
 								.build()));
@@ -303,11 +303,11 @@ public class ClueInventoryManager
 						return;
 					}
 
-					chatboxPanelManager.openTextInput("Enter new clue text:")
-						.value(clue.getDisplayText(configManager))
-						.onDone((newTag) ->
+					chatboxPanelManager.openTextInput("Enter new clue detail:")
+						.value(clue.getDetail(configManager))
+						.onDone((newDetail) ->
 						{
-							configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newTag);
+							configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
 							panel.refresh();
 						})
 						.build();
