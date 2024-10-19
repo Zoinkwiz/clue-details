@@ -27,6 +27,7 @@ package com.cluedetails;
 import com.cluedetails.filters.ClueTier;
 import com.cluedetails.filters.OrRequirement;
 import com.google.common.collect.ImmutableList;
+import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
 import net.runelite.api.ItemID;
@@ -1001,6 +1002,14 @@ public class Clues
 		this.regions = new OrRequirement(wps);
 	}
 
+	public static final Collection<Integer> TRACKED_CLUE_IDS = List.of(
+		ItemID.CLUE_SCROLL_MASTER,
+		ItemID.CLUE_SCROLL_BEGINNER,
+		ItemID.TORN_CLUE_SCROLL_PART_1,
+		ItemID.TORN_CLUE_SCROLL_PART_2,
+		ItemID.TORN_CLUE_SCROLL_PART_3
+	);
+
 	public static Clues forItemId(int itemId)
 	{
 		for (Clues clue : CLUES)
@@ -1066,5 +1075,10 @@ public class Clues
 		String text = configManager.getConfiguration("clue-details-text", String.valueOf(getClueID()));
 		if (text != null) return text;
 		return getClueDetail();
+	}
+
+	public static boolean isTrackedClueOrTornClue(int itemId)
+	{
+		return TRACKED_CLUE_IDS.contains(itemId);
 	}
 }

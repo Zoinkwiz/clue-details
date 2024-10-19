@@ -57,15 +57,6 @@ public class ClueInventoryManager
 	private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
 
-	public static final Collection<Integer> TRACKED_CLUE_IDS = Arrays.asList(
-		ItemID.DAEYALT_ESSENCE, // TODO: Remove
-		ItemID.CLUE_SCROLL_MASTER,
-		ItemID.CLUE_SCROLL_BEGINNER,
-		ItemID.TORN_CLUE_SCROLL_PART_1,
-		ItemID.TORN_CLUE_SCROLL_PART_2,
-		ItemID.TORN_CLUE_SCROLL_PART_3
-	);
-
 	public ClueInventoryManager(Client client, ConfigManager configManager, ClueGroundManager clueGroundManager, ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
 	{
 		this.client = client;
@@ -88,7 +79,7 @@ public class ClueInventoryManager
 
 		for (Item item : inventoryItems)
 		{
-			if (item == null || !TRACKED_CLUE_IDS.contains(item.getId())) continue;
+			if (item == null || !Clues.isTrackedClueOrTornClue(item.getId())) continue;
 			int itemId = item.getId();
 
 			ClueInstance clueInstance = null;
@@ -216,7 +207,7 @@ public class ClueInventoryManager
 		final int clueId;
 
 		// Mark Option
-		if (TRACKED_CLUE_IDS.contains(itemId))
+		if (Clues.isTrackedClueOrTornClue(itemId))
 		{
 			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
@@ -251,7 +242,7 @@ public class ClueInventoryManager
 		if (!isInventoryMenu) return;
 
 		// Clue Details Option
-		if (TRACKED_CLUE_IDS.contains(clueId))
+		if (Clues.isTrackedClueOrTornClue(clueId))
 		{
 			ClueInstance clueSelected = trackedCluesInInventory.get(clueId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;

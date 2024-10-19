@@ -64,7 +64,7 @@ public class ClueGroundManager
 		// If log in on tile with clues on it, spawned. Won't be dropped, but could be dropped?
 		// Main issue is we don't want to create a new groundClue if it was dropped, as we will then also be doing another new one after.
 		TileItem item = event.getItem();
-		if (!isTrackedClue(item.getId())) return;
+		if (!Clues.isTrackedClueOrTornClue(item.getId())) return;
 		if (checkIfItemMatchesKnownItem(event.getTile(), item, event.getTile().getWorldLocation())) return;
 
 		// New despawn timer, probably been dropped. Track to see what it was.
@@ -82,7 +82,7 @@ public class ClueGroundManager
 	public void onItemDespawned(ItemDespawned event)
 	{
 		TileItem item = event.getItem();
-		if (!isTrackedClue(item.getId())) return;
+		if (!Clues.isTrackedClueOrTornClue(item.getId())) return;
 		WorldPoint location = event.getTile().getWorldLocation();
 		List<ClueInstance> cluesAtLocation = groundClues.get(location);
 
@@ -147,13 +147,6 @@ public class ClueGroundManager
 	private void removeClue(ClueInstance clue)
 	{
 		groundClues.get(clue.getLocation()).remove(clue);
-	}
-
-	public boolean isTrackedClue(int itemId)
-	{
-		return ItemID.CLUE_SCROLL_MASTER == itemId || ItemID.CLUE_SCROLL_BEGINNER == itemId ||
-			ItemID.TORN_CLUE_SCROLL_PART_1 == itemId || ItemID.TORN_CLUE_SCROLL_PART_2 == itemId ||
-			ItemID.TORN_CLUE_SCROLL_PART_3 == itemId;
 	}
 
 	public boolean checkIfItemMatchesKnownItem(Tile tile, TileItem tileItem, WorldPoint tileWp)
@@ -406,7 +399,7 @@ public class ClueGroundManager
 			return Collections.emptyList();
 		}
 		return items.stream()
-			.filter(item -> isTrackedClue(item.getId()))
+			.filter(item -> Clues.isTrackedClueOrTornClue(item.getId()))
 			.collect(Collectors.toList());
 	}
 

@@ -24,7 +24,6 @@
  */
 package com.cluedetails;
 
-import static com.cluedetails.ClueInventoryManager.TRACKED_CLUE_IDS;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +63,7 @@ public class ClueBankManager
 			return;
 		}
 
-		for (Integer trackedClueId : TRACKED_CLUE_IDS)
+		for (Integer trackedClueId : Clues.TRACKED_CLUE_IDS)
 		{
 			if (bankContainer.contains(trackedClueId))
 			{
