@@ -39,7 +39,7 @@ public class BeginnerMasterClueText
 	public static final String BEGINNER_ANAGRAM_8 = ANAGRAM_TEXT_BEGINNER + "TAUNT ROOF";
 	public static final String BEGINNER_CRYPTIC_0 = "Always walking around the castle grounds and somehow knows everyone's age.";
 	public static final String BEGINNER_CRYPTIC_1 = "Buried beneath the ground, who knows where it's found.<br><br>Lucky for you, a man called Reldo may have a clue.";
-	public static final String BEGINNER_CRYPTIC_2 = "In the place Duke Horacio calls home, talk to a man with a hat dropped by goblins";
+	public static final String BEGINNER_CRYPTIC_2 = "In the place Duke Horacio calls home, talk to a man with a hat dropped by goblins.";
 	public static final String BEGINNER_CRYPTIC_3 = "In a village of barbarians, I am the one who guards the village from up high.";
 	public static final String BEGINNER_CRYPTIC_4 = "Talk to Charlie the Tramp in Varrock.";
 	public static final String BEGINNER_CRYPTIC_5 = "Near the open desert I reside, to get past me you must abide. Go forward if you dare, for when you pass me, you'll be sweating by your hair.";
