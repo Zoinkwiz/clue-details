@@ -303,7 +303,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		LocalPoint itemLp = new LocalPoint(sceneX * SCENE_TO_LOCAL, sceneY * SCENE_TO_LOCAL, wv);
 		WorldPoint itemWp = WorldPoint.fromLocalInstance(client, itemLp);
 		List<ClueInstance> trackedClues = clueGroundManager.getGroundClues().get(itemWp);
-
+		if (trackedClues == null) return null;
 		ClueInstance clueInstance = trackedClues.get(index);
 		if (clueInstance == null) return null;
 

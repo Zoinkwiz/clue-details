@@ -320,7 +320,7 @@ public class ClueGroundManager
 		}
 
 		List<ClueInstance> sortedStoredClues = new ArrayList<>(storedClues);
-		sortedStoredClues.sort(Comparator.comparingInt(ClueInstance::getTimeToDespawnFromDataInTicks));
+		sortedStoredClues.sort(Comparator.comparingInt((clue) -> clue.getTicksToDespawnConsideringTileItem(currentTick)));
 
 		// If only 1 of either but not both, less certainty as can't use diffs.
 		// Could assume things like last clue expired, probs let's just assume nothing
@@ -352,7 +352,7 @@ public class ClueGroundManager
 		// This means we don't need to worry about considering gaps where a clue has been taken from the middle of a stack.
 		for (int i = 0; i < sortedStoredClues.size() - 1; i++)
 		{
-			int currentStoredClueDiff = sortedStoredClues.get(i + 1).getTimeToDespawnFromDataInTicks() - sortedStoredClues.get(i).getTimeToDespawnFromDataInTicks();
+			int currentStoredClueDiff = sortedStoredClues.get(i + 1).getTicksToDespawnConsideringTileItem(currentTick) - sortedStoredClues.get(i).getTicksToDespawnConsideringTileItem(currentTick);
 			for (int j = 0; j < sortedGroundClues.size() - 1; j++)
 			{
 				int currentGroundClueDiff = sortedGroundClues.get(j + 1).getDespawnTime() - sortedGroundClues.get(j).getDespawnTime();
