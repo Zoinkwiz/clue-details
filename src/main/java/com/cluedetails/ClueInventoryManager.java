@@ -51,16 +51,19 @@ public class ClueInventoryManager
 {
 	private final Client client;
 	private final ConfigManager configManager;
+	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueGroundManager clueGroundManager;
 	private final ClueBankManager clueBankManager;
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
 
-	public ClueInventoryManager(Client client, ConfigManager configManager, ClueGroundManager clueGroundManager, ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
+	public ClueInventoryManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin, ClueGroundManager clueGroundManager,
+	                            ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
 	{
 		this.client = client;
 		this.configManager = configManager;
+		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.clueGroundManager = clueGroundManager;
 		this.clueBankManager = clueBankManager;
 		this.chatboxPanelManager = chatboxPanelManager;
@@ -79,7 +82,7 @@ public class ClueInventoryManager
 
 		for (Item item : inventoryItems)
 		{
-			if (item == null || !Clues.isTrackedClueOrTornClue(item.getId())) continue;
+			if (item == null || !Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) continue;
 			int itemId = item.getId();
 
 			ClueInstance clueInstance = null;
@@ -131,6 +134,16 @@ public class ClueInventoryManager
 	public void updateClueText(String clueText)
 	{
 		List<Integer> clueIds = new ArrayList<>();
+
+		// Allow for fake items to have info attached to them in dev mode
+		if (clueDetailsPlugin.isDeveloperMode())
+		{
+			for (Integer devModeId : Clues.DEV_MODE_IDS)
+			{
+				int randomTestId = (int) (Math.random() * 20);
+				trackedCluesInInventory.put(devModeId, new ClueInstance(List.of(randomTestId), devModeId));
+			}
+		}
 
 		ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(clueText);
 		if (threeStepCrypticClue != null)
@@ -207,7 +220,7 @@ public class ClueInventoryManager
 		final int clueId;
 
 		// Mark Option
-		if (Clues.isTrackedClueOrTornClue(itemId))
+		if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 		{
 			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
@@ -242,7 +255,7 @@ public class ClueInventoryManager
 		if (!isInventoryMenu) return;
 
 		// Clue Details Option
-		if (Clues.isTrackedClueOrTornClue(clueId))
+		if (Clues.isTrackedClueOrTornClue(clueId, clueDetailsPlugin.isDeveloperMode()))
 		{
 			ClueInstance clueSelected = trackedCluesInInventory.get(clueId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;

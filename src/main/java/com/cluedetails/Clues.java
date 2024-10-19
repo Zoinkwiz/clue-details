@@ -27,7 +27,9 @@ package com.cluedetails;
 import com.cluedetails.filters.ClueTier;
 import com.cluedetails.filters.OrRequirement;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 import net.runelite.api.ItemID;
@@ -1002,12 +1004,19 @@ public class Clues
 		this.regions = new OrRequirement(wps);
 	}
 
-	public static final Collection<Integer> TRACKED_CLUE_IDS = List.of(
+	private static final Collection<Integer> TRACKED_CLUE_IDS = List.of(
 		ItemID.CLUE_SCROLL_MASTER,
-		ItemID.CLUE_SCROLL_BEGINNER,
+		ItemID.CLUE_SCROLL_BEGINNER
+	);
+
+	private static final Collection<Integer> TRACKED_TORN_CLUE_IDS = List.of(
 		ItemID.TORN_CLUE_SCROLL_PART_1,
 		ItemID.TORN_CLUE_SCROLL_PART_2,
 		ItemID.TORN_CLUE_SCROLL_PART_3
+	);
+
+	public static final Collection<Integer> DEV_MODE_IDS = List.of(
+		ItemID.DAEYALT_ESSENCE
 	);
 
 	public static Clues forItemId(int itemId)
@@ -1021,7 +1030,6 @@ public class Clues
 		}
 		return null;
 	}
-
 
 	public static Clues forClueId(int clueId)
 	{
@@ -1077,8 +1085,27 @@ public class Clues
 		return getClueDetail();
 	}
 
-	public static boolean isTrackedClueOrTornClue(int itemId)
+	public static boolean isClue(int itemId, boolean isDeveloperMode)
 	{
-		return TRACKED_CLUE_IDS.contains(itemId);
+		return CLUES.stream().anyMatch((clue) -> clue.getItemID() == itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
+	}
+
+	public static boolean isTrackedClue(int itemId, boolean isDeveloperMode)
+	{
+		return TRACKED_CLUE_IDS.contains(itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
+	}
+
+	public static boolean isTrackedClueOrTornClue(int itemId, boolean isDeveloperMode)
+	{
+		return TRACKED_CLUE_IDS.contains(itemId) || TRACKED_TORN_CLUE_IDS.contains(itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
+	}
+
+	public static Collection<Integer> getTrackedClueAndTornClueIds(boolean isDevMode)
+	{
+		Collection<Integer> allIds = new ArrayList<>();
+		allIds.addAll(TRACKED_CLUE_IDS);
+		allIds.addAll(TRACKED_TORN_CLUE_IDS);
+		if (isDevMode) allIds.addAll(DEV_MODE_IDS);
+		return allIds;
 	}
 }

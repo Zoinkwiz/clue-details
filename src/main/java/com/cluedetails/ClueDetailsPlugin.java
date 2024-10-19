@@ -147,12 +147,12 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.register(widgetOverlay);
 
 		cluePreferenceManager = new CluePreferenceManager(configManager);
-		clueGroundManager = new ClueGroundManager(client, configManager);
+		clueGroundManager = new ClueGroundManager(client, configManager, this);
 		clueBankManager = new ClueBankManager(client, configManager);
-		clueInventoryManager = new ClueInventoryManager(client, configManager, clueGroundManager, clueBankManager, chatboxPanelManager);
+		clueInventoryManager = new ClueInventoryManager(client, configManager, this, clueGroundManager, clueBankManager, chatboxPanelManager);
 		clueBankManager.startUp(clueInventoryManager);
 
-		infoOverlay.startUp(clueGroundManager, clueInventoryManager);
+		infoOverlay.startUp(this, clueGroundManager, clueInventoryManager);
 		widgetOverlay.setClueInventoryManager(clueInventoryManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");

@@ -74,6 +74,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 	private final ConfigManager configManager;
 
 	private final Notifier notifier;
+	private ClueDetailsPlugin clueDetailsPlugin;
 	private ClueGroundManager clueGroundManager;
 	private ClueInventoryManager clueInventoryManager;
 
@@ -105,8 +106,9 @@ public class ClueDetailsOverlay extends OverlayPanel
 		}
 	}
 
-	public void startUp(ClueGroundManager clueGroundManager, ClueInventoryManager clueInventoryManager)
+	public void startUp(ClueDetailsPlugin clueDetailsPlugin, ClueGroundManager clueGroundManager, ClueInventoryManager clueInventoryManager)
 	{
+		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.clueGroundManager = clueGroundManager;
 		this.clueInventoryManager = clueInventoryManager;
 	}
@@ -278,7 +280,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		// We want to keep track from soonest to despawn to most recently dropped
 		for (int i = menuEntries.length - 1; i >= 0; i--)
 		{
-			if (!isTakeClue(menuEntries[i]) || !Clues.isTrackedClueOrTornClue(menuEntries[i].getIdentifier())) continue;
+			if (!isTakeClue(menuEntries[i]) || !Clues.isTrackedClueOrTornClue(menuEntries[i].getIdentifier(), clueDetailsPlugin.isDeveloperMode())) continue;
 			int x = menuEntries[i].getParam0() * SCENE_TO_LOCAL;
 			int y = menuEntries[i].getParam1() * SCENE_TO_LOCAL;
 			int wv = menuEntries[i].getWorldViewId();
@@ -325,17 +327,18 @@ public class ClueDetailsOverlay extends OverlayPanel
 		String target = entry.getTarget();
 		String option = entry.getOption();
 		MenuAction type = entry.getType();
+		int identifier = entry.getIdentifier();
 
-		return target.contains("Clue scroll") && (
+		return Clues.isClue(identifier, clueDetailsPlugin.isDeveloperMode()) && (
 			(type == MenuAction.GROUND_ITEM_THIRD_OPTION && option.equals("Take")) ||
 				(type == MenuAction.RUNELITE && (option.equals("Unmark") || option.equals("Mark"))));
 	}
 
 	public boolean isReadClue(MenuEntry entry)
 	{
-		String target = entry.getTarget();
 		String option = entry.getOption();
-		return target.contains("Clue scroll") && option.equals("Read");
+		int itemId = entry.getItemId();
+		return Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode()) && option.equals("Read");
 	}
 
 	private boolean shouldHighlight(int id)

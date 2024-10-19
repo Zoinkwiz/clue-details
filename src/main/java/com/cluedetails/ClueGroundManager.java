@@ -38,6 +38,8 @@ import net.runelite.client.config.ConfigManager;
 public class ClueGroundManager
 {
 	private final Client client;
+
+	private final ClueDetailsPlugin clueDetailsPlugin;
 	@Getter
 	private final ClueGroundSaveDataManager clueGroundSaveDataManager;
 	@Getter
@@ -51,9 +53,10 @@ public class ClueGroundManager
 	private Zone lastZone;
 	private Zone currentZone;
 
-	public ClueGroundManager(Client client, ConfigManager configManager)
+	public ClueGroundManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin)
 	{
 		this.client = client;
+		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.clueGroundSaveDataManager = new ClueGroundSaveDataManager(configManager);
 		clueGroundSaveDataManager.loadStateFromConfig(client);
 	}
@@ -64,11 +67,13 @@ public class ClueGroundManager
 		// If log in on tile with clues on it, spawned. Won't be dropped, but could be dropped?
 		// Main issue is we don't want to create a new groundClue if it was dropped, as we will then also be doing another new one after.
 		TileItem item = event.getItem();
-		if (!Clues.isTrackedClueOrTornClue(item.getId())) return;
+		if (!Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
 		if (checkIfItemMatchesKnownItem(event.getTile(), item, event.getTile().getWorldLocation())) return;
 
+		System.out.println(item.getDespawnTime() - client.getTickCount());
 		// New despawn timer, probably been dropped. Track to see what it was.
-		if (item.getDespawnTime() - client.getTickCount() >= MAX_DESPAWN_TIMER)
+		if (item.getDespawnTime() - client.getTickCount() >= MAX_DESPAWN_TIMER || (
+			clueDetailsPlugin.isDeveloperMode() && Clues.DEV_MODE_IDS.contains(item.getId()) && item.getDespawnTime() - client.getTickCount() >= 300))
 		{
 			pendingGroundClues.add(new PendingGroundClue(item, event.getTile().getWorldLocation(), client.getTickCount()));
 		}
@@ -82,7 +87,7 @@ public class ClueGroundManager
 	public void onItemDespawned(ItemDespawned event)
 	{
 		TileItem item = event.getItem();
-		if (!Clues.isTrackedClueOrTornClue(item.getId())) return;
+		if (!Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
 		WorldPoint location = event.getTile().getWorldLocation();
 		List<ClueInstance> cluesAtLocation = groundClues.get(location);
 
@@ -399,7 +404,7 @@ public class ClueGroundManager
 			return Collections.emptyList();
 		}
 		return items.stream()
-			.filter(item -> Clues.isTrackedClueOrTornClue(item.getId()))
+			.filter(item -> Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 			.collect(Collectors.toList());
 	}
 

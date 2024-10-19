@@ -63,7 +63,7 @@ public class ClueBankManager
 			return;
 		}
 
-		for (Integer trackedClueId : Clues.TRACKED_CLUE_IDS)
+		for (Integer trackedClueId : Clues.getTrackedClueAndTornClueIds(true))
 		{
 			if (bankContainer.contains(trackedClueId))
 			{
