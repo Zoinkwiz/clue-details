@@ -70,7 +70,6 @@ public class ClueGroundManager
 		if (!Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
 		if (checkIfItemMatchesKnownItem(event.getTile(), item, event.getTile().getWorldLocation())) return;
 
-		System.out.println(item.getDespawnTime() - client.getTickCount());
 		// New despawn timer, probably been dropped. Track to see what it was.
 		if (item.getDespawnTime() - client.getTickCount() >= MAX_DESPAWN_TIMER || (
 			clueDetailsPlugin.isDeveloperMode() && Clues.DEV_MODE_IDS.contains(item.getId()) && item.getDespawnTime() - client.getTickCount() >= 300))

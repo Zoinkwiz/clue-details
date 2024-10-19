@@ -151,7 +151,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return;
 		}
 
-		String clueText = getText(menuEntry);
+		String clueText = getText(menuEntry, 0);
 
 		if (clueText == null) return;
 		// tooltip only supports </br> for multiline strings
@@ -185,6 +185,8 @@ public class ClueDetailsOverlay extends OverlayPanel
 			// Change text of actual clue
 			for (int i = currentMenuEntries.length - 1; i >= 0; i--)
 			{
+				int realPos = currentMenuEntries.length - i - 1;
+
 				MenuEntry hoveredEntry = currentMenuEntries[i];
 				Clues clue = Clues.forItemId(hoveredEntry.getIdentifier());
 				String newText;
@@ -194,7 +196,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 				}
 				else
 				{
-					newText = getTextForTrackedClue(hoveredEntry, entriesByTile);
+					newText = getTextForTrackedClue(hoveredEntry, realPos, entriesByTile);
 				}
 
 				if (newText == null || !isTakeOrMarkClue(hoveredEntry)) continue;
@@ -247,10 +249,10 @@ public class ClueDetailsOverlay extends OverlayPanel
 			if (mousePosition.getX() > menuX && mousePosition.getX() < menuX + menuWidth &&
 				mousePosition.getY() > entryTopY && mousePosition.getY() <= entryBottomY)
 			{
-				String text = getText(hoveredEntry);
+				String text = getText(hoveredEntry, realPos);
 				if (text == null && !entriesByTile.isEmpty())
 				{
-					text = getTextForTrackedClue(hoveredEntry, entriesByTile);
+					text = getTextForTrackedClue(hoveredEntry, realPos, entriesByTile);
 					if (text == null || text.isEmpty()) continue;
 				}
 
@@ -291,7 +293,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		return mappedEntries;
 	}
 
-	private String getTextForTrackedClue(MenuEntry entry, Map<WorldPoint, List<MenuEntry>> entriesByTile)
+	private String getTextForTrackedClue(MenuEntry entry, int index, Map<WorldPoint, List<MenuEntry>> entriesByTile)
 	{
 		if (entriesByTile.isEmpty()) return null;
 
@@ -300,15 +302,9 @@ public class ClueDetailsOverlay extends OverlayPanel
 		int wv = entry.getWorldViewId();
 		LocalPoint itemLp = new LocalPoint(sceneX * SCENE_TO_LOCAL, sceneY * SCENE_TO_LOCAL, wv);
 		WorldPoint itemWp = WorldPoint.fromLocalInstance(client, itemLp);
-		List<MenuEntry> trackedTileEntries = entriesByTile.get(itemWp);
 		List<ClueInstance> trackedClues = clueGroundManager.getGroundClues().get(itemWp);
-		if (trackedTileEntries == null || trackedClues == null || trackedClues.size() != trackedTileEntries.size())
-			return null;
 
-		int indexOf = trackedTileEntries.indexOf(entry);
-		if (indexOf == -1) return null;
-
-		ClueInstance clueInstance = trackedClues.get(indexOf);
+		ClueInstance clueInstance = trackedClues.get(index);
 		if (clueInstance == null) return null;
 
 		return clueInstance.getCombinedClueText(configManager);
@@ -347,7 +343,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		return "true".equals(shouldHighlight);
 	}
 
-	private String getText(MenuEntry menuEntry)
+	private String getText(MenuEntry menuEntry, int posInMenu)
 	{
 		int scrollID = menuEntry.getIdentifier();
 		if (isReadClue(menuEntry))
@@ -378,7 +374,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		if (!entriesByTile.isEmpty())
 		{
-			return getTextForTrackedClue(menuEntry, entriesByTile);
+			return getTextForTrackedClue(menuEntry, posInMenu, entriesByTile);
 		}
 
 		return null;
