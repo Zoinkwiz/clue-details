@@ -360,10 +360,13 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return matchingClue.getDetail(configManager);
 		}
 
-		ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(scrollID);
-		if (clueInstance != null && !clueInstance.getClueIds().isEmpty())
+		if (isReadClue(menuEntry))
 		{
-			return clueInstance.getCombinedClueText(configManager);
+			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(scrollID);
+			if (clueInstance != null && !clueInstance.getClueIds().isEmpty())
+			{
+				return clueInstance.getCombinedClueText(configManager);
+			}
 		}
 
 		MenuEntry[] currentMenuEntries = {menuEntry};
