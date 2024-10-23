@@ -26,8 +26,8 @@ package com.cluedetails;
 
 public class BeginnerMasterClueText
 {
-	private static final String ANAGRAM_TEXT = "This anagram reveals<br>who to speak to next:<br>";
-	private static final String ANAGRAM_TEXT_BEGINNER = "The anagram reveals<br> who to speak to next:<br>";
+	private static final String ANAGRAM_TEXT = "This anagram reveals who to speak to next: ";
+	private static final String ANAGRAM_TEXT_BEGINNER = "The anagram reveals who to speak to next: ";
 	public static final String BEGINNER_ANAGRAM_0 = ANAGRAM_TEXT_BEGINNER + "AN EARL";
 	public static final String BEGINNER_ANAGRAM_1 = ANAGRAM_TEXT_BEGINNER + "CHAR GAME DISORDER";
 	public static final String BEGINNER_ANAGRAM_2 = ANAGRAM_TEXT_BEGINNER + "CARPET AHOY";
@@ -38,7 +38,7 @@ public class BeginnerMasterClueText
 	public static final String BEGINNER_ANAGRAM_7 = ANAGRAM_TEXT_BEGINNER + "SIR SHARE RED";
 	public static final String BEGINNER_ANAGRAM_8 = ANAGRAM_TEXT_BEGINNER + "TAUNT ROOF";
 	public static final String BEGINNER_CRYPTIC_0 = "Always walking around the castle grounds and somehow knows everyone's age.";
-	public static final String BEGINNER_CRYPTIC_1 = "Buried beneath the ground, who knows where it's found.<br><br>Lucky for you, a man called Reldo may have a clue.";
+	public static final String BEGINNER_CRYPTIC_1 = "Buried beneath the ground, who knows where it's found. Lucky for you, a man called Reldo may have a clue.";
 	public static final String BEGINNER_CRYPTIC_2 = "In the place Duke Horacio calls home, talk to a man with a hat dropped by goblins.";
 	public static final String BEGINNER_CRYPTIC_3 = "In a village of barbarians, I am the one who guards the village from up high.";
 	public static final String BEGINNER_CRYPTIC_4 = "Talk to Charlie the Tramp in Varrock.";
@@ -65,40 +65,40 @@ public class BeginnerMasterClueText
 	public static final String MASTER_ANAGRAM_13 = ANAGRAM_TEXT + "Slam Duster Grail";
 	public static final String MASTER_ANAGRAM_14 = ANAGRAM_TEXT + "Ten Wigs On";
 	public static final String MASTER_ANAGRAM_15 = ANAGRAM_TEXT + "Twenty Cure Iron";
-	public static final String MASTER_COORDINATE_0 = coordinateText("01", "30", "north", "08", "11", "west");
-	public static final String MASTER_COORDINATE_1 = coordinateText("01", "54", "south", "08", "54", "west");
-	public static final String MASTER_COORDINATE_2 = coordinateText("02", "09", "south", "06", "58", "west");
-	public static final String MASTER_COORDINATE_3 = coordinateText("03", "09", "south", "43", "26", "east");
-	public static final String MASTER_COORDINATE_4 = coordinateText("03", "26", "north", "12", "18", "east");
-	public static final String MASTER_COORDINATE_5 = coordinateText("03", "50", "north", "09", "07", "east");
-	public static final String MASTER_COORDINATE_6 = coordinateText("04", "58", "north", "36", "56", "east");
-	public static final String MASTER_COORDINATE_7 = coordinateText("05", "13", "north", "04", "16", "west");
-	public static final String MASTER_COORDINATE_8 = coordinateText("07", "37", "north", "35", "18", "east");
-	public static final String MASTER_COORDINATE_9 = coordinateText("08", "01", "north", "20", "58", "west");
-	public static final String MASTER_COORDINATE_10 = coordinateText("08", "11", "north", "12", "30", "east");
-	public static final String MASTER_COORDINATE_11 = coordinateText("12", "35", "north", "36", "22", "east");
-	public static final String MASTER_COORDINATE_12 = coordinateText("12", "45", "north", "20", "09", "east");
-	public static final String MASTER_COORDINATE_13 = coordinateText("13", "33", "south", "15", "26", "east");
-	public static final String MASTER_COORDINATE_14 = coordinateText("16", "41", "north", "30", "54", "west");
-	public static final String MASTER_COORDINATE_15 = coordinateText("18", "03", "north", "03", "03", "east");
-	public static final String MASTER_COORDINATE_16 = coordinateText("18", "26", "north", "37", "15", "west");
-	public static final String MASTER_COORDINATE_17 = coordinateText("19", "43", "north", "23", "11", "west");
-	public static final String MASTER_COORDINATE_18 = coordinateText("20", "35", "north", "15", "58", "east");
-	public static final String MASTER_COORDINATE_19 = coordinateText("20", "45", "north", "7 ", "26", "west");
-	public static final String MASTER_COORDINATE_20 = coordinateText("21", "37", "north", "21", "13", "west");
-	public static final String MASTER_COORDINATE_21 = coordinateText("21", "56", "north", "10", "56", "west");
-	public static final String MASTER_COORDINATE_22 = coordinateText("22", "24", "north", "31", "11", "west");
-	public static final String MASTER_COORDINATE_23 = coordinateText("24", "00", "north", "29", "22", "east");
-	public static final String MASTER_COORDINATE_24 = coordinateText("24", "18", "north", "23", "22", "east");
-	public static final String MASTER_COORDINATE_25 = coordinateText("24", "22", "north", "27", "00", "east");
-	public static final String MASTER_COORDINATE_26 = coordinateText("23", "58", "north", "18", "22", "east");
+	public static final String MASTER_COORDINATE_0 = "1 degree 30 minutes north 8 degrees 11 minutes west";
+	public static final String MASTER_COORDINATE_1 = "1 degree 54 minutes south 8 degrees 54 minutes west";
+	public static final String MASTER_COORDINATE_2 = "2 degrees 9 minutes south 6 degrees 58 minutes west";
+	public static final String MASTER_COORDINATE_3 = "3 degrees 9 minutes south 43 degrees 26 minutes east";
+	public static final String MASTER_COORDINATE_4 = "3 degrees 26 minutes north 12 degrees 18 minutes east";
+	public static final String MASTER_COORDINATE_5 = "3 degrees 50 minutes north 9 degrees 7 minutes east";
+	public static final String MASTER_COORDINATE_6 = "4 degrees 58 minutes north 36 degrees 56 minutes east";
+	public static final String MASTER_COORDINATE_7 = "5 degrees 13 minutes north 4 degrees 16 minutes west";
+	public static final String MASTER_COORDINATE_8 = "7 degrees 37 minutes north 35 degrees 18 minutes east";
+	public static final String MASTER_COORDINATE_9 = "8 degrees 1 minute north 20 degrees 58 minutes west";
+	public static final String MASTER_COORDINATE_10 = "8 degrees 11 minutes north 12 degrees 30 minutes east";
+	public static final String MASTER_COORDINATE_11 = "12 degrees 35 minutes north 36 degrees 22 minutes east";
+	public static final String MASTER_COORDINATE_12 = "12 degrees 45 minutes north 20 degrees 9 minutes east";
+	public static final String MASTER_COORDINATE_13 = "13 degrees 33 minutes south 15 degrees 26 minutes east";
+	public static final String MASTER_COORDINATE_14 = "16 degrees 41 minutes north 30 degrees 54 minutes west";
+	public static final String MASTER_COORDINATE_15 = "18 degrees 3 minutes north 3 degrees 3 minutes east";
+	public static final String MASTER_COORDINATE_16 = "18 degrees 26 minutes north 37 degrees 15 minutes west";
+	public static final String MASTER_COORDINATE_17 = "19 degrees 43 minutes north 23 degrees 11 minutes west";
+	public static final String MASTER_COORDINATE_18 = "20 degrees 35 minutes north 15 degrees 58 minutes east";
+	public static final String MASTER_COORDINATE_19 = "20 degrees 45 minutes north 7 degrees 26 minutes west";
+	public static final String MASTER_COORDINATE_20 = "21 degrees 37 minutes north 21 degrees 13 minutes west";
+	public static final String MASTER_COORDINATE_21 = "21 degrees 56 minutes north 10 degrees 56 minutes west";
+	public static final String MASTER_COORDINATE_22 = "22 degrees 24 minutes north 31 degrees 11 minutes west";
+	public static final String MASTER_COORDINATE_23 = "24 degrees 0 minutes north 29 degrees 22 minutes east";
+	public static final String MASTER_COORDINATE_24 = "24 degrees 18 minutes north 23 degrees 22 minutes east";
+	public static final String MASTER_COORDINATE_25 = "24 degrees 22 minutes north 27 degrees 0 minutes east";
+	public static final String MASTER_COORDINATE_26 = "23 degrees 58 minutes north 18 degrees 22 minutes east";
 	public static final String MASTER_CRYPTIC_0 = "2 musical birds. Dig in front of the spinning light.";
 	public static final String MASTER_CRYPTIC_1 = "A chisel and hammer reside in his home, strange for one of magic. Impress him with your magical equipment.";
 	public static final String MASTER_CRYPTIC_2 = "A dwarf, approaching death, but very much in the light.";
 	public static final String MASTER_CRYPTIC_3 = "A massive battle rages beneath so be careful when you dig by the large broken crossbow.";
 	public static final String MASTER_CRYPTIC_4 = "Anger Abbot Langley.";
 	public static final String MASTER_CRYPTIC_5 = "Anger those who adhere to Saradomin's edicts to prevent travel.";
-	public static final String MASTER_CRYPTIC_6 = "Buried beneath the ground, who knows where it's found.<br><br>Lucky for you, A man called Jorral may have a clue.";
+	public static final String MASTER_CRYPTIC_6 = "Buried beneath the ground, who knows where it's found. Lucky for you, A man called Jorral may have a clue.";
 	public static final String MASTER_CRYPTIC_7 = "Come brave adventurer, your sense is on fire. If you talk to me, it's an old god you desire.";
 	public static final String MASTER_CRYPTIC_8 = "Darkness wanders around me, but fills my mind with knowledge.";
 	public static final String MASTER_CRYPTIC_9 = "Dig in front of the icy arena where 1 of 4 was fought.";
@@ -107,7 +107,7 @@ public class BeginnerMasterClueText
 	public static final String MASTER_CRYPTIC_12 = "Elvish onions.";
 	public static final String MASTER_CRYPTIC_13 = "Fiendish cooks probably won't dig the dirty dishes.";
 	public static final String MASTER_CRYPTIC_14 = "The doorman of the Warriors' Guild wishes to be impressed by how strong your equipment is.";
-	public static final String MASTER_CRYPTIC_15 = "Great demons, dragons, and spiders protect this blue rock, beneath which, you may find what you seek.";
+	public static final String MASTER_CRYPTIC_15 = "Great demons, dragons and spiders protect this blue rock, beneath which, you may find what you seek.";
 	public static final String MASTER_CRYPTIC_16 = "Guthix left his mark in a fiery lake, dig at the tip of it.";
 	public static final String MASTER_CRYPTIC_17 = "Here, there are tears, but nobody is crying. Speak to the guardian and show off your alignment to balance.";
 	public static final String MASTER_CRYPTIC_18 = "Hopefully this set of armour will help you to keep surviving.";
@@ -127,27 +127,27 @@ public class BeginnerMasterClueText
 	public static final String MASTER_CRYPTIC_32 = "Where safe to speak, the man who offers the pouch of smallest size wishes to see your alignment.";
 	public static final String MASTER_EMOTE_0 = "Beckon by a collection of crystalline maple trees. Beware of double agents! Equip Bryophyta's staff and a nature tiara.";
 	public static final String MASTER_EMOTE_1 = "Blow a kiss outside K'ril Tsutsaroth's chamber. Beware of double agents! Equip a Zamorak full helm and the shadow sword.";
-	public static final String MASTER_EMOTE_2 = "Blow a raspberry at the bank of the Warrior's guild. Beware of double agents! Equip a dragon battleaxe, a slayer helm of any kind and a dragon defender or avernic defender.";
+	public static final String MASTER_EMOTE_2 = "Blow a raspberry in the bank of the Warriors' Guild. Beware of double agents! Equip a dragon battleaxe, a slayer helm of any kind and a dragon defender or avernic defender.";
 	public static final String MASTER_EMOTE_3 = "Bow in the Iorwerth Camp. Beware of double agents! Equip a charged crystal bow.";
-	public static final String MASTER_EMOTE_4 = "Cheer in the Entrana church. Beware of double agents! Equip a set of full black dragonhide armour.";
+	public static final String MASTER_EMOTE_4 = "Cheer in the Entrana church. Beware of double agents! Equip a full set of black dragonhide armour.";
 	public static final String MASTER_EMOTE_5 = "Clap in the magic axe hut. Beware of double agents. Equip only flared trousers";
-	public static final String MASTER_EMOTE_6 = "Cry in the Tzhaar gem store. Beware of the double agents! Equip a fire cape and a TokTz-Xil-Ul'";
-	public static final String MASTER_EMOTE_7 = "Dance in Iban's temple. Beware of double agents! Equip Iban's staff, a black mystic top, and a black mystic bottom.";
-	public static final String MASTER_EMOTE_8 = "Dance in the King Black Dragon's lair. Beware of double agents! Equip a black d'hide body, black d'hide vambraces and a black dragon mask.";
-	public static final String MASTER_EMOTE_9 = "Do a jig at the Barrows chest. Beware of double agents! Equip any full barrows set.";
-	public static final String MASTER_EMOTE_10 = "Flap at the Death Altar. Beware of double agents! Equip a death tiara, a legend's cape and any ring of wealth.";
+	public static final String MASTER_EMOTE_6 = "Cry in the TzHaar gem store. Beware of double agents! Equip a fire cape and TokTz-Xil-Ul.";
+	public static final String MASTER_EMOTE_7 = "Dance in Iban's temple. Beware of double agents! Equip Iban's staff, a black mystic top and a black mystic bottom.";
+	public static final String MASTER_EMOTE_8 = "Dance in the King Black Dragon's lair. Beware of double agents! Equip a black dragonhide body, black dragonhide vambraces and a black dragon mask.";
+	public static final String MASTER_EMOTE_9 = "Do a jig at the barrows chest. Beware of double agents! Equip any full barrows set.";
+	public static final String MASTER_EMOTE_10 = "Flap at the death altar. Beware of double agents! Equip a death tiara, a legend's cape and any ring of wealth.";
 	public static final String MASTER_EMOTE_11 = "Salute outside the gates of Cam Torum. Beware of double agents! Equip a full set of blue moon equipment.";
-	public static final String MASTER_EMOTE_12 = "Goblin Salute at the Goblin Village. Beware of double agents! Equip a Bandos platebody, Bandos cloak and Bandos godsword.";
+	public static final String MASTER_EMOTE_12 = "Goblin Salute in the Goblin Village. Beware of double agents! Equip a bandos godsword, a bandos cloak and a bandos platebody.";
 	public static final String MASTER_EMOTE_13 = "Jump for joy in the centre of Zul-Andra. Beware of double agents! Equip a dragon 2h sword, bandos boots and an obsidian cape.";
 	public static final String MASTER_EMOTE_14 = "Panic by the big egg where no one dare goes and the ground is burnt. Beware of double agents! Equip a dragon med helm, a TokTz-Ket-Xil, a brine sabre, rune platebody and an uncharged amulet of glory.";
-	public static final String MASTER_EMOTE_15 = "Show your anger at the Wise old man. Beware of double agents! Equip an abyssal whip, a cape of legends|legend's cape and some spined chaps.";
-	public static final String MASTER_EMOTE_16 = "Show your anger towards the Statue of Saradomin in Ellamaria's garden.";
+	public static final String MASTER_EMOTE_15 = "Show your anger at the Wise old man. Beware of double agents! Equip an abyssal whip, a legend's cape and some spined chaps.";
+	public static final String MASTER_EMOTE_16 = "Show your anger towards the Statue of Saradomin in Ellamaria's garden. Beware of double agents! Equip a zamorak godsword.";
 	public static final String MASTER_EMOTE_17 = "Slap your head in the centre of the Kourend catacombs. Beware of double agents! Equip arclight or emberlight along with the amulet of the damned.";
-	public static final String MASTER_EMOTE_18 = "Spin in front of the Soul Altar. Beware of double agents! Equip a dragon pickaxe, helm of neitiznot and a pair of rune boots.";
-	public static final String MASTER_EMOTE_19 = "Stamp in the Enchanted valley west of the waterfall. Beware of double agents! Equip a dragon axe.";
+	public static final String MASTER_EMOTE_18 = "Spin in front of the Soul altar. Beware of double agents! Equip a dragon pickaxe, helm of neitiznot and a pair of rune boots.";
+	public static final String MASTER_EMOTE_19 = "Stamp in the Enchanted alley west of the waterfall. Beware of double agents! Equip a dragon axe.";
 	public static final String MASTER_EMOTE_20 = "Swing a bullroarer at the top of the Watchtower. Beware of double agents! Equip a dragon plateskirt, climbing boots and a dragon chainbody.";
-	public static final String MASTER_EMOTE_21 = "Wave on the northern wall of the Castle Drakan. Beware of double agents! Wear a dragon sq shield, splitbark body and any boater.";
-	public static final String MASTER_EMOTE_22 = "Yawn in the 7th room of Pyramid Plunder. Beware of double agents! Equip a pharaoh's sceptre and a full set of menaphite robes.";
+	public static final String MASTER_EMOTE_21 = "Wave on the northern wall of Castle Drakan. Beware of double agents! Wear a dragon sq shield, splitbark body and any boater.";
+	public static final String MASTER_EMOTE_22 = "Yawn in the 7th room of Pyramid Plunder. Beware of double agents! Equip a pharaoh sceptre and a full set of menaphite robes.";
 	public static final String MASTER_EMOTE_23 = "Think on the western coast of Salvager Overlook. Beware of double agents! Equip a Hueycoatl hide coif and some Hueycoatl hide vambraces.";
 	public static final String MASTER_FALO_0 = "A blood red weapon, a strong curved sword, found on the island of primate lords.";
 	public static final String MASTER_FALO_1 = "A book that preaches of some great figure, lending strength, might and vigour.";
@@ -171,20 +171,5 @@ public class BeginnerMasterClueText
 
 	public BeginnerMasterClueText()
 	{
-	}
-
-	private static String coordinateText(String degreesNS, String minutesNS, String northSouth, String degreesEW, String minutesEW, String eastWest)
-	{
-		return degreesNS +
-			" degrees " +
-			minutesNS +
-			" minutes " +
-			northSouth +
-			" " +
-			degreesEW +
-			" degrees " +
-			minutesEW +
-			" minutes " +
-			eastWest;
 	}
 }

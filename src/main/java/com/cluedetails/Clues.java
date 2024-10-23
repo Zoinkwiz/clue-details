@@ -36,6 +36,7 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.plugins.cluescrolls.clues.MapClue;
+import net.runelite.client.util.Text;
 
 @Getter
 public class Clues
@@ -1051,8 +1052,10 @@ public class Clues
 		return getItemID();
 	}
 
-	public static Integer forTextGetId(String text)
+	public static Integer forTextGetId(String rawText)
 	{
+		final String text = Text.sanitizeMultilineText(rawText).toLowerCase();
+
 		for (Clues clue : CLUES)
 		{
 			if (text.equalsIgnoreCase(clue.getClueText()))
