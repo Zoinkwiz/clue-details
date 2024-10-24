@@ -43,7 +43,7 @@ public class BeginnerMasterClueText
 	public static final String BEGINNER_CRYPTIC_3 = "In a village of barbarians, I am the one who guards the village from up high.";
 	public static final String BEGINNER_CRYPTIC_4 = "Talk to Charlie the Tramp in Varrock.";
 	public static final String BEGINNER_CRYPTIC_5 = "Near the open desert I reside, to get past me you must abide. Go forward if you dare, for when you pass me, you'll be sweating by your hair.";
-	public static final String BEGINNER_EMOTE_0 = "Blow a raspberry at Aris in her tent. Equip a gold ring and a gold necklace.";
+	public static final String BEGINNER_EMOTE_0 = "Blow a raspberry at Gypsy Aris in her tent. Equip a gold ring and a gold necklace.";
 	public static final String BEGINNER_EMOTE_1 = "Bow to Brugsen Bursen at the Grand Exchange.";
 	public static final String BEGINNER_EMOTE_2 = "Cheer at Iffie Nitter. Equip a chef hat and a red cape.";
 	public static final String BEGINNER_EMOTE_3 = "Clap at Bob's Brilliant Axes. Equip a bronze axe and leather boots.";
