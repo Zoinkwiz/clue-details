@@ -151,6 +151,11 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return;
 		}
 
+		if (isReadClue(menuEntry) && (config.showInventoryClueTags() || (config.showInventoryCluesOverlay())))
+		{
+			return;
+		}
+
 		String clueText = getText(menuEntryAndPos);
 
 		if (clueText == null) return;
@@ -179,7 +184,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			changeFloorText(entriesByTile);
 		}
 
-		if (config.showHoverText())
+		if (config.showHoverText() && !config.changeClueText())
 		{
 			addTooltip(entriesByTile);
 		}
