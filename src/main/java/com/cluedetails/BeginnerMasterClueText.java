@@ -49,6 +49,14 @@ public class BeginnerMasterClueText
 	public static final String BEGINNER_EMOTE_3 = "Clap at Bob's Brilliant Axes. Equip a bronze axe and leather boots.";
 	public static final String BEGINNER_EMOTE_4 = "Panic at Al Kharid mine.";
 	public static final String BEGINNER_EMOTE_5 = "Spin at Flynn's Mace Shop.";
+	public static final String BEGINNER_CHARLIE_0 = "I need to give Charlie a cooked trout.";
+	public static final String BEGINNER_CHARLIE_1 = "I need to give Charlie a cooked pike.";
+	public static final String BEGINNER_CHARLIE_2 = "I need to give Charlie a raw herring.";
+	public static final String BEGINNER_CHARLIE_3 = "I need to give Charlie a raw trout.";
+	public static final String BEGINNER_CHARLIE_4 = "I need to give Charlie a piece of iron ore.";
+	public static final String BEGINNER_CHARLIE_5 = "I need to give Charlie one iron dagger.";
+	public static final String BEGINNER_CHARLIE_6 = "I need to give Charlie a leather body.";
+	public static final String BEGINNER_CHARLIE_7 = "I need to give Charlie some leather chaps.";
 	public static final String MASTER_ANAGRAM_0 = ANAGRAM_TEXT + "A Elf Knows";
 	public static final String MASTER_ANAGRAM_1 = ANAGRAM_TEXT + "Brucie Catnap";
 	public static final String MASTER_ANAGRAM_2 = ANAGRAM_TEXT + "Car If Ices";
@@ -168,6 +176,32 @@ public class BeginnerMasterClueText
 	public static final String MASTER_FALO_16 = "They come from some time ago, from a land unto the east. Fossilised they have become, this small and gentle beast.";
 	public static final String MASTER_FALO_17 = "To slay a dragon you must first do, before this chest piece can be put on you.";
 	public static final String MASTER_FALO_18 = "Vampyres are agile opponents, damaged best with a weapon of many components.";
+	public static final String MASTER_SHERLOCK_0 = "Angle for an Anglerfish whilst sporting the finest fishing gear.";
+	public static final String MASTER_SHERLOCK_1 = "Bind a blood rune at the Blood Altar.";
+	public static final String MASTER_SHERLOCK_2 = "Burn a magic log.";
+	public static final String MASTER_SHERLOCK_3 = "Burn a redwood log.";
+	public static final String MASTER_SHERLOCK_4 = "Catch a tecu salamander.";
+	public static final String MASTER_SHERLOCK_5 = "Chop a redwood log whilst sporting the finest lumberjack gear.";
+	public static final String MASTER_SHERLOCK_6 = "Complete a lap of the Rellekka rooftop agility course whilst sporting the finest amount of grace.";
+	public static final String MASTER_SHERLOCK_7 = "Craft a light orb in the Dorgesh-Kaan bank.";
+	public static final String MASTER_SHERLOCK_8 = "Create a Barrows teleport tablet.";
+	public static final String MASTER_SHERLOCK_9 = "Create an unstrung dragonstone amulet at a furnace.";
+	public static final String MASTER_SHERLOCK_10 = "Cremate a set of fiyr remains.";
+	public static final String MASTER_SHERLOCK_11 = "Dissect a sacred eel.";
+	public static final String MASTER_SHERLOCK_12 = "Equip an abyssal whip in front of the abyssal demons of the Slayer Tower.";
+	public static final String MASTER_SHERLOCK_13 = "Fletch a rune dart.";
+	public static final String MASTER_SHERLOCK_14 = "Kill a Fiyr shade inside Mort'tons shade catacombs.";
+	public static final String MASTER_SHERLOCK_15 = "Kill a lizardman shaman.";
+	public static final String MASTER_SHERLOCK_16 = "Kill a reanimated abyssal.";
+	public static final String MASTER_SHERLOCK_17 = "Kill the spiritual, magic and godly whilst representing their own god.";
+	public static final String MASTER_SHERLOCK_18 = "Mine a piece of runite ore whilst sporting the finest mining gear.";
+	public static final String MASTER_SHERLOCK_19 = "Mix a ranging mix potion.";
+	public static final String MASTER_SHERLOCK_20 = "Mix an anti-venom potion.";
+	public static final String MASTER_SHERLOCK_21 = "Pickpocket an elf.";
+	public static final String MASTER_SHERLOCK_22 = "Slay a Nechryael in the Slayer Tower.";
+	public static final String MASTER_SHERLOCK_23 = "Smith a runite med helm.";
+	public static final String MASTER_SHERLOCK_24 = "Steal a gem from the Ardougne market.";
+	public static final String MASTER_SHERLOCK_25 = "Teleport to a spirit tree you planted yourself.";
 
 	public BeginnerMasterClueText()
 	{
