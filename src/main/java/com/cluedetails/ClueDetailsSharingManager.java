@@ -71,7 +71,12 @@ public class ClueDetailsSharingManager
 
 	public void resetClueDetails()
 	{
-		for (Clues clue : Clues.CLUES)
+		List<Clues> filteredClues = Clues.CLUES.stream()
+			.filter(config.filterListByTier())
+			.filter(config.filterListByRegion())
+			.collect(Collectors.toList());
+
+		for (Clues clue : filteredClues)
 		{
 			int id = clue.getClueID();
 			configManager.unsetConfiguration("clue-details-text", String.valueOf(id));
