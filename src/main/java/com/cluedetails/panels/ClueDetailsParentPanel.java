@@ -247,7 +247,8 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JPopupMenu popupMenu = new JPopupMenu();
 
 		JMenuItem inputItem = new JMenuItem("Edit text for clue");
-		inputItem.addActionListener(event -> {
+		inputItem.addActionListener(event ->
+		{
 			clueTableModel.setEditableRow(row);
 			clueTable.editCellAt(row, 0);
 			Component editorComponent = clueTable.getEditorComponent();
@@ -344,7 +345,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		});
 
-		copyMarkers.setToolTipText("Export details to your clipboard");
+		copyMarkers.setToolTipText("Export currently filtered details to your clipboard");
 		copyMarkers.addMouseListener(new MouseAdapter()
 		{
 			@Override

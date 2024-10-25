@@ -37,20 +37,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
-import net.runelite.client.menus.MenuManager;
 
 @Slf4j
 public class ClueDetailsSharingManager
 {
 	private final ClueDetailsPlugin plugin;
+	private final ClueDetailsConfig config;
 	private final ChatMessageManager chatMessageManager;
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Gson gson;
@@ -58,10 +58,11 @@ public class ClueDetailsSharingManager
 	private final ConfigManager configManager;
 
 	@Inject
-	private ClueDetailsSharingManager(ClueDetailsPlugin plugin, ChatMessageManager chatMessageManager, ChatboxPanelManager chatboxPanelManager,
-	                                  Gson gson, ConfigManager configManager)
+	private ClueDetailsSharingManager(ClueDetailsPlugin plugin, ClueDetailsConfig config, ChatMessageManager chatMessageManager, ChatboxPanelManager chatboxPanelManager,
+										Gson gson, ConfigManager configManager)
 	{
 		this.plugin = plugin;
+		this.config = config;
 		this.chatMessageManager = chatMessageManager;
 		this.chatboxPanelManager = chatboxPanelManager;
 		this.gson = gson;
@@ -80,7 +81,13 @@ public class ClueDetailsSharingManager
 	public void exportClueDetails()
 	{
 		List<ClueIdToText> clueIdToTextList = new ArrayList<>();
-		for (Clues clue : Clues.CLUES)
+
+		List<Clues> filteredClues = Clues.CLUES.stream()
+			.filter(config.filterListByTier())
+			.filter(config.filterListByRegion())
+			.collect(Collectors.toList());
+
+		for (Clues clue : filteredClues)
 		{
 			int id = clue.getClueID();
 			String clueText = configManager.getConfiguration("clue-details-text", String.valueOf(id));
