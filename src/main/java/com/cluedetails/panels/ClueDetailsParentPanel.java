@@ -247,7 +247,8 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JPopupMenu popupMenu = new JPopupMenu();
 
 		JMenuItem inputItem = new JMenuItem("Edit text for clue");
-		inputItem.addActionListener(event -> {
+		inputItem.addActionListener(event ->
+		{
 			clueTableModel.setEditableRow(row);
 			clueTable.editCellAt(row, 0);
 			Component editorComponent = clueTable.getEditorComponent();
@@ -261,15 +262,16 @@ public class ClueDetailsParentPanel extends PluginPanel
 		popupMenu.show(e.getComponent(), e.getX(), e.getY());
 	}
 
-	private void openResetPopup(MouseEvent e)
+	private void openResetPopup()
 	{
-		JPopupMenu popupMenu = new JPopupMenu();
+		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
+			"Are you sure you want to reset your customised details?",
+			"Warning", JOptionPane.OK_CANCEL_OPTION);
 
-		JMenuItem inputItem = new JMenuItem("Reset customised clue details");
-		inputItem.addActionListener(event -> clueDetailsSharingManager.resetClueDetails());
-
-		popupMenu.add(inputItem);
-		popupMenu.show(e.getComponent(), e.getX(), e.getY());
+		if (confirm == 0)
+		{
+			clueDetailsSharingManager.resetClueDetails();
+		}
 	}
 
 	private JPanel setupTitlePanel()
@@ -328,7 +330,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
-				openResetPopup(e);
+				openResetPopup();
 			}
 
 			@Override
