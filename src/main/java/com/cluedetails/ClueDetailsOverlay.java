@@ -360,7 +360,10 @@ public class ClueDetailsOverlay extends OverlayPanel
 		Clues matchingClue = Clues.forItemId(scrollID);
 		if (matchingClue != null)
 		{
-			return matchingClue.getDetail(configManager);
+			String text = matchingClue.getDetail(configManager);
+			String color = Integer.toHexString(matchingClue.getDetailColor(configManager).getRGB()).substring(2);
+			if (!color.equals("ffffff")) return "<col=" + color + ">" + text;
+			return text;
 		}
 
 		if (isReadClue(menuEntry))

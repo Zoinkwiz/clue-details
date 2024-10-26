@@ -103,6 +103,8 @@ public class ClueInstance
 		{
 			Clues cluePart = Clues.forClueId(clueId);
 			if (cluePart == null) continue;
+			String color = Integer.toHexString(cluePart.getDetailColor(configManager).getRGB()).substring(2);
+			if (!color.equalsIgnoreCase("FFFFFF")) returnText.append("<col=").append(color).append(">");
 			if (isFirst)
 			{
 				isFirst = false;

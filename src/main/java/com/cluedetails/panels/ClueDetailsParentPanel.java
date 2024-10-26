@@ -55,6 +55,7 @@ import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
+import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 import net.runelite.client.util.ImageUtil;
 
 public class ClueDetailsParentPanel extends PluginPanel
@@ -77,6 +78,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private CluePreferenceManager cluePreferenceManager;
 	private ClueDetailsSharingManager clueDetailsSharingManager;
+	private final ClueDetailsPlugin plugin;
 	private final ClueDetailsConfig config;
 
 	private final JScrollPane scrollableContainer;
@@ -110,7 +112,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	}
 
 	public ClueDetailsParentPanel(ConfigManager configManager, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
-								ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager)
+									ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager, ClueDetailsPlugin plugin)
 	{
 		super(false);
 
@@ -119,6 +121,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		this.config = config;
 		this.chatboxPanelManager = chatboxPanelManager;
 		this.clueDetailsSharingManager = clueDetailsSharingManager;
+		this.plugin = plugin;
 
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 		setLayout(new BorderLayout());
@@ -246,8 +249,8 @@ public class ClueDetailsParentPanel extends PluginPanel
 	{
 		JPopupMenu popupMenu = new JPopupMenu();
 
-		JMenuItem inputItem = new JMenuItem("Edit text for clue");
-		inputItem.addActionListener(event ->
+		JMenuItem inputTextItem = new JMenuItem("Edit text for clue");
+		inputTextItem.addActionListener(event ->
 		{
 			clueTableModel.setEditableRow(row);
 			clueTable.editCellAt(row, 0);
@@ -258,7 +261,23 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		});
 
-		popupMenu.add(inputItem);
+		popupMenu.add(inputTextItem);
+
+		JMenuItem inputColorItem = new JMenuItem("Edit color for clue");
+		inputColorItem.addActionListener(event ->
+		{
+			// TODO: Properly edit via clueTableModel
+			Clues clue = Clues.CLUES.get(row - 1);
+			RuneliteColorPicker colorPicker = getColorPicker(clue.getDetailColor(configManager));
+			colorPicker.setOnColorChange(c ->
+			{
+				configManager.setConfiguration("clue-details-color", String.valueOf(clue.getClueID()), c);
+			});
+			colorPicker.setVisible(true);
+		});
+
+		popupMenu.add(inputColorItem);
+
 		popupMenu.show(e.getComponent(), e.getX(), e.getY());
 	}
 
@@ -559,5 +578,16 @@ public class ClueDetailsParentPanel extends PluginPanel
 	{
 		if (!config.onlyShowMarkedClues()) return true;
 		return cluePreferenceManager.getPreference(clue.getClueID());
+	}
+
+	private RuneliteColorPicker getColorPicker(Color color)
+	{
+		RuneliteColorPicker colorPicker = plugin.getColorPickerManager().create(
+			SwingUtilities.windowForComponent(this),
+			color,
+			"Edit Clue Detail Color",
+			false);
+		colorPicker.setLocationRelativeTo(this);
+		return colorPicker;
 	}
 }

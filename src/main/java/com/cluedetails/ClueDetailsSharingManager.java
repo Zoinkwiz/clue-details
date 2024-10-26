@@ -29,6 +29,7 @@ import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -38,6 +39,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
@@ -85,7 +88,7 @@ public class ClueDetailsSharingManager
 
 	public void exportClueDetails()
 	{
-		List<ClueIdToText> clueIdToTextList = new ArrayList<>();
+		List<ClueIdToDetails> clueIdToDetailsList = new ArrayList<>();
 
 		List<Clues> filteredClues = Clues.CLUES.stream()
 			.filter(config.filterListByTier())
@@ -96,25 +99,53 @@ public class ClueDetailsSharingManager
 		{
 			int id = clue.getClueID();
 			String clueText = configManager.getConfiguration("clue-details-text", String.valueOf(id));
-			if (clueText == null) continue;
+			String clueColor = configManager.getConfiguration("clue-details-color", String.valueOf(id));
 
-			clueIdToTextList.add(new ClueIdToText(id, clueText));
+			// Support importing text, or color, or both
+			if (clueColor != null)
+			{
+				if (isHexadecimal(clueColor))
+				{
+					if (clueText != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor)));
+					}
+					else
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
+					}
+				}
+			}
+			else
+			{
+				if (clueText != null)
+				{
+					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
+				}
+			}
 		}
 
-		if (clueIdToTextList.isEmpty())
+		if (clueIdToDetailsList.isEmpty())
 		{
 			sendChatMessage("You have no updated clue details to export.");
 			return;
 		}
 
-		final String exportDump = gson.toJson(clueIdToTextList);
+		final String exportDump = gson.toJson(clueIdToDetailsList);
 
 		log.debug("Exported clue details: {}", exportDump);
 
 		Toolkit.getDefaultToolkit()
 			.getSystemClipboard()
 			.setContents(new StringSelection(exportDump), null);
-		sendChatMessage(clueIdToTextList.size() + " clue details were copied to your clipboard.");
+		sendChatMessage(clueIdToDetailsList.size() + " clue details were copied to your clipboard.");
+	}
+
+	private boolean isHexadecimal(String input)
+	{
+		final Pattern HEXADECIMAL_PATTERN = Pattern.compile("\\p{XDigit}+");
+		final Matcher matcher = HEXADECIMAL_PATTERN.matcher(input);
+		return matcher.matches();
 	}
 
 	public void promptForImport()
@@ -141,17 +172,23 @@ public class ClueDetailsSharingManager
 			return;
 		}
 
-		List<ClueIdToText> importClueDetails;
+		List<ClueIdToDetails> importClueDetails;
 		try
 		{
 			// CHECKSTYLE:OFF
-			importClueDetails = gson.fromJson(clipboardText, new TypeToken<List<ClueIdToText>>(){}.getType());
+			importClueDetails = gson.fromJson(clipboardText, new TypeToken<List<ClueIdToDetails>>(){}.getType());
 			// CHECKSTYLE:ON
 		}
 		catch (JsonSyntaxException e)
 		{
 			log.debug("Malformed JSON for clipboard import", e);
 			sendChatMessage("You do not have any clue details copied in your clipboard.");
+			return;
+		}
+		catch (NumberFormatException e)
+		{
+			log.debug("Malformed JSON for clipboard import", e);
+			sendChatMessage("Your clue details color is not properly formatted.");
 			return;
 		}
 
@@ -167,11 +204,18 @@ public class ClueDetailsSharingManager
 			.build();
 	}
 
-	private void importClueDetails(Collection<ClueIdToText> importPoints)
+	private void importClueDetails(Collection<ClueIdToDetails> importPoints)
 	{
-		for (ClueIdToText importPoint : importPoints)
+		for (ClueIdToDetails importPoint : importPoints)
 		{
-			configManager.setConfiguration("clue-details-text", String.valueOf(importPoint.id), importPoint.text);
+			if (importPoint.text != null)
+			{
+				configManager.setConfiguration("clue-details-text", String.valueOf(importPoint.id), importPoint.text);
+			}
+			if (importPoint.color != null)
+			{
+				configManager.setConfiguration("clue-details-color", String.valueOf(importPoint.id), importPoint.color);
+			}
 		}
 
 		sendChatMessage(importPoints.size() + " clue details were imported from the clipboard.");
