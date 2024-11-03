@@ -345,6 +345,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 	private boolean shouldHighlight(int id)
 	{
+		if (id < 2677) return false; //TODO: Support fake beginner & master IDs
 		String shouldHighlight = configManager.getConfiguration("clue-details-highlights", String.valueOf(id));
 		return "true".equals(shouldHighlight);
 	}
@@ -518,6 +519,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 				return;
 			}
 
+			// TODO: Currently outlines all items in the tile
 			modelOutlineRenderer.drawOutline(
 				tile.getItemLayer(),
 				config.outlineWidth(),
