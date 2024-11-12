@@ -361,7 +361,7 @@ public class ClueInventoryManager
 	private boolean isUriBeginnerClue(Widget headModel)
 	{
 		if (headModel == null) return false;
-		return headModel.getModelId() == NpcID.URI_7311;
+		return headModel.getModelId() == NpcID.URI_8638;
 	}
 
 	private boolean isUriStandardDialogue(Widget npcChat)
