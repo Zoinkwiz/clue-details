@@ -790,7 +790,7 @@ public class Clues
 		new Clues("Oneiromancer: Talk", ItemID.CLUE_SCROLL_ELITE_12132, ClueTier.ELITE, null, List.of(new WorldPoint(2150, 3866, 0))),
 		new Clues("Old crone: Talk", ItemID.CLUE_SCROLL_ELITE_12138, ClueTier.ELITE, null, List.of(new WorldPoint(3462, 3557, 0))),
 		new Clues("Shadow dungeon: Emote", ItemID.CLUE_SCROLL_ELITE_12076, ClueTier.ELITE, null, List.of(new WorldPoint(2629, 5071, 0))),
-		new Clues("Unobtainable", ItemID.CLUE_SCROLL_ELITE_21524, ClueTier.ELITE, null, List.of(new WorldPoint(3689, 3830, 0))),
+		new Clues("Jardric: Talk", ItemID.CLUE_SCROLL_ELITE_21524, ClueTier.ELITE, null, List.of(new WorldPoint(3689, 3830, 0))),
 		new Clues("Mandrith: Talk", ItemID.CLUE_SCROLL_ELITE_12134, ClueTier.ELITE, null, List.of(new WorldPoint(3182, 3946, 0))),
 		new Clues("Fishing Platform: Emote", ItemID.CLUE_SCROLL_ELITE_12079, ClueTier.ELITE, null, List.of(new WorldPoint(2782, 3273, 0))),
 		new Clues("Kalphite Cave: Dig", ItemID.CLUE_SCROLL_ELITE_12158, ClueTier.ELITE, null, List.of(new WorldPoint(3307, 9505, 0))),
