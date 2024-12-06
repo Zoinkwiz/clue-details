@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +49,8 @@ import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
+import net.runelite.client.plugins.grounditems.GroundItemsConfig;
+import net.runelite.client.plugins.inventorytags.InventoryTagsConfig;
 
 @Slf4j
 public class ClueDetailsSharingManager
@@ -215,6 +218,19 @@ public class ClueDetailsSharingManager
 			if (importPoint.color != null)
 			{
 				configManager.setConfiguration("clue-details-color", String.valueOf(importPoint.id), importPoint.color);
+				// Ground Items and Inventory Tags cannot support unique colors for beginner & master clues
+				if (importPoint.id >= 2677)
+				{
+					if (config.colorGroundItems())
+					{
+						configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id, importPoint.color);
+					}
+					if (config.colorInventoryTags())
+					{
+						configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id,
+							gson.toJson(Map.of("color", importPoint.color)));
+					}
+				}
 			}
 		}
 

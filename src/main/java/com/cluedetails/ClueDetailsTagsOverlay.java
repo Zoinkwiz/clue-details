@@ -96,6 +96,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 						}
 						text.append(clueDetails == null ? "error" : clueDetails.getClueText());
 						detail.append(clueDetails == null ? "error" : clueDetails.getDetail(configManager));
+						clueDetailColor = clueDetails.getDetailColor(configManager);
 						isFirst = false;
 					}
 
@@ -105,6 +106,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					{
 						threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
 						clueDetail = threeStepCrypticClue.getDetail(configManager);
+						clueDetailColor = Color.WHITE;
 					}
 					else
 					{
@@ -148,7 +150,11 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		graphics.setFont(FontManager.getRunescapeSmallFont());
 
 		final TextComponent textComponent = new TextComponent();
-		textComponent.setColor(clueDetailColor);
+
+		if (config.colorInventoryClueTags())
+		{
+			textComponent.setColor(clueDetailColor);
+		}
 
 		String[] clueDetails = new String [] {clueDetail};
 		// Handle Three Step Cryptic Clues

@@ -27,6 +27,7 @@ package com.cluedetails.panels;
 import com.cluedetails.*;
 import com.cluedetails.ClueDetailsConfig.*;
 
+import com.google.gson.Gson;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -42,6 +43,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.swing.*;
@@ -49,9 +51,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import lombok.Getter;
+import net.runelite.api.ItemID;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
+import net.runelite.client.plugins.grounditems.GroundItemsConfig;
+import net.runelite.client.plugins.inventorytags.InventoryTagsConfig;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
@@ -272,6 +277,20 @@ public class ClueDetailsParentPanel extends PluginPanel
 			colorPicker.setOnColorChange(c ->
 			{
 				configManager.setConfiguration("clue-details-color", String.valueOf(clue.getClueID()), c);
+				int clueItemId = clue.getItemID();
+				if (clueItemId != ItemID.CLUE_SCROLL_BEGINNER && clueItemId != ItemID.CLUE_SCROLL_MASTER)
+				{
+					if (config.colorGroundItems())
+					{
+						configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueItemId, c);
+					}
+					if (config.colorInventoryTags())
+					{
+						Gson gson = new Gson();
+						configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueItemId,
+							gson.toJson(Map.of("color", c)));
+					}
+				}
 			});
 			colorPicker.setVisible(true);
 		});
