@@ -157,7 +157,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return;
 		}
 
-		String clueText = getText(menuEntryAndPos);
+		String clueText = getText(menuEntryAndPos, config.colorHoverText());
 
 		if (clueText == null) return;
 		// tooltip only supports </br> for multiline strings
@@ -209,7 +209,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		for (MenuEntryAndPos entryAndPos : entriesByTile)
 		{
 			MenuEntry menuEntry = entryAndPos.getMenuEntry();
-			String newText = getText(entryAndPos);
+			String newText = getText(entryAndPos, config.colorChangeClueText());
 			if (newText == null || !isTakeOrMarkClue(menuEntry)) continue;
 			String regex = "Clue scroll \\(.*?\\)";
 			if (clueDetailsPlugin.isDeveloperMode())
@@ -270,7 +270,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		if (!isTakeOrMarkClue(hoveredEntry)) return;
 
-		String text = getText(entryAndPos);
+		String text = getText(entryAndPos, config.colorHoverText());
 
 		panelComponent.getChildren().add(LineComponent.builder().left(text).build());
 		double infoPanelWidth = panelComponent.getBounds().getWidth();
@@ -350,7 +350,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		return "true".equals(shouldHighlight);
 	}
 
-	private String getText(MenuEntryAndPos menuEntryAndPos)
+	private String getText(MenuEntryAndPos menuEntryAndPos, boolean showColor)
 	{
 		MenuEntry menuEntry = menuEntryAndPos.getMenuEntry();
 		int scrollID = menuEntry.getIdentifier();
@@ -361,7 +361,13 @@ public class ClueDetailsOverlay extends OverlayPanel
 		Clues matchingClue = Clues.forItemId(scrollID);
 		if (matchingClue != null)
 		{
-			return matchingClue.getDetail(configManager);
+			String text = matchingClue.getDetail(configManager);
+			String color = Integer.toHexString(matchingClue.getDetailColor(configManager).getRGB()).substring(2);
+			if (showColor)
+			{
+				return "<col=" + color + ">" + text;
+			}
+			return text;
 		}
 
 		if (isReadClue(menuEntry))
@@ -369,7 +375,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(scrollID);
 			if (clueInstance != null && !clueInstance.getClueIds().isEmpty())
 			{
-				return clueInstance.getCombinedClueText(configManager);
+				return clueInstance.getCombinedClueText(configManager, showColor);
 			}
 		}
 
@@ -382,13 +388,13 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		if (!entriesByTile.isEmpty())
 		{
-			return getTextForTrackedClue(menuEntryAndPos);
+			return getTextForTrackedClue(menuEntryAndPos, showColor);
 		}
 
 		return null;
 	}
 
-	private String getTextForTrackedClue(MenuEntryAndPos entry)
+	private String getTextForTrackedClue(MenuEntryAndPos entry, boolean showColor)
 	{
 		MenuEntry menuEntry = entry.getMenuEntry();
 		int sceneX = menuEntry.getParam0();
@@ -402,7 +408,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		ClueInstance clueInstance = trackedClues.get(entry.getPosOnTile());
 		if (clueInstance == null) return null;
 
-		return clueInstance.getCombinedClueText(configManager);
+		return clueInstance.getCombinedClueText(configManager, showColor);
 	}
 
 	@Subscribe
