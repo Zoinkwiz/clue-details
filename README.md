@@ -1,6 +1,6 @@
 # Clue Details
 
-This plugin provides details on clue scrolls whilst they're on the floor. When you hover over a clue scroll, you'll get an infobox letting you know the step's details. This can be particularly useful for snowflake ironmen who can only do particular subsets of clues, allowing them to ignore ones they can't do.
+This plugin provides additional details on clue scrolls. This can be particularly useful for snowflake ironmen who can only do particular subsets of clues, allowing them to ignore ones they can't do.
 
 **NOTE**: This plugin will only work for beginner and master clues once you have read them once. After that, the plugin should keep track of them as long as they are in your inventory, dropped by you, or banked.
 
@@ -8,7 +8,7 @@ This plugin provides details on clue scrolls whilst they're on the floor. When y
 
 ## Marked Clues
 
-There is also configurable filter lists you can set up to enable highlighting of clues you've chosen. Use filters in the sidebar to easily find the clues you're interested in highlighting.
+There are configurable filter lists you can set up to enable highlighting of clues you've chosen. Use filters in the sidebar to easily find the clues you're interested in highlighting.
 
 ![Screenshot 2024-06-04 180612](https://github.com/Zoinkwiz/clue-regions/assets/29153234/d08ee01a-d8c0-4baf-9054-6fc9173af6cd)
 
@@ -20,9 +20,9 @@ As the hints appear if you hover over the menu option for a clue, it can make it
 
 ## Overlays
 
-The "Change clue item text" toggle in the plugin's settings makes it so the actual text of the clue item is adjusted, so you don't even need to hover for details.
+The "Show hover text" toggle will provide an infobox letting you know the step's details when you hover over a clue scroll.
 
-![Screenshot 2024-09-01 221305](https://github.com/user-attachments/assets/72685ba5-f441-4cac-b18c-6cc0ddf42d98)
+![Screenshot 2024-06-04 180849](https://github.com/Zoinkwiz/clue-regions/assets/29153234/4a470836-cff4-4ce7-93f1-060ba4a3a8d7)
 
 The "Show clue tags" toggle in the plugin's settings renders the details on the clue item in your inventory.
 
@@ -37,16 +37,37 @@ The "Show clues overlay" toggle in the plugin's settings renders the details as 
 
 ![365445046-c5c40aa4-b2d1-46a4-aa31-9ce609760bb6](https://github.com/user-attachments/assets/a1386cd7-7802-471f-92cd-9578688bda83)
 
-## Editing clue hints
+The "Change clue item text" toggle in the plugin's settings makes it so the actual text of the clue item is adjusted, so you don't even need to hover for details.
 
+![Screenshot 2024-09-01 221305](https://github.com/user-attachments/assets/72685ba5-f441-4cac-b18c-6cc0ddf42d98)
+
+## Editing clue details
+
+### Text
 You can also edit the clue hints shown to you, this can be done 2 different ways.
-1. In the sidebar, right-click the clue hint you want to change.
+1. In the sidebar, right-click the clue hint you want to change and select "Edit text for clue".
 2. Shift+right-click on a clue in your inventory, then select the "Clue details" option.
+3. Via Import/Export, see below
 
 Input the next text you want shown for it, and then submit. It will now be what is shown to you for the specific clue.
 
-## Import/Export clue descriptions
+### Colors
+You can also edit the clue hints shown to you, this can be done 2 different ways.
+1. In the sidebar, right-click the clue hint you want to change and select "Edit color for clue".
+2. Via Import/Export in RGB Hexadecimal format, see below
 
-You can share your edited clue descriptions, or import clue details from someone else via the import and export buttons at the top of the sidebar.
+It will now be what is shown to you for the specific clue depending on the configuration toggles enabled.
+
+The plugin also supports updating Ground Items and Inventory Tags Colors. 
+
+Enable the configuration options in the Overlay Colors section
+
+![Screenshot 2024-06-04 180612](https://github.com/Zoinkwiz/clue-regions/assets/29153234/d08ee01a-d8c0-4baf-9054-6fc9173af6cd)
+
+## Import/Export clue details
+
+You can share your edited clue detail text and colors, or import from someone else via the import and export buttons at the top of the sidebar.
 
 ![java_WJJq9uFwNH](https://github.com/user-attachments/assets/504a4bb8-a0dc-429d-be3d-1684e663a264)
+
+You can find custom clue details examples at https://thelope.github.io/clue-tags/details/
