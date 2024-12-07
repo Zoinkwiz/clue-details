@@ -40,8 +40,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
@@ -107,16 +105,13 @@ public class ClueDetailsSharingManager
 			// Support importing text, or color, or both
 			if (clueColor != null)
 			{
-				if (isHexadecimal(clueColor))
+				if (clueText != null)
 				{
-					if (clueText != null)
-					{
-						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor)));
-					}
-					else
-					{
-						clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
-					}
+					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor)));
+				}
+				else
+				{
+					clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
 				}
 			}
 			else
@@ -142,13 +137,6 @@ public class ClueDetailsSharingManager
 			.getSystemClipboard()
 			.setContents(new StringSelection(exportDump), null);
 		sendChatMessage(clueIdToDetailsList.size() + " clue details were copied to your clipboard.");
-	}
-
-	private boolean isHexadecimal(String input)
-	{
-		final Pattern HEXADECIMAL_PATTERN = Pattern.compile("\\p{XDigit}+");
-		final Matcher matcher = HEXADECIMAL_PATTERN.matcher(input);
-		return matcher.matches();
 	}
 
 	public void promptForImport()
@@ -219,16 +207,19 @@ public class ClueDetailsSharingManager
 			{
 				configManager.setConfiguration("clue-details-color", String.valueOf(importPoint.id), importPoint.color);
 				// Ground Items and Inventory Tags cannot support unique colors for beginner & master clues
-				if (importPoint.id >= 2677)
+				if (importPoint.id >= 2677 && (config.colorGroundItems() || config.colorInventoryTags()))
 				{
+					// Ensure ARGB format
+					Color color = Color.decode(configManager.getConfiguration("clue-details-color", String.valueOf(importPoint.id)));
+
 					if (config.colorGroundItems())
 					{
-						configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id, importPoint.color);
+						configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id, color);
 					}
 					if (config.colorInventoryTags())
 					{
 						configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id,
-							gson.toJson(Map.of("color", importPoint.color)));
+							gson.toJson(Map.of("color", color)));
 					}
 				}
 			}
