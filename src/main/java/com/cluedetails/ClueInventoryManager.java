@@ -29,6 +29,7 @@ import com.cluedetails.panels.ClueDetailsParentPanel;
 import java.util.*;
 import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
@@ -46,6 +47,7 @@ import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 
+@Slf4j
 @Singleton
 public class ClueInventoryManager
 {
@@ -274,7 +276,7 @@ public class ClueInventoryManager
 				Clues clue = Clues.forClueId(id);
 				if (clue == null)
 				{
-					System.out.println("Failed to find clue " + id);
+					log.debug("Failed to find clue " + id);
 					return;
 				}
 
@@ -304,7 +306,7 @@ public class ClueInventoryManager
 					Clues clue = Clues.forClueId(clueId);
 					if (clue == null)
 					{
-						System.out.println("Failed to find clue " + clueId);
+						log.debug("Failed to find clue " + clueId);
 						return;
 					}
 
