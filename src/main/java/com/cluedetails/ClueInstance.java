@@ -24,6 +24,7 @@
  */
 package com.cluedetails;
 
+import java.awt.Color;
 import java.util.List;
 import lombok.Data;
 import lombok.Getter;
@@ -95,7 +96,7 @@ public class ClueInstance
 		return timeToDespawnFromDataInTicks == null ? -1 : timeToDespawnFromDataInTicks;
 	}
 
-	public String getCombinedClueText(ConfigManager configManager, boolean showColor)
+	public String getCombinedClueText(ConfigManager configManager, boolean showColor, boolean isFloorText)
 	{
 		StringBuilder returnText = new StringBuilder();
 		boolean isFirst = true;
@@ -114,8 +115,14 @@ public class ClueInstance
 
 			if (showColor)
 			{
-				String color = Integer.toHexString(cluePart.getDetailColor(configManager).getRGB()).substring(2);
-				returnText.append("<col=").append(color).append(">");
+				Color color = cluePart.getDetailColor(configManager);
+
+				// Only change floor text color if it's not the default
+				if (!(isFloorText && color == Color.WHITE))
+				{
+					String hexColor = Integer.toHexString(color.getRGB()).substring(2);
+					returnText.append("<col=").append(hexColor).append(">");
+				}
 			}
 
 			returnText.append(cluePart.getDetail(configManager));
