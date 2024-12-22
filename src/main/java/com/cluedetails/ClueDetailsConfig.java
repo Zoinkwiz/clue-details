@@ -186,7 +186,9 @@ public interface ClueDetailsConfig extends Config
 		TOP(false, "Top"),
 		BOTTOM(false, "Bottom");
 
-		ClueTagLocation(Object selected, String displayName) {}
+		ClueTagLocation(Object selected, String displayName)
+		{
+		}
 	}
 
 	@ConfigItem(
@@ -355,7 +357,7 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "showInventoryCluesOverlay",
-		name = "Show details overlay",
+		name = "Show inventory overlay",
 		description = "Toggle whether to show an overlay with details of all clues in your inventory",
 		section = overlaysSection,
 		position = 4
@@ -405,25 +407,25 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "colorChangeClueText",
-		name = "Color ground menu text",
-		description = "Toggle whether to apply clue details color to ground menu text",
+		keyName = "colorInventoryCluesOverlay",
+		name = "Color inventory overlay",
+		description = "Toggle whether to apply clue details color to inventory overlay",
 		section = overlayColorsSection,
 		position = 2
 	)
-	default boolean colorChangeClueText()
+	default boolean colorInventoryCluesOverlay()
 	{
 		return true;
 	}
 
 	@ConfigItem(
-		keyName = "colorInventoryCluesOverlay",
-		name = "Color details overlay",
-		description = "Toggle whether to apply clue details color to details overlay",
+		keyName = "colorChangeClueText",
+		name = "Color ground menu text",
+		description = "Toggle whether to apply clue details color to ground menu text",
 		section = overlayColorsSection,
 		position = 3
 	)
-	default boolean colorInventoryCluesOverlay()
+	default boolean colorChangeClueText()
 	{
 		return true;
 	}
