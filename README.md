@@ -62,7 +62,7 @@ Updating Ground Items and Inventory Tags colors is also supported.
 
 - Enable the configuration options in the "Overlay Colors" section prior to editing colors. This is applied at the time the colors are edited/imported.
   
-- ![Ody99cS](https://github.com/user-attachments/assets/59060f5d-2b43-484f-b593-4079abc7996e)
+- ![zqZvd7j](https://github.com/user-attachments/assets/b5f9db3e-d2fb-4f3e-95f5-2197feadd591)
 
 - Resetting Ground Items and Inventory Tags colors must be done via those plugins.
 

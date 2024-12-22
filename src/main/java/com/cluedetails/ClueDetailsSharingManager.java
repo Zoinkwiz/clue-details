@@ -88,7 +88,7 @@ public class ClueDetailsSharingManager
 		}
 	}
 
-	public void exportClueDetails()
+	public void exportClueDetails(boolean exportText, boolean exportColors)
 	{
 		List<ClueIdToDetails> clueIdToDetailsList = new ArrayList<>();
 
@@ -103,24 +103,33 @@ public class ClueDetailsSharingManager
 			String clueText = configManager.getConfiguration("clue-details-text", String.valueOf(id));
 			String clueColor = configManager.getConfiguration("clue-details-color", String.valueOf(id));
 
-			// Support importing text, or color, or both
-			if (clueColor != null)
+			if (exportText && exportColors)
 			{
-				if (clueText != null)
+				// Export both
+				if (clueText != null && clueColor != null)
 				{
 					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor)));
 				}
-				else
+				// Export text
+				else if (clueText != null)
+				{
+					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
+				}
+				// Export colors
+				else if (clueColor != null)
 				{
 					clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
 				}
 			}
-			else
+			// Export text
+			else if (exportText && clueText != null)
 			{
-				if (clueText != null)
-				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
-				}
+				clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
+			}
+			// Export colors
+			else if (exportColors && clueColor != null)
+			{
+				clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
 			}
 		}
 
