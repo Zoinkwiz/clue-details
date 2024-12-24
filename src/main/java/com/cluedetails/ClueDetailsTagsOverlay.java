@@ -57,7 +57,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 	{
 		if (config.showInventoryClueTags())
 		{
-			Clues clue = Clues.forItemId(itemId);
+			Clues clue = Clues.forItemId(itemId, config);
 			String clueDetail = null;
 			Color clueDetailColor = Color.WHITE;
 
@@ -88,7 +88,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					StringBuilder detail = new StringBuilder();
 					for (Integer id : ids)
 					{
-						Clues clueDetails = Clues.forClueId(id);
+						Clues clueDetails = Clues.forClueId(id, config);
 						if (!isFirst)
 						{
 							text.append("<br>");

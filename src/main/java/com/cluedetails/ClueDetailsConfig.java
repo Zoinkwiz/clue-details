@@ -186,7 +186,9 @@ public interface ClueDetailsConfig extends Config
 		TOP(false, "Top"),
 		BOTTOM(false, "Bottom");
 
-		ClueTagLocation(Object selected, String displayName) {}
+		ClueTagLocation(Object selected, String displayName)
+		{
+		}
 	}
 
 	@ConfigItem(
@@ -450,5 +452,80 @@ public interface ClueDetailsConfig extends Config
 	default boolean colorInventoryTags()
 	{
 		return false;
+	}
+
+	@ConfigSection(name = "Tier Toggles", description = "Options to enable particular clue tiers", position = 6)
+	String tierTogglesSection = "Tier Toggles";
+
+	@ConfigItem(
+		keyName = "beginnerDetails",
+		name = "Beginner clues",
+		description = "Beginner clue details are shown",
+		section = tierTogglesSection,
+		position = 0
+	)
+	default boolean beginnerDetails()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "easyDetails",
+		name = "Easy clues",
+		description = "Easy clue details are shown",
+		section = tierTogglesSection,
+		position = 1
+	)
+	default boolean easyDetails()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "mediumDetails",
+		name = "Medium clues",
+		description = "Medium clue details are shown",
+		section = tierTogglesSection,
+		position = 2
+	)
+	default boolean mediumDetails()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "hardDetails",
+		name = "Hard clues",
+		description = "Hard clue details are shown",
+		section = tierTogglesSection,
+		position = 3
+	)
+	default boolean hardDetails()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "eliteDetails",
+		name = "Elite clues",
+		description = "Elite clue details are shown",
+		section = tierTogglesSection,
+		position = 4
+	)
+	default boolean eliteDetails()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "masterDetails",
+		name = "Master clues",
+		description = "Master clue details are shown",
+		section = tierTogglesSection,
+		position = 5
+	)
+	default boolean masterDetails()
+	{
+		return true;
 	}
 }

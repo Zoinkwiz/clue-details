@@ -220,7 +220,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 				{
 					scrollID = menuEntry.getItemId();
 				}
-				Clues matchingClue = Clues.forItemId(scrollID);
+				Clues matchingClue = Clues.forItemId(scrollID, config);
 
 				if (matchingClue != null)
 				{
@@ -380,7 +380,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		{
 			scrollID = menuEntry.getItemId();
 		}
-		Clues matchingClue = Clues.forItemId(scrollID);
+		Clues matchingClue = Clues.forItemId(scrollID, config);
 		if (matchingClue != null)
 		{
 			String text = matchingClue.getDetail(configManager);

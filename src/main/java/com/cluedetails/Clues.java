@@ -31,6 +31,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import net.runelite.api.ItemID;
 import net.runelite.api.coords.WorldPoint;
@@ -1068,9 +1069,25 @@ public class Clues
 		ItemID.DAEYALT_ESSENCE
 	);
 
-	public static Clues forItemId(int itemId)
+	public static List<Clues> filteredClues(ClueDetailsConfig config)
 	{
-		for (Clues clue : CLUES)
+		List<ClueTier> enabledClues = new ArrayList<>();
+
+		if (config.beginnerDetails()) enabledClues.add(ClueTier.BEGINNER);
+		if (config.easyDetails()) enabledClues.add(ClueTier.EASY);
+		if (config.mediumDetails()) enabledClues.add(ClueTier.MEDIUM);
+		if (config.hardDetails()) enabledClues.add(ClueTier.HARD);
+		if (config.eliteDetails()) enabledClues.add(ClueTier.ELITE);
+		if (config.masterDetails()) enabledClues.add(ClueTier.MASTER);
+
+		return Clues.CLUES.stream()
+			.filter(c -> enabledClues.contains(c.getClueTier()))
+			.collect(Collectors.toList());
+	}
+
+	public static Clues forItemId(int itemId, ClueDetailsConfig config)
+	{
+		for (Clues clue : filteredClues(config))
 		{
 			if (clue.clueID == -1 && clue.getItemID() == itemId)
 			{
@@ -1092,6 +1109,18 @@ public class Clues
 		return null;
 	}
 
+	public static Clues forClueId(int clueId, ClueDetailsConfig config)
+	{
+		for (Clues clue : filteredClues(config))
+		{
+			if (clue.getClueID() == clueId)
+			{
+				return clue;
+			}
+		}
+		return null;
+	}
+
 	public Integer getClueID()
 	{
 		if (clueID != -1)
@@ -1101,11 +1130,11 @@ public class Clues
 		return getItemID();
 	}
 
-	public static Integer forTextGetId(String rawText)
+	public static Integer forTextGetId(String rawText, ClueDetailsConfig config)
 	{
 		final String text = Text.sanitizeMultilineText(rawText).toLowerCase();
 
-		for (Clues clue : CLUES)
+		for (Clues clue : filteredClues(config))
 		{
 			if (text.equalsIgnoreCase(clue.getClueText()))
 			{
