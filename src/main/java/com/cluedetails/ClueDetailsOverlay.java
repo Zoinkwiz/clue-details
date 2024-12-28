@@ -344,7 +344,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		MenuAction type = entry.getType();
 		int identifier = entry.getIdentifier();
 
-		return Clues.isClue(identifier, clueDetailsPlugin.isDeveloperMode()) && type == MenuAction.GROUND_ITEM_THIRD_OPTION && option.equals("Take");
+		return Clues.isClue(identifier, config, clueDetailsPlugin.isDeveloperMode()) && type == MenuAction.GROUND_ITEM_THIRD_OPTION && option.equals("Take");
 	}
 
 	public boolean isTakeOrMarkClue(MenuEntry entry)
@@ -353,7 +353,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		MenuAction type = entry.getType();
 		int identifier = entry.getIdentifier();
 
-		return Clues.isClue(identifier, clueDetailsPlugin.isDeveloperMode()) && (
+		return Clues.isClue(identifier, config, clueDetailsPlugin.isDeveloperMode()) && (
 			(type == MenuAction.GROUND_ITEM_THIRD_OPTION && option.equals("Take")) ||
 				(type == MenuAction.RUNELITE && (option.equals("Unmark") || option.equals("Mark"))));
 	}
@@ -362,7 +362,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 	{
 		String option = entry.getOption();
 		int itemId = entry.getItemId();
-		return Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode()) && option.equals("Read");
+		return Clues.isClue(itemId, config, clueDetailsPlugin.isDeveloperMode()) && option.equals("Read");
 	}
 
 	private boolean shouldHighlight(int id)

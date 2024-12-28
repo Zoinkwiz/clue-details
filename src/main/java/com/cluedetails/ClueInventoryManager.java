@@ -180,7 +180,7 @@ public class ClueInventoryManager
 		List<Integer> clueIds = new ArrayList<>();
 
 		// Beginner Map Clues all use the same ItemID, but the InterfaceID used to display them is unique
-		clueIds.add(Clues.forInterfaceIdGetId(interfaceId));
+		clueIds.add(Clues.forInterfaceIdGetId(interfaceId, clueDetailsPlugin.provideConfig(configManager)));
 
 		// Assume can only be beginner for now
 		ClueInstance beginnerClueInInv = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);

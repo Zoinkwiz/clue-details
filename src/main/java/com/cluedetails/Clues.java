@@ -1145,14 +1145,15 @@ public class Clues
 		return null;
 	}
 
-	public static Integer forInterfaceIdGetId(int interfaceId)
+	public static Integer forInterfaceIdGetId(int interfaceId, ClueDetailsConfig config)
 	{
 		// Only check beginner map clues
 		for (int i = 21; i < 26; i++)
 		{
-			if (CLUES.get(i).getItemID() == interfaceId)
+			List<Clues> filteredClues = filteredClues(config);
+			if (filteredClues.get(i).getItemID() == interfaceId)
 			{
-				return CLUES.get(i).getClueID();
+				return filteredClues.get(i).getClueID();
 			}
 		}
 		return null;
@@ -1172,9 +1173,9 @@ public class Clues
 		return getClueDetailColor();
 	}
 
-	public static boolean isClue(int itemId, boolean isDeveloperMode)
+	public static boolean isClue(int itemId, ClueDetailsConfig config, boolean isDeveloperMode)
 	{
-		return CLUES.stream().anyMatch((clue) -> clue.getItemID() == itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
+		return filteredClues(config).stream().anyMatch((clue) -> clue.getItemID() == itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
 	}
 
 	public static boolean isTrackedClue(int itemId, boolean isDeveloperMode)
