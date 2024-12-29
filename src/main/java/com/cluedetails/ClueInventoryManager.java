@@ -226,6 +226,7 @@ public class ClueInventoryManager
 		// Mark Option
 		if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 		{
+			// TODO: Doesn't support clues on the ground
 			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
 
@@ -233,6 +234,19 @@ public class ClueInventoryManager
 			if (clueSelected.getClueIds().size() == 1)
 			{
 				clueId = clueSelected.getClueIds().get(0);
+				isMarked = cluePreferenceManager.getPreference(clueId);
+
+				client.getMenu().createMenuEntry(-1)
+					.setOption(isMarked ? "Unmark" : "Mark")
+					.setTarget(event.getTarget())
+					.setIdentifier(itemId)
+					.setType(MenuAction.RUNELITE)
+					.onClick(e ->
+					{
+						boolean currentValue = cluePreferenceManager.getPreference(clueId);
+						cluePreferenceManager.savePreference(clueId, !currentValue);
+						panel.refresh();
+					});
 			}
 			else
 			{
@@ -243,7 +257,6 @@ public class ClueInventoryManager
 		else
 		{
 			clueId = itemId;
-			// We don't want to have marking on masters I think
 			client.getMenu().createMenuEntry(-1)
 				.setOption(isMarked ? "Unmark" : "Mark")
 				.setTarget(event.getTarget())

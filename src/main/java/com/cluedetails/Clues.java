@@ -1101,6 +1101,30 @@ public class Clues
 		return getItemID();
 	}
 
+	public static Integer forIdGetItemId(int id)
+	{
+		for (Clues clue : CLUES)
+		{
+			if (clue.getClueID() == id)
+			{
+				if (clue.getItemID() >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
+					&& clue.getItemID() <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER)
+				{
+					return ItemID.CLUE_SCROLL_BEGINNER;
+				}
+				else
+				{
+					return clue.getItemID();
+				}
+			}
+			else if(clue.getItemID() == id)
+			{
+				return clue.getItemID();
+			}
+		}
+		return null;
+	}
+
 	public static Integer forTextGetId(String rawText)
 	{
 		final String text = Text.sanitizeMultilineText(rawText).toLowerCase();
