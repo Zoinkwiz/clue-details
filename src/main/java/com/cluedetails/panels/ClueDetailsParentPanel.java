@@ -27,7 +27,6 @@ package com.cluedetails.panels;
 import com.cluedetails.*;
 import com.cluedetails.ClueDetailsConfig.*;
 
-import com.google.gson.Gson;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -52,9 +51,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import lombok.Getter;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.ItemID;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.game.chatbox.ChatboxItemSearch;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.inventorytags.InventoryTagsConfig;
@@ -63,6 +65,7 @@ import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
 import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 import net.runelite.client.util.ImageUtil;
+import org.apache.commons.text.WordUtils;
 
 public class ClueDetailsParentPanel extends PluginPanel
 {
@@ -186,9 +189,9 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 				if (e.getButton() == MouseEvent.BUTTON1)
 				{
-					boolean currentState = cluePreferenceManager.getPreference(clue.getClueID());
+					boolean currentState = cluePreferenceManager.getHighlightPreference(clue.getClueID());
 					boolean newState = !currentState;
-					cluePreferenceManager.savePreference(clue.getClueID(), newState);
+					cluePreferenceManager.saveHighlightPreference(clue.getClueID(), newState);
 					clueTable.repaint();
 				}
 				else if (e.getButton() == MouseEvent.BUTTON3)
@@ -306,6 +309,47 @@ public class ClueDetailsParentPanel extends PluginPanel
 		});
 
 		popupMenu.add(inputColorItem);
+
+		String inputItemsTooltip = "Add/Remove item";
+		JMenuItem inputItems = new JMenuItem(inputItemsTooltip);
+		inputItems.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(row, 0);
+			Clues clue = item.getClue();
+
+			ChatboxItemSearch itemSearch = getItemSearch(inputItemsTooltip);
+			itemSearch.onItemSelected((itemId) ->
+			{
+				// Get existing Clue itemIds
+				int clueId = clue.getClueID();
+				List<Integer> clueItemIds = cluePreferenceManager.getItemsPreference(clueId);
+
+				if (clueItemIds == null)
+				{
+					clueItemIds = new ArrayList<>();
+				}
+
+				// Remove if already present
+				if (clueItemIds.contains(itemId))
+				{
+					clueItemIds.remove(itemId);
+					String chatMessage = "Removed item from " + WordUtils.capitalize(clue.getClueTier().name().toLowerCase()) + " clue";
+					sendChatMessage(chatMessage);
+				}
+				// Add if not present
+				else
+				{
+					clueItemIds.add(itemId);
+					String chatMessage = "Added item to " + WordUtils.capitalize(clue.getClueTier().name().toLowerCase()) + " clue";
+					sendChatMessage(chatMessage);
+				}
+
+				// Save Clue itemIds
+				cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
+			}).build();
+		});
+
+		popupMenu.add(inputItems);
 
 		popupMenu.show(e.getComponent(), e.getX(), e.getY());
 	}
@@ -606,7 +650,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	public boolean filterUnmarkedClues(Clues clue)
 	{
 		if (!config.onlyShowMarkedClues()) return true;
-		return cluePreferenceManager.getPreference(clue.getClueID());
+		return cluePreferenceManager.getHighlightPreference(clue.getClueID());
 	}
 
 	private RuneliteColorPicker getColorPicker(Color color)
@@ -618,5 +662,19 @@ public class ClueDetailsParentPanel extends PluginPanel
 			true);
 		colorPicker.setLocationRelativeTo(this);
 		return colorPicker;
+	}
+
+	public ChatboxItemSearch getItemSearch(String tooltip)
+	{
+		return plugin.getItemSearch()
+			.tooltipText(tooltip);
+	}
+
+	private void sendChatMessage(final String message)
+	{
+		plugin.getChatMessageManager().queue(QueuedMessage.builder()
+			.type(ChatMessageType.CONSOLE)
+			.runeLiteFormattedMessage(message)
+			.build());
 	}
 }

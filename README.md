@@ -41,20 +41,24 @@ The "Change clue item text" toggle in the plugin's settings makes it so the actu
 
 ![Screenshot 2024-09-01 221305](https://github.com/user-attachments/assets/72685ba5-f441-4cac-b18c-6cc0ddf42d98)
 
+The "Highlight inventory clue items" toggle highlights configured items for each clue in your inventory
+
+TODO: screenshot here
+
 ## Editing clue details
 
 ### Text
 You can edit the clue details shown to you, this can be done 3 different ways.
 1. In the sidebar, right-click the clue hint you want to change and select "Edit text for clue"
 2. Shift+right-click on a clue in your inventory, then select the "Clue details" option
-3. Via Import/Export, see below
+3. Via Import/Export. See below
 
 Input the next text you want shown for it, and then submit. It will now be what is shown to you for the specific clue.
 
 ### Colors
 You can edit the clue details colors shown to you, this can be done 2 different ways.
 1. In the sidebar, right-click the clue hint you want to change and select "Edit color for clue"
-2. Via Import/Export in RGB Hexadecimal format, see below
+2. Via Import/Export in RGB Hexadecimal format. See below
 
 Colors will now be updated for the specific clue depending on the configuration toggles shown below.
 
@@ -66,9 +70,16 @@ Updating Ground Items and Inventory Tags colors is also supported.
 
 - Resetting Ground Items and Inventory Tags colors must be done via those plugins.
 
+### Items
+You can edit the clue details items for each clue, this can be done 3 different ways.
+1. If you have the clue in your inventory for which you would like to highlight an item:
+    - Right-click the desired inventory item and choose "Add" or "Remove" for the clue via the option specifying its tier
+2. In the sidebar, right-click the clue you would like to highlight an item for, and select "Add/Remove item"
+3. Via Import/Export. See below
+
 ## Import/Export clue details
 
-You can share your edited clue detail text and colors, or import from someone else via the import and export buttons at the top of the sidebar.
+You can share your edited clue detail text, colors, and items, or import from someone else via the import and export buttons at the top of the sidebar.
 
 ![java_WJJq9uFwNH](https://github.com/user-attachments/assets/504a4bb8-a0dc-429d-be3d-1684e663a264)
 

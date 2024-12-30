@@ -25,31 +25,54 @@
 package com.cluedetails;
 
 import java.awt.Color;
+import java.util.List;
 import lombok.Data;
 
 @Data
 public class ClueIdToDetails
 {
 	int id;
-
 	String text;
+	Color color;
+	List<Integer> itemIds;
+
 	public ClueIdToDetails(int id, String text)
 	{
-		this.text = text;
 		this.id = id;
+		this.text = text;
 	}
 
-	Color color;
 	public ClueIdToDetails(int id, Color color)
 	{
-		this.color = color;
 		this.id = id;
+		this.color = color;
 	}
 
 	public ClueIdToDetails(int id, String text, Color color)
 	{
+		this.id = id;
 		this.text = text;
 		this.color = color;
+	}
+
+	public ClueIdToDetails(int id, List<Integer> itemIds)
+	{
 		this.id = id;
+		this.itemIds = itemIds;
+	}
+
+	public ClueIdToDetails(int id, String text, List<Integer> itemIds)
+	{
+		this.id = id;
+		this.text = text;
+		this.itemIds = itemIds;
+	}
+
+	public ClueIdToDetails(int id, String text, Color color, List<Integer> itemIds)
+	{
+		this.id = id;
+		this.text = text;
+		this.color = color;
+		this.itemIds = itemIds;
 	}
 }

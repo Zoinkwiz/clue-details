@@ -30,6 +30,7 @@ import java.util.*;
 import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
@@ -46,6 +47,7 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
+import org.apache.commons.text.WordUtils;
 
 @Slf4j
 @Singleton
@@ -59,6 +61,8 @@ public class ClueInventoryManager
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
+	@Getter
+	private Clues[] cluesInInventory = new Clues[6];
 
 	public ClueInventoryManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin, ClueGroundManager clueGroundManager,
 	                            ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
@@ -80,11 +84,25 @@ public class ClueInventoryManager
 		// Clear current tracked clues
 		trackedCluesInInventory.clear();
 
+		// Clear current clues in inventory
+		cluesInInventory = new Clues[6];
+
 		Item[] inventoryItems = inventoryContainer.getItems();
 
 		for (Item item : inventoryItems)
 		{
-			if (item == null || !Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) continue;
+			if (item == null) continue;
+
+			// Track Easy->Elite clues in inventory
+			if (!Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
+			{
+				Clues clue = Clues.forItemId(item.getId());
+				if (clue != null)
+				{
+					cluesInInventory[clue.getClueTier().getValue()] = clue;
+				}
+			}
+
 			int itemId = item.getId();
 
 			ClueInstance clueInstance = null;
@@ -212,15 +230,44 @@ public class ClueInventoryManager
 			return;
 		}
 
-		if (!event.getTarget().contains("Clue scroll")) return;
-		if (!isExamineClue(event.getMenuEntry())) return;
-
 		MenuEntry entry = event.getMenuEntry();
 		final Widget w = entry.getWidget();
 		boolean isInventoryMenu = w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY;
 		int itemId = isInventoryMenu ? event.getItemId() : event.getIdentifier();
-		boolean isMarked = cluePreferenceManager.getPreference(itemId);
 
+		// Clue Highlight Option
+		if (isInventoryMenu
+			&& !event.getTarget().contains("Clue scroll")
+			&& "Examine".equals(entry.getOption())
+			&& entry.getIdentifier() == 10)
+		{
+			for (Clues clue : cluesInInventory)
+			{
+				if (clue == null) continue;
+
+				boolean itemInCluePreference= cluePreferenceManager.itemsPreferenceContainsItem(clue.getClueID(), itemId);
+
+				String action = itemInCluePreference ? "Remove from " : "Add to ";
+				String tierName = WordUtils.capitalize(clue.getClueTier().name().toLowerCase()).replace("_", " ");
+				final String text = action + tierName + " clue";
+
+				// Add menu to item for clue
+				client.getMenu().createMenuEntry(-1)
+					.setOption(text)
+					.setTarget(event.getTarget())
+					.setIdentifier(itemId)
+					.setType(MenuAction.RUNELITE)
+					.onClick(e ->
+					{
+						updateClueItems(clue, itemId, cluePreferenceManager);
+					});
+			}
+		}
+
+		if (!event.getTarget().contains("Clue scroll")) return;
+		if (!isExamineClue(event.getMenuEntry())) return;
+
+		boolean isMarked = cluePreferenceManager.getHighlightPreference(itemId);
 		final int clueId;
 
 		// Mark Option
@@ -251,8 +298,8 @@ public class ClueInventoryManager
 				.setType(MenuAction.RUNELITE)
 				.onClick(e ->
 				{
-					boolean currentValue = cluePreferenceManager.getPreference(e.getIdentifier());
-					cluePreferenceManager.savePreference(e.getIdentifier(), !currentValue);
+					boolean currentValue = cluePreferenceManager.getHighlightPreference(e.getIdentifier());
+					cluePreferenceManager.saveHighlightPreference(e.getIdentifier(), !currentValue);
 					panel.refresh();
 				});
 		}
@@ -320,6 +367,32 @@ public class ClueInventoryManager
 						.build();
 				});
 		}
+	}
+
+	private void updateClueItems(Clues clue, int itemId, CluePreferenceManager cluePreferenceManager)
+	{
+		// Get existing Clue itemIds
+		int clueId = clue.getClueID();
+		List<Integer> clueItemIds = cluePreferenceManager.getItemsPreference(clueId);
+
+		if (clueItemIds == null)
+		{
+			clueItemIds = new ArrayList<>();
+		}
+
+		// Remove if already present
+		if (clueItemIds.contains(itemId))
+		{
+			clueItemIds.remove(Integer.valueOf(itemId));
+		}
+		// Add if not present
+		else
+		{
+			clueItemIds.add(itemId);
+		}
+
+		// Save Clue itemIds
+		cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
 	}
 
 	public boolean isExamineClue(MenuEntry entry)

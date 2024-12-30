@@ -24,25 +24,61 @@
  */
 package com.cluedetails;
 
+import static com.cluedetails.ClueDetailsConfig.CLUE_ITEMS_CONFIG;
+import com.google.gson.reflect.TypeToken;
+import java.util.List;
 import net.runelite.client.config.ConfigManager;
 
 public class CluePreferenceManager
 {
-	ConfigManager configManager;
+	private final ClueDetailsPlugin clueDetailsPlugin;
+	private final ConfigManager configManager;
 
-	public CluePreferenceManager(ConfigManager configManager)
+	public CluePreferenceManager(ClueDetailsPlugin clueDetailsPlugin, ConfigManager configManager)
 	{
+		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.configManager = configManager;
 	}
 
-	public boolean getPreference(int clueID)
+	public boolean getHighlightPreference(int clueID)
 	{
 		return Boolean.TRUE.equals(configManager.getConfiguration("clue-details-highlights",
 			String.valueOf(clueID), Boolean.class));
 	}
 
-	public void savePreference(int clueID, boolean newValue)
+	public void saveHighlightPreference(int clueID, boolean newValue)
 	{
 		configManager.setConfiguration("clue-details-highlights", String.valueOf(clueID), newValue);
+	}
+
+	public boolean itemsPreferenceContainsItem(int clueID, int itemID)
+	{
+		List<Integer> clueItemIds = getItemsPreference(clueID);
+
+		if (clueItemIds != null)
+		{
+			return getItemsPreference(clueID).contains(itemID);
+		}
+		return false;
+	}
+
+	public List<Integer> getItemsPreference(int clueID)
+	{
+		String clueItems = configManager.getConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(clueID));
+
+		return clueDetailsPlugin.gson.fromJson(clueItems, new TypeToken<List<Integer>>(){}.getType());
+	}
+
+	public void saveItemsPreference(int clueID, List<Integer> newItems)
+	{
+		if (newItems.isEmpty())
+		{
+			configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(clueID));
+		}
+		else
+		{
+			String clueItemIdsJson = clueDetailsPlugin.gson.toJson(newItems);
+			configManager.setConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(clueID), clueItemIdsJson);
+		}
 	}
 }

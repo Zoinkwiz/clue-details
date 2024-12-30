@@ -27,6 +27,7 @@ package com.cluedetails;
 import com.cluedetails.filters.ClueOrders;
 import com.cluedetails.filters.ClueRegion;
 import com.cluedetails.filters.ClueTier;
+import java.awt.Color;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -38,6 +39,8 @@ import net.runelite.client.config.*;
 @ConfigGroup("clue-details")
 public interface ClueDetailsConfig extends Config
 {
+	String CLUE_ITEMS_CONFIG = "clue-details-items";
+
 	enum ClueOrdering implements Comparator<Clues>
 	{
 		/**
@@ -377,6 +380,31 @@ public interface ClueDetailsConfig extends Config
 		return false;
 	}
 
+	@ConfigItem(
+		keyName = "highlightInventoryClueItems",
+		name = "Highlight inventory clue items",
+		description = "Toggle whether to highlight configured items for each clue in your inventory",
+		section = overlaysSection,
+		position = 6
+	)
+	default boolean highlightInventoryClueItems()
+	{
+		return true;
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "itemHighlightColor",
+		name = "Item highlight color",
+		description = "Configures the default color for highlighted inventory clue items",
+		section = overlaysSection,
+		position = 7
+	)
+	default Color itemHighlightColor()
+	{
+		return Color.YELLOW.darker();
+	}
+
 	@ConfigSection(name = "Overlay Colors", description = "Options that effect overlay colors", position = 5)
 	String overlayColorsSection = "Overlay Colors";
 
@@ -429,11 +457,23 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "colorInventoryClueItems",
+		name = "Color inventory clue items",
+		description = "Toggle whether apply clue details color to highlighted inventory clue items",
+		section = overlayColorsSection,
+		position = 4
+	)
+	default boolean colorInventoryClueItems()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "colorGroundItems",
 		name = "Apply colors to Ground Items",
 		description = "When updating clue details colors, apply the color to the Ground Items plugin. Does not supprt beginner and master clues",
 		section = overlayColorsSection,
-		position = 4
+		position = 5
 	)
 	default boolean colorGroundItems()
 	{
@@ -445,7 +485,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Apply colors to Inventory Tags",
 		description = "When updating clue details colors, apply the color to the Inventory Tags plugin. Does not supprt beginner and master clues",
 		section = overlayColorsSection,
-		position = 5
+		position = 6
 	)
 	default boolean colorInventoryTags()
 	{

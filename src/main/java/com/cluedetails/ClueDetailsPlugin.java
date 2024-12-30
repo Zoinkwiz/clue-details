@@ -45,7 +45,9 @@ import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
+import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.events.ClientShutdown;
+import net.runelite.client.game.chatbox.ChatboxItemSearch;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigGroup;
@@ -135,7 +137,15 @@ public class ClueDetailsPlugin extends Plugin
 
 	@Getter
 	@Inject
+	private ChatMessageManager chatMessageManager;
+
+	@Getter
+	@Inject
 	private ColorPickerManager colorPickerManager;
+
+	@Inject
+	@Getter
+	private ChatboxItemSearch itemSearch;
 
 	@Getter
 	private ClueDetailsParentPanel panel;
@@ -155,7 +165,7 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.add(widgetOverlay);
 		eventBus.register(widgetOverlay);
 
-		cluePreferenceManager = new CluePreferenceManager(configManager);
+		cluePreferenceManager = new CluePreferenceManager(this, configManager);
 		clueGroundManager = new ClueGroundManager(client, configManager, this);
 		clueBankManager = new ClueBankManager(client, configManager, gson);
 		clueInventoryManager = new ClueInventoryManager(client, configManager, this, clueGroundManager, clueBankManager, chatboxPanelManager);

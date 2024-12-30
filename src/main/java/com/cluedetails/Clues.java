@@ -24,9 +24,11 @@
  */
 package com.cluedetails;
 
+import static com.cluedetails.ClueDetailsConfig.CLUE_ITEMS_CONFIG;
 import com.cluedetails.filters.ClueTier;
 import com.cluedetails.filters.OrRequirement;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.reflect.TypeToken;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1141,6 +1143,13 @@ public class Clues
 		String colorCode = configManager.getConfiguration("clue-details-color", String.valueOf(getClueID()));
 		if (colorCode != null) return Color.decode(colorCode);
 		return getClueDetailColor();
+	}
+
+	public List<Integer> getItems(ClueDetailsPlugin plugin, ConfigManager configManager)
+	{
+		String items = configManager.getConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(getClueID()));
+		if (items != null) return plugin.gson.fromJson(items, new TypeToken<List<Integer>>(){}.getType());
+		return null;
 	}
 
 	public static boolean isClue(int itemId, boolean isDeveloperMode)

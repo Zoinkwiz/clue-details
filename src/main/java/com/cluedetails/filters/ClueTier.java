@@ -24,17 +24,26 @@
  */
 package com.cluedetails.filters;
 
+import lombok.Getter;
+
+@Getter
 public enum ClueTier
 {
-	SHOW_ALL,
-	BEGINNER,
-	EASY,
-	MEDIUM,
-	MEDIUM_CHALLENGE,
-	MEDIUM_KEY,
-	HARD,
-	HARD_CHALLENGE,
-	ELITE,
-	ELITE_CHALLENGE,
-	MASTER
+	BEGINNER(0),
+	EASY(1),
+	MEDIUM(2),
+	MEDIUM_CHALLENGE(2),
+	MEDIUM_KEY(2),
+	HARD(3),
+	HARD_CHALLENGE(3),
+	ELITE(4),
+	ELITE_CHALLENGE(4),
+	MASTER(5);
+
+	private final int value;
+
+	ClueTier(int value)
+	{
+		this.value = value;
+	}
 }
