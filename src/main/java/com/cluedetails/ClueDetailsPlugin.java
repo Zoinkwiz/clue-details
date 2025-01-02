@@ -88,6 +88,9 @@ public class ClueDetailsPlugin extends Plugin
 	private ClueDetailsOverlay infoOverlay;
 
 	@Inject
+	private ClueGroundOverlay groundOverlay;
+
+	@Inject
 	private ClueDetailsTagsOverlay tagsOverlay;
 
 	@Inject
@@ -111,6 +114,7 @@ public class ClueDetailsPlugin extends Plugin
 	@Inject
 	private KeyManager keyManager;
 
+	@Getter
 	@Inject
 	private ItemManager itemManager;
 
@@ -150,6 +154,9 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.add(infoOverlay);
 		eventBus.register(infoOverlay);
 
+		overlayManager.add(groundOverlay);
+		eventBus.register(groundOverlay);
+
 		overlayManager.add(tagsOverlay);
 
 		overlayManager.add(widgetOverlay);
@@ -162,6 +169,7 @@ public class ClueDetailsPlugin extends Plugin
 		clueBankManager.startUp(clueInventoryManager);
 
 		infoOverlay.startUp(this, clueGroundManager, clueInventoryManager);
+		groundOverlay.startUp(clueGroundManager);
 		widgetOverlay.setClueInventoryManager(clueInventoryManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
@@ -185,6 +193,9 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		overlayManager.remove(infoOverlay);
 		eventBus.unregister(infoOverlay);
+
+		overlayManager.remove(groundOverlay);
+		eventBus.unregister(groundOverlay);
 
 		overlayManager.remove(tagsOverlay);
 
@@ -282,10 +293,10 @@ public class ClueDetailsPlugin extends Plugin
 		clueGroundManager.onItemDespawned(event);
 	}
 
-	@Subscribe
+	@Subscribe(priority = -1) // run after ground items
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
-		clueInventoryManager.onMenuEntryAdded(event, cluePreferenceManager, panel);
+		clueInventoryManager.onMenuEntryAdded(event, cluePreferenceManager, panel, config.showGroundClues());
 	}
 
 	@Subscribe

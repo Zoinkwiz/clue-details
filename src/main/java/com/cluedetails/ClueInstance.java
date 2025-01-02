@@ -95,7 +95,7 @@ public class ClueInstance
 		return timeToDespawnFromDataInTicks == null ? -1 : timeToDespawnFromDataInTicks;
 	}
 
-	public String getCombinedClueText(ConfigManager configManager, boolean showColor)
+	public String getCombinedClueText(ClueDetailsPlugin plugin, ConfigManager configManager, boolean showColor)
 	{
 		StringBuilder returnText = new StringBuilder();
 		boolean isFirst = true;
@@ -120,7 +120,12 @@ public class ClueInstance
 
 			returnText.append(cluePart.getDetail(configManager));
 		}
-		if (returnText.length() == 0) return "Unknown, read to track";
+		if (returnText.length() == 0) return getItemName(plugin);
 		return returnText.toString();
+	}
+
+	public String getItemName(ClueDetailsPlugin plugin)
+	{
+		return plugin.getItemManager().getItemComposition(itemId).getName();
 	}
 }

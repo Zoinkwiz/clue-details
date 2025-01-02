@@ -205,17 +205,34 @@ public class ClueInventoryManager
 		return !trackedCluesInInventory.isEmpty();
 	}
 
-	public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
+	public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, boolean showGroundItems)
 	{
+		if (!isClueItem(event.getMenuEntry())) return;
+
+		MenuEntry entry = event.getMenuEntry();
+
+		// Ensure clue ground items are not deprioritized
+		if (showGroundItems)
+		{
+			MenuAction type = MenuAction.of(event.getType());
+			if (type == MenuAction.GROUND_ITEM_FIRST_OPTION || type == MenuAction.GROUND_ITEM_SECOND_OPTION ||
+				type == MenuAction.GROUND_ITEM_THIRD_OPTION || type == MenuAction.GROUND_ITEM_FOURTH_OPTION ||
+				type == MenuAction.GROUND_ITEM_FIFTH_OPTION || type == MenuAction.WIDGET_TARGET_ON_GROUND_ITEM)
+			{
+				MenuEntry[] menuEntries = client.getMenuEntries();
+				MenuEntry lastEntry = menuEntries[menuEntries.length - 1];
+
+				lastEntry.setDeprioritized(false);
+			}
+		}
+
 		if (!client.isKeyPressed(KeyCode.KC_SHIFT))
 		{
 			return;
 		}
 
-		if (!event.getTarget().contains("Clue scroll")) return;
 		if (!isExamineClue(event.getMenuEntry())) return;
 
-		MenuEntry entry = event.getMenuEntry();
 		final Widget w = entry.getWidget();
 		boolean isInventoryMenu = w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY;
 		int itemId = isInventoryMenu ? event.getItemId() : event.getIdentifier();
@@ -322,12 +339,17 @@ public class ClueInventoryManager
 		}
 	}
 
-	public boolean isExamineClue(MenuEntry entry)
+	public boolean isClueItem(MenuEntry entry)
 	{
 		String[] textOptions = new String[] { "Clue scroll", "Challenge scroll", "Key (" };
 		String target = entry.getTarget();
+		return Arrays.stream(textOptions).anyMatch(target::contains);
+	}
+
+	public boolean isExamineClue(MenuEntry entry)
+	{
 		String option = entry.getOption();
-		return Arrays.stream(textOptions).anyMatch(target::contains) && option.equals("Examine");
+		return isClueItem(entry) && option.equals("Examine");
 	}
 
 	public void onGameTick()

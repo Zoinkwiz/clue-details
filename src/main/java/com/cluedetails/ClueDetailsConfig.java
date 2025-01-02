@@ -186,7 +186,9 @@ public interface ClueDetailsConfig extends Config
 		TOP(false, "Top"),
 		BOTTOM(false, "Bottom");
 
-		ClueTagLocation(Object selected, String displayName) {}
+		ClueTagLocation(Object selected, String displayName)
+		{
+		}
 	}
 
 	@ConfigItem(
@@ -291,11 +293,11 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "outlineWidth",
-			name = "Highlighted outline width",
-			description = "Configure the outline width of highlighted clues",
-			section = markedCluesSection,
-			position = 4
+		keyName = "outlineWidth",
+		name = "Highlighted outline width",
+		description = "Configure the outline width of highlighted clues",
+		section = markedCluesSection,
+		position = 4
 	)
 	default int outlineWidth()
 	{
@@ -308,7 +310,7 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "showHoverText",
 		name = "Show hover text",
-		description = "Toggle whether to hide tooltips on clue hover",
+		description = "Toggle whether to show tooltips on clue hover",
 		section = overlaysSection,
 		position = 0
 	)
@@ -342,11 +344,11 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "clueTagSplit",
-			name = "Clue tag split sequence",
-			description = "Character sequence on which the tag will be split",
-			section = overlaysSection,
-			position = 3
+		keyName = "clueTagSplit",
+		name = "Clue tag split sequence",
+		description = "Character sequence on which the tag will be split",
+		section = overlaysSection,
+		position = 3
 	)
 	default String clueTagSplit()
 	{
@@ -355,7 +357,7 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "showInventoryCluesOverlay",
-		name = "Show clues overlay",
+		name = "Show inventory overlay",
 		description = "Toggle whether to show an overlay with details on all clues in your inventory",
 		section = overlaysSection,
 		position = 4
@@ -367,8 +369,8 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "changeClueText",
-		name = "Change clue item text",
-		description = "Toggle whether to make the clue item text be the hint or the normal text",
+		name = "Change ground item menu text",
+		description = "Toggle whether to change the ground item menu text to the clue detail",
 		section = overlaysSection,
 		position = 5
 	)
@@ -383,7 +385,7 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "colorHoverText",
 		name = "Color hover text",
-		description = "Toggle whether apply clue details color to hover text",
+		description = "Toggle whether to apply clue details color to hover text",
 		section = overlayColorsSection,
 		position = 0
 	)
@@ -395,7 +397,7 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "colorInventoryClueTags",
 		name = "Color clue tags",
-		description = "Toggle whether apply clue details color to clue tags",
+		description = "Toggle whether to apply clue details color to clue tags",
 		section = overlayColorsSection,
 		position = 1
 	)
@@ -405,23 +407,11 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "colorChangeClueText",
-		name = "Color clue item text",
-		description = "Toggle whether apply clue details color to clue item text",
+		keyName = "colorInventoryCluesOverlay",
+		name = "Color inventory overlay",
+		description = "Toggle whether to apply clue details color to clues overlay",
 		section = overlayColorsSection,
 		position = 2
-	)
-	default boolean colorChangeClueText()
-	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "colorInventoryCluesOverlay",
-		name = "Color clues overlay",
-		description = "Toggle whether apply clue details color to clues overlay",
-		section = overlayColorsSection,
-		position = 3
 	)
 	default boolean colorInventoryCluesOverlay()
 	{
@@ -429,9 +419,22 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "colorChangeClueText",
+		name = "Color ground item menu text",
+		description = "Toggle whether to apply clue details color to ground item menu text",
+		section = overlayColorsSection,
+		position = 3
+	)
+	default boolean colorChangeClueText()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "colorGroundItems",
-		name = "Apply colors to Ground Items",
-		description = "When updating clue details colors, apply the color to the Ground Items plugin. Does not supprt beginner and master clues",
+		name = "Overwrite Ground Items colors",
+		description = "When updating clue details colors, apply the color to the Ground Items plugin",
+		warning = "Does not work for Beginner and Master clues. Colors must be reset via Ground Items plugin.",
 		section = overlayColorsSection,
 		position = 4
 	)
@@ -442,13 +445,77 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "colorInventoryTags",
-		name = "Apply colors to Inventory Tags",
-		description = "When updating clue details colors, apply the color to the Inventory Tags plugin. Does not supprt beginner and master clues",
+		name = "Overwrite Inventory Tags colors",
+		description = "When updating clue details colors, apply the color to the Inventory Tags plugin",
+		warning = "Does not work for Beginner and Master clues. Colors must be reset via Inventory Tags plugin.",
 		section = overlayColorsSection,
 		position = 5
 	)
 	default boolean colorInventoryTags()
 	{
 		return false;
+	}
+
+	@ConfigSection(name = "Ground Clues", description = "Options that effect ground clues overlay (only supports Beginner and Master clues", position = 6)
+	String groundCluesSection = "Ground Clues";
+
+	@ConfigItem(
+		keyName = "showGroundClues",
+		name = "Show ground clues",
+		description = "Toggle whether to show ground clues overlay",
+		section = groundCluesSection,
+		position = 0
+	)
+	default boolean showGroundClues()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "changeGroundClueText",
+		name = "Change ground clue text",
+		description = "Toggle whether to change the ground clue text to the clue detail",
+		section = groundCluesSection,
+		position = 1
+	)
+	default boolean changeGroundClueText()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "showGroundCluesDespawn",
+		name = "Show ground clues despawn",
+		description = "Toggle whether to add despawn timers to the ground clues overlay",
+		section = groundCluesSection,
+		position = 2
+	)
+	default boolean showGroundCluesDespawn()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "collapseGroundClues",
+		name = "Collapse ground clues",
+		description = "Toggle whether to combine duplicates in the ground clues overlay",
+		section = groundCluesSection,
+		position = 3
+	)
+	default boolean collapseGroundClues()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "colorGroundClues",
+		name = "Color ground clues",
+		description = "Toggle whether to apply clue details color to ground clue text",
+		section = groundCluesSection,
+		position = 4
+	)
+	default boolean colorGroundClues()
+	{
+		return true;
 	}
 }
