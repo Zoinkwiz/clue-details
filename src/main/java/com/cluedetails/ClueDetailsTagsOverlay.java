@@ -105,7 +105,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					if (threeStepCrypticClue != null)
 					{
 						threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
-						clueDetail = threeStepCrypticClue.getDetail(configManager);
+						clueDetail = threeStepCrypticClue.getDetail(configManager, config);
 						clueDetailColor = Color.WHITE;
 					}
 					else
@@ -151,11 +151,6 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 
 		final TextComponent textComponent = new TextComponent();
 
-		if (config.colorInventoryClueTags())
-		{
-			textComponent.setColor(clueDetailColor);
-		}
-
 		String[] clueDetails = new String [] {clueDetail};
 		// Handle Three Step Cryptic Clues
 		if (clueDetail.contains("<br>"))
@@ -168,9 +163,21 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 			&& !config.clueTagSplit().isEmpty()
 			&& clueDetails.length == 1)
 		{
+			// Correct clueDetailColor for three step cryptic clue
+			if (clueDetail.contains("<col="))
+			{
+				clueDetailColor = Color.decode("#" + getStringBetween(clueDetail, "<col=", ">"));
+			}
+
 			clueDetails = clueDetails[0].split(config.clueTagSplit(), 3);
 		}
 
+		if (config.colorInventoryClueTags())
+		{
+			textComponent.setColor(clueDetailColor);
+		}
+
+		// Render tag in configured location
 		int i = 0;
 		int detailCount = clueDetails.length;
 		for (String detail : clueDetails)
@@ -183,5 +190,21 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 			textComponent.render(graphics);
 			i++;
 		}
+	}
+
+	public static String getStringBetween(String input, String start, String end) {
+		int startIndex = input.indexOf(start);
+		if (startIndex == -1) {
+			return null; // Start string not found
+		}
+
+		startIndex += start.length(); // Move past the start string
+
+		int endIndex = input.indexOf(end, startIndex);
+		if (endIndex == -1) {
+			return null; // End string not found
+		}
+
+		return input.substring(startIndex, endIndex);
 	}
 }

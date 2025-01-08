@@ -409,7 +409,7 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "colorInventoryCluesOverlay",
 		name = "Color inventory overlay",
-		description = "Toggle whether to apply clue details color to clues overlay",
+		description = "Toggle whether to apply clue details color to inventory overlay",
 		section = overlayColorsSection,
 		position = 2
 	)

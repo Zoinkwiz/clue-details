@@ -37,7 +37,7 @@ The "Show inventory overlay" toggle in the plugin's settings renders the details
 
 ![365445046-c5c40aa4-b2d1-46a4-aa31-9ce609760bb6](https://github.com/user-attachments/assets/a1386cd7-7802-471f-92cd-9578688bda83)
 
-The "Change ground clue text" toggle in the plugin's settings makes it so the actual text of the clue item is adjusted, so you don't even need to hover for details.
+The "Change ground item menu text" toggle in the plugin's settings adjusts the actual text of the clue item menu, so you don't even need to hover for details.
 
 ![Screenshot 2024-09-01 221305](https://github.com/user-attachments/assets/72685ba5-f441-4cac-b18c-6cc0ddf42d98)
 

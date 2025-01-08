@@ -165,7 +165,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return;
 		}
 
-		String clueText = getText(menuEntryAndPos, config.colorHoverText());
+		String clueText = getText(menuEntryAndPos, config.colorHoverText(), false);
 
 		if (clueText == null) return;
 		// tooltip only supports </br> for multiline strings
@@ -252,7 +252,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			// Change ground item menu text & color
 			if (config.changeClueText())
 			{
-				newText = getText(entryAndPos, showColor);
+				newText = getText(entryAndPos, showColor, true);
 			}
 			// Change ground item menu color
 			else
@@ -283,7 +283,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 			boolean showColor = shouldShowColor(menuEntry);
 
-			String newText = getText(entryAndPos, showColor);
+			String newText = getText(entryAndPos, showColor, false);
 			if (newText == null || !isTakeOrMarkClue(menuEntry)) continue;
 
 			String[] newTexts = newText.split("<br>");
@@ -349,7 +349,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		if (!isTakeOrMarkClue(hoveredEntry)) return;
 
-		String text = getText(entryAndPos, config.colorHoverText());
+		String text = getText(entryAndPos, config.colorHoverText(), false);
 
 		// Handle master three-step cryptic
 		if (text != null)
@@ -458,7 +458,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		return false;
 	}
 
-	private String getText(MenuEntryAndPos menuEntryAndPos, boolean showColor)
+	private String getText(MenuEntryAndPos menuEntryAndPos, boolean showColor, boolean isFloorText)
 	{
 		MenuEntry menuEntry = menuEntryAndPos.getMenuEntry();
 		int scrollID = getScrollID(menuEntry);
@@ -469,8 +469,14 @@ public class ClueDetailsOverlay extends OverlayPanel
 			String text = matchingClue.getDetail(configManager);
 			if (showColor)
 			{
-				String color = Integer.toHexString(matchingClue.getDetailColor(configManager).getRGB()).substring(2);
-				return "<col=" + color + ">" + text;
+				Color color = matchingClue.getDetailColor(configManager);
+
+				// Only change floor text color if it's not the default
+				if (!(isFloorText && color == Color.WHITE))
+				{
+					String hexColor = Integer.toHexString(color.getRGB()).substring(2);
+					return "<col=" + hexColor + ">" + text;
+				}
 			}
 			return text;
 		}
@@ -480,13 +486,13 @@ public class ClueDetailsOverlay extends OverlayPanel
 			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(scrollID);
 			if (clueInstance != null && !clueInstance.getClueIds().isEmpty())
 			{
-				return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor);
+				return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor, isFloorText);
 			}
 		}
 
 		if (areEntriesInTile(menuEntry))
 		{
-			return getTrackedClueText(menuEntryAndPos, showColor);
+			return getTrackedClueText(menuEntryAndPos, showColor, isFloorText);
 		}
 		return null;
 	}
@@ -531,12 +537,12 @@ public class ClueDetailsOverlay extends OverlayPanel
 		return trackedClues.get(entry.getPosOnTile());
 	}
 
-	private String getTrackedClueText(MenuEntryAndPos entry, boolean showColor)
+	private String getTrackedClueText(MenuEntryAndPos entry, boolean showColor, boolean isFloorText)
 	{
 		ClueInstance clueInstance = getTrackedClueInstance(entry);
 		if (clueInstance == null) return null;
 
-		return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor);
+		return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor, isFloorText);
 	}
 
 	private String getTrackedClueColor(MenuEntryAndPos entry)
