@@ -80,7 +80,7 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 
 		for (Item item : inventory.getItems())
 		{
-			Clues clue = Clues.forItemId(item.getId(), config);
+			Clues clue = Clues.forItemId(item.getId());
 			if (clue != null && !Arrays.asList(
 				ClueTier.MEDIUM_CHALLENGE,
 				ClueTier.HARD_CHALLENGE,
@@ -103,7 +103,7 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 
 			for (Integer clueId : clueInstance.getClueIds())
 			{
-				Clues cluePart = Clues.forClueId(clueId, config);
+				Clues cluePart = Clues.forClueIdFiltered(clueId);
 				if (cluePart == null) continue;
 
 				Color color = TITLED_CONTENT_COLOR;

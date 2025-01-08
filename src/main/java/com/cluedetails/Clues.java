@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.Setter;
 import net.runelite.api.ItemID;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.widgets.InterfaceID;
@@ -1021,6 +1022,10 @@ public class Clues
 	@Getter
 	final OrRequirement regions;
 
+	// To be initialized to avoid passing around
+	@Setter
+	public static ClueDetailsConfig config;
+
 	Clues(String clueDetail, int itemID, ClueTier clueTier, String clueText, List<WorldPoint> wps)
 	{
 		this.clueID = -1;
@@ -1069,10 +1074,11 @@ public class Clues
 		ItemID.DAEYALT_ESSENCE
 	);
 
-	public static List<Clues> filteredClues(ClueDetailsConfig config)
+	public static List<Clues> filteredClues()
 	{
-		List<ClueTier> enabledClues = new ArrayList<>();
+		if (config == null) return Clues.CLUES;
 
+		List<ClueTier> enabledClues = new ArrayList<>();
 		if (config.beginnerDetails()) enabledClues.add(ClueTier.BEGINNER);
 		if (config.easyDetails()) enabledClues.add(ClueTier.EASY);
 		if (config.mediumDetails()) enabledClues.add(ClueTier.MEDIUM);
@@ -1085,9 +1091,9 @@ public class Clues
 			.collect(Collectors.toList());
 	}
 
-	public static Clues forItemId(int itemId, ClueDetailsConfig config)
+	public static Clues forItemId(int itemId)
 	{
-		for (Clues clue : filteredClues(config))
+		for (Clues clue : filteredClues())
 		{
 			if (clue.clueID == -1 && clue.getItemID() == itemId)
 			{
@@ -1109,9 +1115,9 @@ public class Clues
 		return null;
 	}
 
-	public static Clues forClueId(int clueId, ClueDetailsConfig config)
+	public static Clues forClueIdFiltered(int clueId)
 	{
-		for (Clues clue : filteredClues(config))
+		for (Clues clue : filteredClues())
 		{
 			if (clue.getClueID() == clueId)
 			{
@@ -1130,11 +1136,11 @@ public class Clues
 		return getItemID();
 	}
 
-	public static Integer forTextGetId(String rawText, ClueDetailsConfig config)
+	public static Integer forTextGetId(String rawText)
 	{
 		final String text = Text.sanitizeMultilineText(rawText).toLowerCase();
 
-		for (Clues clue : filteredClues(config))
+		for (Clues clue : filteredClues())
 		{
 			if (text.equalsIgnoreCase(clue.getClueText()))
 			{
@@ -1145,12 +1151,12 @@ public class Clues
 		return null;
 	}
 
-	public static Integer forInterfaceIdGetId(int interfaceId, ClueDetailsConfig config)
+	public static Integer forInterfaceIdGetId(int interfaceId)
 	{
 		// Only check beginner map clues
 		for (int i = 21; i < 26; i++)
 		{
-			List<Clues> filteredClues = filteredClues(config);
+			List<Clues> filteredClues = filteredClues();
 			if (filteredClues.get(i).getItemID() == interfaceId)
 			{
 				return filteredClues.get(i).getClueID();
@@ -1173,9 +1179,9 @@ public class Clues
 		return getClueDetailColor();
 	}
 
-	public static boolean isClue(int itemId, ClueDetailsConfig config, boolean isDeveloperMode)
+	public static boolean isClue(int itemId, boolean isDeveloperMode)
 	{
-		return filteredClues(config).stream().anyMatch((clue) -> clue.getItemID() == itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
+		return filteredClues().stream().anyMatch((clue) -> clue.getItemID() == itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
 	}
 
 	public static boolean isTrackedClue(int itemId, boolean isDeveloperMode)
