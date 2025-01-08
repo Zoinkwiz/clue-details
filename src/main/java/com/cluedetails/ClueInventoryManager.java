@@ -155,7 +155,7 @@ public class ClueInventoryManager
 		}
 		else
 		{
-			clueIds.add(Clues.forTextGetId(clueText, clueDetailsPlugin.provideConfig(configManager)));
+			clueIds.add(Clues.forTextGetId(clueText));
 		}
 
 		if (clueIds.get(0) == null) return;
@@ -166,7 +166,7 @@ public class ClueInventoryManager
 			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
 			// Check that at least one part of the clue text matches the clue tier we're looking at
 			if (clueInstance == null) continue;
-			Clues clueInfo = Clues.forClueId(clueIds.get(0), clueDetailsPlugin.provideConfig(configManager));
+			Clues clueInfo = Clues.forClueIdFiltered(clueIds.get(0));
 			if (clueInfo == null) continue;
 			if (!Objects.equals(clueInfo.getItemID(), itemID)) continue;
 			clueInstance.setClueIds(clueIds);
@@ -180,7 +180,7 @@ public class ClueInventoryManager
 		List<Integer> clueIds = new ArrayList<>();
 
 		// Beginner Map Clues all use the same ItemID, but the InterfaceID used to display them is unique
-		clueIds.add(Clues.forInterfaceIdGetId(interfaceId, clueDetailsPlugin.provideConfig(configManager)));
+		clueIds.add(Clues.forInterfaceIdGetId(interfaceId));
 
 		// Assume can only be beginner for now
 		ClueInstance beginnerClueInInv = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
@@ -271,7 +271,7 @@ public class ClueInventoryManager
 
 			for (int id : clueSelected.getClueIds())
 			{
-				Clues clue = Clues.forClueId(id, clueDetailsPlugin.provideConfig(configManager));
+				Clues clue = Clues.forClueIdFiltered(id);
 				if (clue == null)
 				{
 					System.out.println("Failed to find clue " + id);
@@ -301,7 +301,7 @@ public class ClueInventoryManager
 				.setType(MenuAction.RUNELITE)
 				.onClick(e ->
 				{
-					Clues clue = Clues.forClueId(clueId, clueDetailsPlugin.provideConfig(configManager));
+					Clues clue = Clues.forClueIdFiltered(clueId);
 					if (clue == null)
 					{
 						System.out.println("Failed to find clue " + clueId);
