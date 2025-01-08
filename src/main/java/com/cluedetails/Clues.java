@@ -1081,9 +1081,22 @@ public class Clues
 		List<ClueTier> enabledClues = new ArrayList<>();
 		if (config.beginnerDetails()) enabledClues.add(ClueTier.BEGINNER);
 		if (config.easyDetails()) enabledClues.add(ClueTier.EASY);
-		if (config.mediumDetails()) enabledClues.add(ClueTier.MEDIUM);
-		if (config.hardDetails()) enabledClues.add(ClueTier.HARD);
-		if (config.eliteDetails()) enabledClues.add(ClueTier.ELITE);
+		if (config.mediumDetails())
+		{
+			enabledClues.add(ClueTier.MEDIUM);
+			enabledClues.add(ClueTier.MEDIUM_CHALLENGE);
+			enabledClues.add(ClueTier.MEDIUM_KEY);
+		}
+		if (config.hardDetails())
+		{
+			enabledClues.add(ClueTier.HARD);
+			enabledClues.add(ClueTier.HARD_CHALLENGE);
+		}
+		if (config.eliteDetails())
+		{
+			enabledClues.add(ClueTier.ELITE);
+			enabledClues.add(ClueTier.ELITE_CHALLENGE);
+		}
 		if (config.masterDetails()) enabledClues.add(ClueTier.MASTER);
 
 		return Clues.CLUES.stream()
