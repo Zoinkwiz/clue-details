@@ -95,7 +95,7 @@ public class ThreeStepCrypticClue
 		}
 	}
 
-	public String getDetail(ConfigManager configManager)
+	public String getDetail(ConfigManager configManager, ClueDetailsConfig config)
 	{
 		StringBuilder text = new StringBuilder();
 
@@ -105,8 +105,12 @@ public class ThreeStepCrypticClue
 			{
 				Clues clue = e.getKey();
 				String detail = clue.getDetail(configManager);
-				String color = Integer.toHexString(clue.getDetailColor(configManager).getRGB()).substring(2);
-				text.append("<col=").append(color).append(">").append(detail).append("<br>");
+				if (config.colorInventoryClueTags())
+				{
+					String color = Integer.toHexString(clue.getDetailColor(configManager).getRGB()).substring(2);
+					text.append("<col=").append(color).append(">");
+				}
+				text.append(detail).append("<br>");
 			}
 		}
 		return text.toString();

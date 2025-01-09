@@ -33,11 +33,11 @@ The "Show clue tags" toggle in the plugin's settings renders the details on the 
 
 ![365446878-169c15ad-f793-4c7d-af0c-a2b787f072f0](https://github.com/user-attachments/assets/cac24b71-74a8-4a13-94b7-6d61ae5d1813)
 
-The "Show clues overlay" toggle in the plugin's settings renders the details as an infobox for all clues in your inventory.
+The "Show inventory overlay" toggle in the plugin's settings renders the details as an infobox for all clues in your inventory.
 
 ![365445046-c5c40aa4-b2d1-46a4-aa31-9ce609760bb6](https://github.com/user-attachments/assets/a1386cd7-7802-471f-92cd-9578688bda83)
 
-The "Change clue item text" toggle in the plugin's settings makes it so the actual text of the clue item is adjusted, so you don't even need to hover for details.
+The "Change ground menu text" toggle in the plugin's settings adjusts the actual text of the clue item menu text, so you don't even need to hover for details.
 
 ![Screenshot 2024-09-01 221305](https://github.com/user-attachments/assets/72685ba5-f441-4cac-b18c-6cc0ddf42d98)
 
@@ -66,7 +66,7 @@ Updating Ground Items and Inventory Tags colors is also supported.
 
 - Enable the configuration options in the "Overlay Colors" section prior to editing colors. This is applied at the time the colors are edited/imported.
   
-- ![Ody99cS](https://github.com/user-attachments/assets/59060f5d-2b43-484f-b593-4079abc7996e)
+- ![zqZvd7j](https://github.com/user-attachments/assets/b5f9db3e-d2fb-4f3e-95f5-2197feadd591)
 
 - Resetting Ground Items and Inventory Tags colors must be done via those plugins.
 
