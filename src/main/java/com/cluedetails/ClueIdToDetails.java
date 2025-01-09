@@ -48,6 +48,12 @@ public class ClueIdToDetails
 		this.color = color;
 	}
 
+	public ClueIdToDetails(int id, List<Integer> itemIds)
+	{
+		this.id = id;
+		this.itemIds = itemIds;
+	}
+
 	public ClueIdToDetails(int id, String text, Color color)
 	{
 		this.id = id;
@@ -55,16 +61,17 @@ public class ClueIdToDetails
 		this.color = color;
 	}
 
-	public ClueIdToDetails(int id, List<Integer> itemIds)
-	{
-		this.id = id;
-		this.itemIds = itemIds;
-	}
-
 	public ClueIdToDetails(int id, String text, List<Integer> itemIds)
 	{
 		this.id = id;
 		this.text = text;
+		this.itemIds = itemIds;
+	}
+
+	public ClueIdToDetails(int id, Color color, List<Integer> itemIds)
+	{
+		this.id = id;
+		this.color = color;
 		this.itemIds = itemIds;
 	}
 

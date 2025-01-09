@@ -43,7 +43,7 @@ The "Change ground menu text" toggle in the plugin's settings adjusts the actual
 
 The "Highlight inventory clue items" toggle highlights configured items for each clue in your inventory
 
-TODO: screenshot here
+![Di3FxGL](https://github.com/user-attachments/assets/b650e09e-ddcc-44e2-a9ec-cdf8c725b78b)
 
 ## Editing clue details
 

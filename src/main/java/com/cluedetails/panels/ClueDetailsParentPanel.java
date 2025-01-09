@@ -444,7 +444,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
-				clueDetailsSharingManager.exportClueDetails();
+				if (e.getButton() == MouseEvent.BUTTON1)
+				{
+					clueDetailsSharingManager.exportClueDetails(true, true, true);
+				}
+				else if (e.getButton() == MouseEvent.BUTTON3)
+				{
+					selectiveExport(e);
+				}
 			}
 
 			@Override
@@ -510,6 +517,31 @@ public class ClueDetailsParentPanel extends PluginPanel
 		allDropdownSections.add(orderPanel);
 
 		searchCluesPanel.add(allDropdownSections, BorderLayout.NORTH);
+	}
+
+	private void selectiveExport(MouseEvent e)
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+
+		JMenuItem inputItemExportText = new JMenuItem("Export clue text");
+		inputItemExportText.addActionListener(event
+			-> clueDetailsSharingManager.exportClueDetails(true, false, false)
+		);
+		popupMenu.add(inputItemExportText);
+
+		JMenuItem inputItemExportColors = new JMenuItem("Export clue colors");
+		inputItemExportColors.addActionListener(event
+			-> clueDetailsSharingManager.exportClueDetails(false, true, false)
+		);
+		popupMenu.add(inputItemExportColors);
+
+		JMenuItem inputItemExportItems = new JMenuItem("Export clue items");
+		inputItemExportItems.addActionListener(event
+			-> clueDetailsSharingManager.exportClueDetails(false, false, true)
+		);
+		popupMenu.add(inputItemExportItems);
+
+		popupMenu.show(e.getComponent(), e.getX(), e.getY());
 	}
 
 	private JComboBox<Enum> makeNewDropdown(Enum[] values, String key)

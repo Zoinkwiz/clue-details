@@ -86,7 +86,7 @@ public class ClueDetailsSharingManager
 		}
 	}
 
-	public void exportClueDetails()
+	public void exportClueDetails(boolean exportText, boolean exportColors, boolean exportItems)
 	{
 		List<ClueIdToDetails> clueIdToDetailsList = new ArrayList<>();
 
@@ -102,41 +102,73 @@ public class ClueDetailsSharingManager
 			String clueColor = configManager.getConfiguration("clue-details-color", String.valueOf(id));
 			String clueItems = configManager.getConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
 
-			// Support combinations of text, color, and items
-			if (clueItems != null)
+			// Try to export text, color, and items. Export where valid configurations are returned
+			if (exportText && exportColors && exportItems)
 			{
-				List<Integer> loadedClueItemsData = gson.fromJson(clueItems, new TypeToken<List<Integer>>(){}.getType());
+				if (clueItems != null)
+				{
+					List<Integer> loadedClueItemsData = gson.fromJson(clueItems, new TypeToken<List<Integer>>()
+					{
+					}.getType());
 
-				if (clueColor != null && clueText != null)
-				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor), loadedClueItemsData));
-				}
-				else if (clueText != null)
-				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, loadedClueItemsData));
+					// Export text, colors, and items
+					if (clueColor != null && clueText != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor), loadedClueItemsData));
+					}
+					// Export text and items
+					else if (clueText != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, loadedClueItemsData));
+					}
+					// Export color and items
+					else if (clueColor != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor), loadedClueItemsData));
+					}
+					// Export items
+					else
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, loadedClueItemsData));
+					}
 				}
 				else
 				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, loadedClueItemsData));
+					// Export text and colors
+					if (clueText != null && clueColor != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor)));
+					}
+					// Export text
+					else if (clueText != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
+					}
+					// Export colors
+					else if (clueColor != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
+					}
 				}
 			}
-			else if (clueColor != null)
+			// Export text
+			else if (exportText && clueText != null)
 			{
-				if (clueText != null)
-				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor)));
-				}
-				else
-				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
-				}
+				clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
 			}
-			else
+			// Export colors
+			else if (exportColors && clueColor != null)
 			{
-				if (clueText != null)
+				clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
+			}
+			// Export items
+			else if (exportItems && clueItems != null)
+			{
+				List<Integer> loadedClueItemsData = gson.fromJson(clueItems, new TypeToken<List<Integer>>()
 				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
-				}
+				}.getType());
+
+				clueIdToDetailsList.add(new ClueIdToDetails(id, loadedClueItemsData));
 			}
 		}
 
@@ -251,7 +283,14 @@ public class ClueDetailsSharingManager
 			}
 			if (importPoint.itemIds != null)
 			{
-				configManager.setConfiguration("clue-details-text", String.valueOf(importPoint.id), importPoint.itemIds);
+				if (importPoint.itemIds.isEmpty())
+				{
+					configManager.unsetConfiguration("clue-details-items", String.valueOf(importPoint.id));
+				}
+				else
+				{
+					configManager.setConfiguration("clue-details-items", String.valueOf(importPoint.id), importPoint.itemIds);
+				}
 			}
 		}
 
