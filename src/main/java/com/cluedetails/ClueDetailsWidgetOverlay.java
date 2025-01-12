@@ -122,7 +122,7 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 
 			for (Integer clueId : clueInstance.getClueIds())
 			{
-				Clues cluePart = Clues.forClueId(clueId);
+				Clues cluePart = Clues.forClueIdFiltered(clueId);
 				if (cluePart == null) continue;
 
 				Color color = TITLED_CONTENT_COLOR;
@@ -142,7 +142,7 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 	private void createHighlightInventoryClueItems(Graphics2D graphics)
 	{
 		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
-		if (inventory == null) return;
+		if (inventory == null || clueInventoryManager == null ) return;
 
 		for (Clues clue : clueInventoryManager.getCluesInInventory())
 		{

@@ -165,6 +165,8 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.add(widgetOverlay);
 		eventBus.register(widgetOverlay);
 
+		Clues.setConfig(config);
+
 		cluePreferenceManager = new CluePreferenceManager(this, configManager);
 		clueGroundManager = new ClueGroundManager(client, configManager, this);
 		clueBankManager = new ClueBankManager(client, configManager, gson);

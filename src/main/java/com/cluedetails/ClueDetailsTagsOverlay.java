@@ -30,6 +30,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import net.runelite.api.ItemID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.config.ConfigManager;
@@ -74,6 +75,14 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 				if (Clues.isTrackedClue(itemId, clueDetailsPlugin.isDeveloperMode())
 					&& clueDetailsPlugin.getClueInventoryManager().hasTrackedClues())
 				{
+					// Check if clue tier is enabled
+					if (((itemId == ItemID.CLUE_SCROLL_BEGINNER || (itemId >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
+						&& itemId <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER)) && !config.beginnerDetails())
+						|| itemId == ItemID.CLUE_SCROLL_MASTER && !config.masterDetails())
+					{
+						return;
+					}
+
 					ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueItemId(itemId);
 					if (readClues == null)
 					{
@@ -88,7 +97,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 					StringBuilder detail = new StringBuilder();
 					for (Integer id : ids)
 					{
-						Clues clueDetails = Clues.forClueId(id);
+						Clues clueDetails = Clues.forClueIdFiltered(id);
 						if (!isFirst)
 						{
 							text.append("<br>");
@@ -96,7 +105,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 						}
 						text.append(clueDetails == null ? "error" : clueDetails.getClueText());
 						detail.append(clueDetails == null ? "error" : clueDetails.getDetail(configManager));
-						clueDetailColor = clueDetails.getDetailColor(configManager);
+						clueDetailColor = clueDetails == null ? Color.WHITE : clueDetails.getDetailColor(configManager);
 						isFirst = false;
 					}
 

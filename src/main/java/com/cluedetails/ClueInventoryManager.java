@@ -65,7 +65,7 @@ public class ClueInventoryManager
 	private Clues[] cluesInInventory = new Clues[6];
 
 	public ClueInventoryManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin, ClueGroundManager clueGroundManager,
-	                            ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
+								ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
 	{
 		this.client = client;
 		this.configManager = configManager;
@@ -186,7 +186,7 @@ public class ClueInventoryManager
 			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
 			// Check that at least one part of the clue text matches the clue tier we're looking at
 			if (clueInstance == null) continue;
-			Clues clueInfo = Clues.forClueId(clueIds.get(0));
+			Clues clueInfo = Clues.forClueIdFiltered(clueIds.get(0));
 			if (clueInfo == null) continue;
 			if (!Objects.equals(clueInfo.getItemID(), itemID)) continue;
 			clueInstance.setClueIds(clueIds);
@@ -245,7 +245,7 @@ public class ClueInventoryManager
 			{
 				if (clue == null) continue;
 
-				boolean itemInCluePreference= cluePreferenceManager.itemsPreferenceContainsItem(clue.getClueID(), itemId);
+				boolean itemInCluePreference = cluePreferenceManager.itemsPreferenceContainsItem(clue.getClueID(), itemId);
 
 				String action = itemInCluePreference ? "Remove from " : "Add to ";
 				String tierName = WordUtils.capitalize(clue.getClueTier().name().toLowerCase()).replace("_", " ");
@@ -258,9 +258,7 @@ public class ClueInventoryManager
 					.setIdentifier(itemId)
 					.setType(MenuAction.RUNELITE)
 					.onClick(e ->
-					{
-						updateClueItems(clue, itemId, cluePreferenceManager);
-					});
+						updateClueItems(clue, itemId, cluePreferenceManager));
 			}
 		}
 
@@ -320,7 +318,7 @@ public class ClueInventoryManager
 
 			for (int id : clueSelected.getClueIds())
 			{
-				Clues clue = Clues.forClueId(id);
+				Clues clue = Clues.forClueIdFiltered(id);
 				if (clue == null)
 				{
 					log.debug("Failed to find clue " + id);
@@ -350,7 +348,7 @@ public class ClueInventoryManager
 				.setType(MenuAction.RUNELITE)
 				.onClick(e ->
 				{
-					Clues clue = Clues.forClueId(clueId);
+					Clues clue = Clues.forClueIdFiltered(clueId);
 					if (clue == null)
 					{
 						log.debug("Failed to find clue " + clueId);
