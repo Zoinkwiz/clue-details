@@ -87,6 +87,8 @@ public class ClueGroundOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+		if(clueGroundManager == null) return null;
+
 		if (!config.showGroundClues())
 		{
 			return null;
@@ -104,6 +106,12 @@ public class ClueGroundOverlay extends Overlay
 		final LocalPoint localLocation = player.getLocalLocation();
 
 		// Handle beginner and master clues
+		if (clueGroundManager.getGroundClues().keySet().isEmpty()
+			|| (!config.beginnerDetails() && !config.masterDetails()))
+		{
+			return null;
+		}
+
 		for (WorldPoint wp : clueGroundManager.getGroundClues().keySet())
 		{
 			// Check if wp in clueGroundManager is within range of the player
@@ -125,9 +133,12 @@ public class ClueGroundOverlay extends Overlay
 			for (Map.Entry<ClueInstance, Integer> entry : clueInstancesAtWpMap.entrySet())
 			{
 				ClueInstance item = entry.getKey();
-				int quantity = entry.getValue();
 
-				renderClueInstanceGroundOverlay(graphics, item, quantity, groundPoint, fm);
+				if(item.isEnabled(config))
+				{
+					int quantity = entry.getValue();
+					renderClueInstanceGroundOverlay(graphics, item, quantity, groundPoint, fm);
+				}
 			}
 		}
 
@@ -166,7 +177,7 @@ public class ClueGroundOverlay extends Overlay
 		else
 		{
 			int clueId = item.getClueIds().get(0);
-			Clues clueDetails = Clues.forClueId(clueId);
+			Clues clueDetails = Clues.forClueIdFiltered(clueId);
 
 			if (clueDetails == null)
 			{

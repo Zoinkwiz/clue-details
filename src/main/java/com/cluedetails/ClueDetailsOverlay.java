@@ -552,7 +552,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		// Ignore three-step cryptic clues
 		if (clueInstance != null && clueInstance.getClueIds().size() == 1)
 		{
-			Clues cluePart = Clues.forClueId(clueInstance.getClueIds().get(0));
+			Clues cluePart = Clues.forClueIdFiltered(clueInstance.getClueIds().get(0));
 			if (cluePart != null)
 			{
 				return Integer.toHexString(cluePart.getDetailColor(configManager).getRGB()).substring(2);
