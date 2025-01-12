@@ -50,6 +50,7 @@ import net.runelite.api.Tile;
 import net.runelite.api.TileItem;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
@@ -65,6 +66,7 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
+import net.runelite.client.util.Text;
 
 public class ClueDetailsOverlay extends OverlayPanel
 {
@@ -158,6 +160,11 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return;
 		}
 
+		if (isTakeClue(menuEntry) && config.changeClueText())
+		{
+			return;
+		}
+
 		String clueText = getText(menuEntryAndPos, config.colorHoverText(), false);
 
 		if (clueText == null) return;
@@ -187,6 +194,24 @@ public class ClueDetailsOverlay extends OverlayPanel
 		}
 	}
 
+	// Using onClientTick for compatability with Ground Items "Collapse ground item menu"
+	@Subscribe
+	public void onClientTick(ClientTick event)
+	{
+		final MenuEntry[] menuEntries = client.getMenuEntries();
+		if (Arrays.stream(menuEntries).noneMatch(this::isTakeClue))
+		{
+			return;
+		}
+
+		List<MenuEntryAndPos> entriesByTile = getEntriesByTile(menuEntries);
+
+		if (config.changeClueText() || config.colorChangeClueText())
+		{
+			changeGroundItemMenu(entriesByTile);
+		}
+	}
+
 	@Subscribe
 	public void onMenuOpened(MenuOpened event)
 	{
@@ -200,30 +225,67 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		if (config.changeClueText())
 		{
-			changeFloorText(entriesByTile);
+			addClueSubmenus(entriesByTile);
 		}
 	}
 
-	private void changeFloorText(List<MenuEntryAndPos> entriesByTile)
+	private void changeGroundItemMenu(List<MenuEntryAndPos> entriesByTile)
 	{
-		// Change text of actual clue
+		// Change ground item menu text
 		for (MenuEntryAndPos entryAndPos : entriesByTile)
 		{
 			MenuEntry menuEntry = entryAndPos.getMenuEntry();
+			if (!isTakeOrMarkClue(menuEntry)) continue;
 
-			String newText = getText(entryAndPos, config.colorChangeClueText(), true);
-			if (newText == null || !isTakeOrMarkClue(menuEntry)) continue;
-			String regex = "Clue scroll \\(.*?\\)";
+			boolean showColor = shouldShowColor(menuEntry);
+			String regex = "(Clue scroll \\(.*?\\)|Challenge scroll \\(.*?\\))";
 			if (clueDetailsPlugin.isDeveloperMode())
 			{
-				regex = "(Daeyalt essence|Clue scroll \\(.*?\\))";
+				regex = "(Daeyalt essence|Clue scroll \\(.*?\\)|Challenge scroll \\(.*?\\))";
 			}
 
 			// Compile the pattern
 			Pattern pattern = Pattern.compile(regex);
 			Matcher matcher = pattern.matcher(menuEntry.getTarget());
 
+			String newText;
+			// Change ground item menu text & color
+			if (config.changeClueText())
+			{
+				newText = getText(entryAndPos, showColor, true);
+			}
+			// Change ground item menu color
+			else
+			{
+				newText = recolorText(entryAndPos);
+			}
+
+			if (newText == null) continue;
+
 			// Handle master three-step cryptic
+			if (newText.split("<br>").length > 1)
+			{
+				newText = "Three-step (master)";
+			}
+			// Replace the matched text with the new text
+			String newTarget = matcher.replaceAll(newText);
+
+			menuEntry.setTarget(newTarget);
+		}
+	}
+
+	private void addClueSubmenus(List<MenuEntryAndPos> entriesByTile)
+	{
+		// Add submenus to three-step cryptic clues
+		for (MenuEntryAndPos entryAndPos : entriesByTile)
+		{
+			MenuEntry menuEntry = entryAndPos.getMenuEntry();
+
+			boolean showColor = shouldShowColor(menuEntry);
+
+			String newText = getText(entryAndPos, showColor, false);
+			if (newText == null || !isTakeOrMarkClue(menuEntry)) continue;
+
 			String[] newTexts = newText.split("<br>");
 
 			// TODO: Text doesn't update after details changed
@@ -238,13 +300,28 @@ public class ClueDetailsOverlay extends OverlayPanel
 						.setOption(text)
 						.setType(MenuAction.RUNELITE);
 				}
-				newText = "Three-step (master)";
 			}
-			// Replace the matched text with the new text
-			String newTarget = matcher.replaceAll(newText);
-
-			menuEntry.setTarget(newTarget);
 		}
+	}
+
+	private boolean shouldShowColor(MenuEntry menuEntry)
+	{
+		// Only change color if it is not the default
+		boolean showColor = config.colorChangeClueText();
+		if (showColor)
+		{
+			int scrollID = getScrollID(menuEntry);
+			Clues matchingClue = Clues.forItemId(scrollID);
+
+			if (matchingClue != null)
+			{
+				if (matchingClue.getDetailColor(configManager) == Color.WHITE)
+				{
+					showColor = false;
+				}
+			}
+		}
+		return showColor;
 	}
 
 	private void addTooltip(List<MenuEntryAndPos> relevantMenuEntries)
@@ -274,7 +351,15 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		String text = getText(entryAndPos, config.colorHoverText(), false);
 
-		panelComponent.getChildren().add(LineComponent.builder().left(text).build());
+		// Handle master three-step cryptic
+		if (text != null)
+		{
+			for (String splitText : text.split("<br>"))
+			{
+				panelComponent.getChildren().add(LineComponent.builder().left(splitText).build());
+			}
+		}
+
 		double infoPanelWidth = panelComponent.getBounds().getWidth();
 		int viewportWidth = client.getViewportWidth();
 		if (menuX + menuWidth + infoPanelWidth > viewportWidth)
@@ -352,19 +437,36 @@ public class ClueDetailsOverlay extends OverlayPanel
 		return "true".equals(shouldHighlight);
 	}
 
-	private String getText(MenuEntryAndPos menuEntryAndPos, boolean showColor, boolean isFloorText)
+	private int getScrollID(MenuEntry menuEntry)
 	{
-		MenuEntry menuEntry = menuEntryAndPos.getMenuEntry();
 		int scrollID = menuEntry.getIdentifier();
 		if (isReadClue(menuEntry))
 		{
 			scrollID = menuEntry.getItemId();
 		}
+		return scrollID;
+	}
+
+	private boolean areEntriesInTile(MenuEntry menuEntry)
+	{
+		MenuEntry[] currentMenuEntries = {menuEntry};
+		if (Arrays.stream(currentMenuEntries).anyMatch(this::isTakeClue))
+		{
+			List<MenuEntryAndPos> entriesByTile = getEntriesByTile(currentMenuEntries);
+			return !entriesByTile.isEmpty();
+		}
+		return false;
+	}
+
+	private String getText(MenuEntryAndPos menuEntryAndPos, boolean showColor, boolean isFloorText)
+	{
+		MenuEntry menuEntry = menuEntryAndPos.getMenuEntry();
+		int scrollID = getScrollID(menuEntry);
+
 		Clues matchingClue = Clues.forItemId(scrollID);
 		if (matchingClue != null)
 		{
 			String text = matchingClue.getDetail(configManager);
-
 			if (showColor)
 			{
 				Color color = matchingClue.getDetailColor(configManager);
@@ -384,26 +486,44 @@ public class ClueDetailsOverlay extends OverlayPanel
 			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(scrollID);
 			if (clueInstance != null && !clueInstance.getClueIds().isEmpty())
 			{
-				return clueInstance.getCombinedClueText(configManager, showColor, isFloorText);
+				return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor, isFloorText);
 			}
 		}
 
-		MenuEntry[] currentMenuEntries = {menuEntry};
-		List<MenuEntryAndPos> entriesByTile = new ArrayList<>();
-		if (Arrays.stream(currentMenuEntries).anyMatch(this::isTakeClue))
+		if (areEntriesInTile(menuEntry))
 		{
-			entriesByTile = getEntriesByTile(currentMenuEntries);
+			return getTrackedClueText(menuEntryAndPos, showColor, isFloorText);
 		}
-
-		if (!entriesByTile.isEmpty())
-		{
-			return getTextForTrackedClue(menuEntryAndPos, showColor, isFloorText);
-		}
-
 		return null;
 	}
 
-	private String getTextForTrackedClue(MenuEntryAndPos entry, boolean showColor, boolean isFloorText)
+	private String recolorText(MenuEntryAndPos menuEntryAndPos)
+	{
+		MenuEntry menuEntry = menuEntryAndPos.getMenuEntry();
+		int scrollID = getScrollID(menuEntry);
+
+		String itemName = Text.removeTags(menuEntry.getTarget());
+		String color;
+		Clues matchingClue = Clues.forItemId(scrollID);
+		if (matchingClue != null)
+		{
+			color = Integer.toHexString(matchingClue.getDetailColor(configManager).getRGB()).substring(2);
+			return "<col=" + color + ">" + itemName;
+		}
+
+		if (areEntriesInTile(menuEntry))
+		{
+			color = getTrackedClueColor(menuEntryAndPos);
+
+			if (color != null)
+			{
+				return "<col=" + color + ">" + itemName;
+			}
+		}
+		return null;
+	}
+
+	private ClueInstance getTrackedClueInstance(MenuEntryAndPos entry)
 	{
 		MenuEntry menuEntry = entry.getMenuEntry();
 		int sceneX = menuEntry.getParam0();
@@ -414,10 +534,31 @@ public class ClueDetailsOverlay extends OverlayPanel
 		List<ClueInstance> trackedClues = clueGroundManager.getGroundClues().get(itemWp);
 		if (trackedClues == null) return null;
 		// TODO: Fix, when a clue is picked up, posOnTile doesn't work any more. Needs shifting
-		ClueInstance clueInstance = trackedClues.get(entry.getPosOnTile());
+		return trackedClues.get(entry.getPosOnTile());
+	}
+
+	private String getTrackedClueText(MenuEntryAndPos entry, boolean showColor, boolean isFloorText)
+	{
+		ClueInstance clueInstance = getTrackedClueInstance(entry);
 		if (clueInstance == null) return null;
 
-		return clueInstance.getCombinedClueText(configManager, showColor, isFloorText);
+		return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor, isFloorText);
+	}
+
+	private String getTrackedClueColor(MenuEntryAndPos entry)
+	{
+		ClueInstance clueInstance = getTrackedClueInstance(entry);
+
+		// Ignore three-step cryptic clues
+		if (clueInstance != null && clueInstance.getClueIds().size() == 1)
+		{
+			Clues cluePart = Clues.forClueIdFiltered(clueInstance.getClueIds().get(0));
+			if (cluePart != null)
+			{
+				return Integer.toHexString(cluePart.getDetailColor(configManager).getRGB()).substring(2);
+			}
+		}
+		return null;
 	}
 
 	@Subscribe

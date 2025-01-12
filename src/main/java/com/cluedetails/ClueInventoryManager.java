@@ -29,6 +29,7 @@ import com.cluedetails.panels.ClueDetailsParentPanel;
 import java.util.*;
 import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
@@ -59,6 +60,10 @@ public class ClueInventoryManager
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
+
+	// To be initialized to avoid passing around
+	@Setter
+	public static ClueDetailsConfig config;
 
 	public ClueInventoryManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin, ClueGroundManager clueGroundManager,
 								ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
@@ -207,15 +212,35 @@ public class ClueInventoryManager
 
 	public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
 	{
+		if (!isClueItem(event.getMenuEntry())) return;
+
+		MenuEntry entry = event.getMenuEntry();
+
+		// Ensure clue ground items are not deprioritized
+		if (config.showGroundClues())
+		{
+			MenuAction type = MenuAction.of(event.getType());
+			if (type == MenuAction.GROUND_ITEM_FIRST_OPTION || type == MenuAction.GROUND_ITEM_SECOND_OPTION ||
+				type == MenuAction.GROUND_ITEM_THIRD_OPTION || type == MenuAction.GROUND_ITEM_FOURTH_OPTION ||
+				type == MenuAction.GROUND_ITEM_FIFTH_OPTION || type == MenuAction.WIDGET_TARGET_ON_GROUND_ITEM)
+			{
+				MenuEntry[] menuEntries = client.getMenuEntries();
+				MenuEntry lastEntry = menuEntries[menuEntries.length - 1];
+
+				if (isEnabled(lastEntry.getItemId()))
+				{
+					lastEntry.setDeprioritized(false);
+				}
+			}
+		}
+
 		if (!client.isKeyPressed(KeyCode.KC_SHIFT))
 		{
 			return;
 		}
 
-		if (!event.getTarget().contains("Clue scroll")) return;
 		if (!isExamineClue(event.getMenuEntry())) return;
 
-		MenuEntry entry = event.getMenuEntry();
 		final Widget w = entry.getWidget();
 		boolean isInventoryMenu = w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY;
 		int itemId = isInventoryMenu ? event.getItemId() : event.getIdentifier();
@@ -322,12 +347,17 @@ public class ClueInventoryManager
 		}
 	}
 
-	public boolean isExamineClue(MenuEntry entry)
+	public boolean isClueItem(MenuEntry entry)
 	{
 		String[] textOptions = new String[] { "Clue scroll", "Challenge scroll", "Key (" };
 		String target = entry.getTarget();
+		return Arrays.stream(textOptions).anyMatch(target::contains);
+	}
+
+	public boolean isExamineClue(MenuEntry entry)
+	{
 		String option = entry.getOption();
-		return Arrays.stream(textOptions).anyMatch(target::contains) && option.equals("Examine");
+		return isClueItem(entry) && option.equals("Examine");
 	}
 
 	public void onGameTick()
@@ -383,5 +413,18 @@ public class ClueInventoryManager
 	{
 		if (chatDialogClueItem == null) return false;
 		return chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_MASTER;
+	}
+
+	private boolean isEnabled(Integer itemId)
+	{
+		if (itemId == ItemID.CLUE_SCROLL_BEGINNER)
+		{
+			return config.beginnerDetails();
+		}
+		else if (itemId == ItemID.CLUE_SCROLL_MASTER )
+		{
+			return config.masterDetails();
+		}
+		return true;
 	}
 }

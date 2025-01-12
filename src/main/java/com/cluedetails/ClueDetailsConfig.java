@@ -358,7 +358,7 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "showInventoryCluesOverlay",
 		name = "Show inventory overlay",
-		description = "Toggle whether to show an overlay with details of all clues in your inventory",
+		description = "Toggle whether to show an overlay with details on all clues in your inventory",
 		section = overlaysSection,
 		position = 4
 	)
@@ -369,8 +369,8 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "changeClueText",
-		name = "Change ground menu text",
-		description = "Toggle whether to make the ground menu text be the clue detail",
+		name = "Change ground item menu text",
+		description = "Toggle whether to change the ground item menu text to the clue detail",
 		section = overlaysSection,
 		position = 5
 	)
@@ -420,8 +420,8 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "colorChangeClueText",
-		name = "Color ground menu text",
-		description = "Toggle whether to apply clue details color to ground menu text",
+		name = "Color ground item menu text",
+		description = "Toggle whether to apply clue details color to ground item menu text",
 		section = overlayColorsSection,
 		position = 3
 	)
@@ -456,7 +456,70 @@ public interface ClueDetailsConfig extends Config
 		return false;
 	}
 
-	@ConfigSection(name = "Tier Toggles", description = "Options to enable particular clue tiers", position = 6)
+	@ConfigSection(name = "Ground Clues", description = "Options that effect ground clues overlay (only supports Beginner and Master clues", position = 6)
+	String groundCluesSection = "Ground Clues";
+
+	@ConfigItem(
+		keyName = "showGroundClues",
+		name = "Show ground clues",
+		description = "Toggle whether to show ground clues overlay",
+		section = groundCluesSection,
+		position = 0
+	)
+	default boolean showGroundClues()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "changeGroundClueText",
+		name = "Change ground clue text",
+		description = "Toggle whether to change the ground clue text to the clue detail",
+		section = groundCluesSection,
+		position = 1
+	)
+	default boolean changeGroundClueText()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "showGroundCluesDespawn",
+		name = "Show ground clues despawn",
+		description = "Toggle whether to add despawn timers to the ground clues overlay",
+		section = groundCluesSection,
+		position = 2
+	)
+	default boolean showGroundCluesDespawn()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "collapseGroundClues",
+		name = "Collapse ground clues",
+		description = "Toggle whether to combine duplicates in the ground clues overlay",
+		section = groundCluesSection,
+		position = 3
+	)
+	default boolean collapseGroundClues()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "colorGroundClues",
+		name = "Color ground clues",
+		description = "Toggle whether to apply clue details color to ground clue text",
+		section = groundCluesSection,
+		position = 4
+	)
+	default boolean colorGroundClues()
+	{
+		return true;
+	}
+
+	@ConfigSection(name = "Tier Toggles", description = "Options to enable particular clue tiers", position = 7)
 	String tierTogglesSection = "Tier Toggles";
 
 	@ConfigItem(
