@@ -29,6 +29,7 @@ import java.util.List;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import net.runelite.api.ItemID;
 import net.runelite.api.TileItem;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.config.ConfigManager;
@@ -134,5 +135,18 @@ public class ClueInstance
 	public String getItemName(ClueDetailsPlugin plugin)
 	{
 		return plugin.getItemManager().getItemComposition(itemId).getName();
+	}
+
+	public boolean isEnabled(ClueDetailsConfig config)
+	{
+		if (itemId == ItemID.CLUE_SCROLL_BEGINNER)
+		{
+			return config.beginnerDetails();
+		}
+		else if (itemId == ItemID.CLUE_SCROLL_MASTER )
+		{
+			return config.masterDetails();
+		}
+		return true;
 	}
 }
