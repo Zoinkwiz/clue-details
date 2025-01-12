@@ -29,6 +29,7 @@ import com.cluedetails.panels.ClueDetailsParentPanel;
 import java.util.*;
 import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
@@ -59,6 +60,10 @@ public class ClueInventoryManager
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
+
+	// To be initialized to avoid passing around
+	@Setter
+	public static ClueDetailsConfig config;
 
 	public ClueInventoryManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin, ClueGroundManager clueGroundManager,
 								ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
@@ -205,14 +210,14 @@ public class ClueInventoryManager
 		return !trackedCluesInInventory.isEmpty();
 	}
 
-	public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, boolean showGroundItems)
+	public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
 	{
 		if (!isClueItem(event.getMenuEntry())) return;
 
 		MenuEntry entry = event.getMenuEntry();
 
 		// Ensure clue ground items are not deprioritized
-		if (showGroundItems)
+		if (config.showGroundClues())
 		{
 			MenuAction type = MenuAction.of(event.getType());
 			if (type == MenuAction.GROUND_ITEM_FIRST_OPTION || type == MenuAction.GROUND_ITEM_SECOND_OPTION ||
@@ -222,7 +227,10 @@ public class ClueInventoryManager
 				MenuEntry[] menuEntries = client.getMenuEntries();
 				MenuEntry lastEntry = menuEntries[menuEntries.length - 1];
 
-				lastEntry.setDeprioritized(false);
+				if (isEnabled(lastEntry.getItemId()))
+				{
+					lastEntry.setDeprioritized(false);
+				}
 			}
 		}
 
@@ -405,5 +413,18 @@ public class ClueInventoryManager
 	{
 		if (chatDialogClueItem == null) return false;
 		return chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_MASTER;
+	}
+
+	private boolean isEnabled(Integer itemId)
+	{
+		if (itemId == ItemID.CLUE_SCROLL_BEGINNER)
+		{
+			return config.beginnerDetails();
+		}
+		else if (itemId == ItemID.CLUE_SCROLL_MASTER )
+		{
+			return config.masterDetails();
+		}
+		return true;
 	}
 }

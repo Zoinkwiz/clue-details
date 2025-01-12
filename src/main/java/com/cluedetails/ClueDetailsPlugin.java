@@ -163,6 +163,7 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.register(widgetOverlay);
 
 		Clues.setConfig(config);
+		ClueInventoryManager.setConfig(config);
 
 		cluePreferenceManager = new CluePreferenceManager(configManager);
 		clueGroundManager = new ClueGroundManager(client, configManager, this);
@@ -298,7 +299,7 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe(priority = -1) // run after ground items
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
-		clueInventoryManager.onMenuEntryAdded(event, cluePreferenceManager, panel, config.showGroundClues());
+		clueInventoryManager.onMenuEntryAdded(event, cluePreferenceManager, panel);
 	}
 
 	@Subscribe
