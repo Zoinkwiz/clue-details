@@ -31,7 +31,9 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.Setter;
 import net.runelite.api.ItemID;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.widgets.InterfaceID;
@@ -1020,6 +1022,10 @@ public class Clues
 	@Getter
 	final OrRequirement regions;
 
+	// To be initialized to avoid passing around
+	@Setter
+	public static ClueDetailsConfig config;
+
 	Clues(String clueDetail, int itemID, ClueTier clueTier, String clueText, List<WorldPoint> wps)
 	{
 		this.clueID = -1;
@@ -1068,9 +1074,39 @@ public class Clues
 		ItemID.DAEYALT_ESSENCE
 	);
 
+	public static List<Clues> filteredClues()
+	{
+		if (config == null) return Clues.CLUES;
+
+		List<ClueTier> enabledClues = new ArrayList<>();
+		if (config.beginnerDetails()) enabledClues.add(ClueTier.BEGINNER);
+		if (config.easyDetails()) enabledClues.add(ClueTier.EASY);
+		if (config.mediumDetails())
+		{
+			enabledClues.add(ClueTier.MEDIUM);
+			enabledClues.add(ClueTier.MEDIUM_CHALLENGE);
+			enabledClues.add(ClueTier.MEDIUM_KEY);
+		}
+		if (config.hardDetails())
+		{
+			enabledClues.add(ClueTier.HARD);
+			enabledClues.add(ClueTier.HARD_CHALLENGE);
+		}
+		if (config.eliteDetails())
+		{
+			enabledClues.add(ClueTier.ELITE);
+			enabledClues.add(ClueTier.ELITE_CHALLENGE);
+		}
+		if (config.masterDetails()) enabledClues.add(ClueTier.MASTER);
+
+		return Clues.CLUES.stream()
+			.filter(c -> enabledClues.contains(c.getClueTier()))
+			.collect(Collectors.toList());
+	}
+
 	public static Clues forItemId(int itemId)
 	{
-		for (Clues clue : CLUES)
+		for (Clues clue : filteredClues())
 		{
 			if (clue.clueID == -1 && clue.getItemID() == itemId)
 			{
@@ -1083,6 +1119,18 @@ public class Clues
 	public static Clues forClueId(int clueId)
 	{
 		for (Clues clue : CLUES)
+		{
+			if (clue.getClueID() == clueId)
+			{
+				return clue;
+			}
+		}
+		return null;
+	}
+
+	public static Clues forClueIdFiltered(int clueId)
+	{
+		for (Clues clue : filteredClues())
 		{
 			if (clue.getClueID() == clueId)
 			{
@@ -1105,7 +1153,7 @@ public class Clues
 	{
 		final String text = Text.sanitizeMultilineText(rawText).toLowerCase();
 
-		for (Clues clue : CLUES)
+		for (Clues clue : filteredClues())
 		{
 			if (text.equalsIgnoreCase(clue.getClueText()))
 			{
@@ -1121,9 +1169,10 @@ public class Clues
 		// Only check beginner map clues
 		for (int i = 21; i < 26; i++)
 		{
-			if (CLUES.get(i).getItemID() == interfaceId)
+			List<Clues> filteredClues = filteredClues();
+			if (filteredClues.get(i).getItemID() == interfaceId)
 			{
-				return CLUES.get(i).getClueID();
+				return filteredClues.get(i).getClueID();
 			}
 		}
 		return null;
@@ -1145,7 +1194,7 @@ public class Clues
 
 	public static boolean isClue(int itemId, boolean isDeveloperMode)
 	{
-		return CLUES.stream().anyMatch((clue) -> clue.getItemID() == itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
+		return filteredClues().stream().anyMatch((clue) -> clue.getItemID() == itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
 	}
 
 	public static boolean isTrackedClue(int itemId, boolean isDeveloperMode)

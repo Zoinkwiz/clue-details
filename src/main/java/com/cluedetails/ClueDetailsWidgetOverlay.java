@@ -103,7 +103,7 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 
 			for (Integer clueId : clueInstance.getClueIds())
 			{
-				Clues cluePart = Clues.forClueId(clueId);
+				Clues cluePart = Clues.forClueIdFiltered(clueId);
 				if (cluePart == null) continue;
 
 				Color color = TITLED_CONTENT_COLOR;
