@@ -24,6 +24,7 @@
  */
 package com.cluedetails;
 
+import static com.cluedetails.ClueDetailsConfig.CLUE_ITEMS_CONFIG;
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
@@ -44,7 +45,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
-import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
@@ -56,19 +56,17 @@ public class ClueDetailsSharingManager
 {
 	private final ClueDetailsPlugin plugin;
 	private final ClueDetailsConfig config;
-	private final ChatMessageManager chatMessageManager;
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Gson gson;
 
 	private final ConfigManager configManager;
 
 	@Inject
-	private ClueDetailsSharingManager(ClueDetailsPlugin plugin, ClueDetailsConfig config, ChatMessageManager chatMessageManager, ChatboxPanelManager chatboxPanelManager,
+	private ClueDetailsSharingManager(ClueDetailsPlugin plugin, ClueDetailsConfig config, ChatboxPanelManager chatboxPanelManager,
 										Gson gson, ConfigManager configManager)
 	{
 		this.plugin = plugin;
 		this.config = config;
-		this.chatMessageManager = chatMessageManager;
 		this.chatboxPanelManager = chatboxPanelManager;
 		this.gson = gson;
 		this.configManager = configManager;
@@ -88,7 +86,7 @@ public class ClueDetailsSharingManager
 		}
 	}
 
-	public void exportClueDetails(boolean exportText, boolean exportColors)
+	public void exportClueDetails(boolean exportText, boolean exportColors, boolean exportItems)
 	{
 		List<ClueIdToDetails> clueIdToDetailsList = new ArrayList<>();
 
@@ -102,23 +100,55 @@ public class ClueDetailsSharingManager
 			int id = clue.getClueID();
 			String clueText = configManager.getConfiguration("clue-details-text", String.valueOf(id));
 			String clueColor = configManager.getConfiguration("clue-details-color", String.valueOf(id));
+			String clueItems = configManager.getConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
 
-			if (exportText && exportColors)
+			// Try to export text, color, and items. Export where valid configurations are returned
+			if (exportText && exportColors && exportItems)
 			{
-				// Export both
-				if (clueText != null && clueColor != null)
+				if (clueItems != null)
 				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor)));
+					List<Integer> loadedClueItemsData = gson.fromJson(clueItems, new TypeToken<List<Integer>>()
+					{
+					}.getType());
+
+					// Export text, colors, and items
+					if (clueColor != null && clueText != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor), loadedClueItemsData));
+					}
+					// Export text and items
+					else if (clueText != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, loadedClueItemsData));
+					}
+					// Export color and items
+					else if (clueColor != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor), loadedClueItemsData));
+					}
+					// Export items
+					else
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, loadedClueItemsData));
+					}
 				}
-				// Export text
-				else if (clueText != null)
+				else
 				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
-				}
-				// Export colors
-				else if (clueColor != null)
-				{
-					clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
+					// Export text and colors
+					if (clueText != null && clueColor != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor)));
+					}
+					// Export text
+					else if (clueText != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
+					}
+					// Export colors
+					else if (clueColor != null)
+					{
+						clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
+					}
 				}
 			}
 			// Export text
@@ -130,6 +160,15 @@ public class ClueDetailsSharingManager
 			else if (exportColors && clueColor != null)
 			{
 				clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
+			}
+			// Export items
+			else if (exportItems && clueItems != null)
+			{
+				List<Integer> loadedClueItemsData = gson.fromJson(clueItems, new TypeToken<List<Integer>>()
+				{
+				}.getType());
+
+				clueIdToDetailsList.add(new ClueIdToDetails(id, loadedClueItemsData));
 			}
 		}
 
@@ -242,6 +281,17 @@ public class ClueDetailsSharingManager
 					}
 				}
 			}
+			if (importPoint.itemIds != null)
+			{
+				if (importPoint.itemIds.isEmpty())
+				{
+					configManager.unsetConfiguration("clue-details-items", String.valueOf(importPoint.id));
+				}
+				else
+				{
+					configManager.setConfiguration("clue-details-items", String.valueOf(importPoint.id), importPoint.itemIds);
+				}
+			}
 		}
 
 		sendChatMessage(importPoints.size() + " clue details were imported from the clipboard.");
@@ -250,7 +300,7 @@ public class ClueDetailsSharingManager
 
 	private void sendChatMessage(final String message)
 	{
-		chatMessageManager.queue(QueuedMessage.builder()
+		plugin.getChatMessageManager().queue(QueuedMessage.builder()
 			.type(ChatMessageType.CONSOLE)
 			.runeLiteFormattedMessage(message)
 			.build());

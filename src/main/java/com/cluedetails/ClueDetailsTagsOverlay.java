@@ -201,16 +201,19 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		}
 	}
 
-	public static String getStringBetween(String input, String start, String end) {
+	public static String getStringBetween(String input, String start, String end)
+	{
 		int startIndex = input.indexOf(start);
-		if (startIndex == -1) {
+		if (startIndex == -1)
+		{
 			return null; // Start string not found
 		}
 
 		startIndex += start.length(); // Move past the start string
 
 		int endIndex = input.indexOf(end, startIndex);
-		if (endIndex == -1) {
+		if (endIndex == -1)
+		{
 			return null; // End string not found
 		}
 

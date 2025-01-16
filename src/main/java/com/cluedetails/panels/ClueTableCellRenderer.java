@@ -88,7 +88,7 @@ public class ClueTableCellRenderer extends JPanel implements TableCellRenderer
 			textArea.setForeground(clue.getDetailColor(configManager));
 			textArea.setOpaque(true);
 
-			boolean isActive = cluePreferenceManager.getPreference(clue.getClueID());
+			boolean isActive = cluePreferenceManager.getHighlightPreference(clue.getClueID());
 			textArea.setBorder(isActive ? SELECTED_BORDER : UNSELECTED_BORDER);
 			setBackground(ColorScheme.DARK_GRAY_COLOR);
 		}
