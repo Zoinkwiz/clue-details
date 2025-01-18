@@ -144,6 +144,7 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
 		if (inventory == null || clueInventoryManager == null ) return;
 
+		// Highlight for easy-elite clues
 		for (Clues clue : clueInventoryManager.getCluesInInventory())
 		{
 			if (clue == null) continue;
@@ -152,6 +153,23 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 			{
 				checkInvAndHighlightItems(graphics, clue);
 			}
+		}
+
+		// Highlight for beginner and master clues
+		for (Integer itemID : clueInventoryManager.getTrackedCluesInInventory())
+		{
+			if (itemID == null) continue;
+			ClueInstance instance = clueInventoryManager.getTrackedClueByClueItemId(itemID);
+			if (instance == null) continue;
+
+			instance.getClueIds().forEach((clueId) -> {
+				Clues clue = Clues.forClueIdFiltered(clueId);
+				if (clue == null) return;
+				if (isEnabled(clue))
+				{
+					checkInvAndHighlightItems(graphics, clue);
+				}
+			});
 		}
 	}
 

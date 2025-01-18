@@ -47,7 +47,6 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
-import org.apache.commons.text.WordUtils;
 
 @Slf4j
 @Singleton
@@ -279,6 +278,7 @@ public class ClueInventoryManager
 		if (!hasClueName(menuEntry.getTarget()))
 		{
 			Arrays.stream(cluesInInventory).forEach((clue) -> addHighlightItemMenu(cluePreferenceManager, clue, itemId, event));
+			trackedCluesInInventory.forEach((id, instance) -> instance.getClueIds().forEach((clueId) -> addHighlightItemMenu(cluePreferenceManager, Clues.forClueIdFiltered(clueId), itemId, event)));
 			return;
 		}
 
@@ -365,8 +365,8 @@ public class ClueInventoryManager
 		boolean itemInCluePreference = cluePreferenceManager.itemsPreferenceContainsItem(clue.getClueID(), itemId);
 
 		String action = itemInCluePreference ? "Remove from " : "Add to ";
-		String tierName = WordUtils.capitalize(clue.getClueTier().name().toLowerCase()).replace("_", " ");
-		final String text = action + tierName + " clue";
+		String clueDetail = clue.getDetail(configManager);
+		final String text = action + "'" + clueDetail + "'";
 
 		// Add menu to item for clue
 		client.getMenu().createMenuEntry(-1)
