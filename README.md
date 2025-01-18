@@ -43,7 +43,7 @@ The "Change ground item menu text" toggle in the plugin's settings adjusts the a
 
 The "Highlight inventory clue items" toggle highlights configured items for each clue in your inventory
 
-![Di3FxGL](https://github.com/user-attachments/assets/b650e09e-ddcc-44e2-a9ec-cdf8c725b78b)
+![image](https://github.com/user-attachments/assets/3dc33f5b-f300-4614-b6bf-db7359f23ae5)
 
 The "Show ground clues" toggle shows text overlay for Beginner and Master ground clues, similar to the Ground Items plugin.
 
