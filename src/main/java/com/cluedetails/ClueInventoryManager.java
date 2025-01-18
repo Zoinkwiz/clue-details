@@ -28,7 +28,6 @@ import com.cluedetails.panels.ClueDetailsParentPanel;
 
 import java.util.*;
 import javax.inject.Singleton;
-import javax.swing.SwingUtilities;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
@@ -233,14 +232,14 @@ public class ClueInventoryManager
 		MenuEntry entry = event.getMenuEntry();
 
 		// Ensure clue ground items are not deprioritized
-		if (isClueItem(event.getMenuEntry()) && config.showGroundClues())
+		if (hasClueName(event.getMenuEntry().getTarget()) && config.showGroundClues())
 		{
 			MenuAction type = MenuAction.of(event.getType());
 			if (type == MenuAction.GROUND_ITEM_FIRST_OPTION || type == MenuAction.GROUND_ITEM_SECOND_OPTION ||
 				type == MenuAction.GROUND_ITEM_THIRD_OPTION || type == MenuAction.GROUND_ITEM_FOURTH_OPTION ||
 				type == MenuAction.GROUND_ITEM_FIFTH_OPTION || type == MenuAction.WIDGET_TARGET_ON_GROUND_ITEM)
 			{
-				MenuEntry[] menuEntries = client.getMenuEntries();
+				MenuEntry[] menuEntries = client.getMenu().getMenuEntries();
 				MenuEntry lastEntry = menuEntries[menuEntries.length - 1];
 
 				if (isEnabled(lastEntry.getItemId()))
@@ -255,140 +254,144 @@ public class ClueInventoryManager
 			return;
 		}
 
+		// We only run on examine as this should be on all items only once
+		if (!"Examine".equals(event.getMenuEntry().getOption())) return;
+
 		final Widget w = entry.getWidget();
 		boolean isInventoryMenu = w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY;
+
 		int itemId = isInventoryMenu ? event.getItemId() : event.getIdentifier();
+		// Runs on both inventory and ground clues
+		handleMarkClue(cluePreferenceManager, panel, event.getTarget(), itemId);
 
-		// Clue Highlight Option
-		if (isInventoryMenu
-			&& !event.getTarget().contains("Clue scroll")
-			&& "Examine".equals(entry.getOption())
-			&& entry.getIdentifier() == 10)
+		if (isInventoryMenu)
 		{
-			for (Clues clue : cluesInInventory)
-			{
-				if (clue == null) continue;
+			handleInventory(cluePreferenceManager, event, panel);
+		}
+	}
 
-				boolean itemInCluePreference = cluePreferenceManager.itemsPreferenceContainsItem(clue.getClueID(), itemId);
+	private void handleInventory(CluePreferenceManager cluePreferenceManager, MenuEntryAdded event, ClueDetailsParentPanel panel)
+	{
+		MenuEntry menuEntry = event.getMenuEntry();
+		int itemId = event.getItemId();
 
-				String action = itemInCluePreference ? "Remove from " : "Add to ";
-				String tierName = WordUtils.capitalize(clue.getClueTier().name().toLowerCase()).replace("_", " ");
-				final String text = action + tierName + " clue";
-
-				// Add menu to item for clue
-				client.getMenu().createMenuEntry(-1)
-					.setOption(text)
-					.setTarget(event.getTarget())
-					.setIdentifier(itemId)
-					.setType(MenuAction.RUNELITE)
-					.onClick(e ->
-						updateClueItems(clue, itemId, cluePreferenceManager));
-			}
+		// Add item highlight menu
+		if (!hasClueName(menuEntry.getTarget()))
+		{
+			Arrays.stream(cluesInInventory).forEach((clue) -> addHighlightItemMenu(cluePreferenceManager, clue, itemId, event));
+			return;
 		}
 
-		if (!event.getTarget().contains("Clue scroll")) return;
-		if (!isExamineClue(event.getMenuEntry())) return;
+		// Is a clue item, add clue item menu entries
+		handleClueDetailsMenuEntry(panel, menuEntry, itemId);
+	}
 
+	private void handleMarkClue(CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, String name, int itemId)
+	{
 		boolean isMarked = cluePreferenceManager.getHighlightPreference(itemId);
-		final int clueId;
 
 		// Mark Option
+		if (!Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+		{
+			toggleMarkClue(cluePreferenceManager, panel, itemId, isMarked, name);
+		}
+	}
+
+	private void handleClueDetailsMenuEntry(ClueDetailsParentPanel panel, MenuEntry entry, int itemId)
+	{
+		List<Integer> clueIds = new ArrayList<>();
+		Menu menu;
+		String option = null;
+		String target = null;
+
+		// If beginner or master clue
 		if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 		{
 			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
 
-			// If isn't a master three-step cryptic
-			if (clueSelected.getClueIds().size() == 1)
-			{
-				clueId = clueSelected.getClueIds().get(0);
-			}
-			else
-			{
-				// Used in below TRACKED_CLUE_IDS check
-				clueId = itemId;
-			}
-		}
-		else
-		{
-			clueId = itemId;
-			// We don't want to have marking on masters I think
-			client.getMenu().createMenuEntry(-1)
-				.setOption(isMarked ? "Unmark" : "Mark")
-				.setTarget(event.getTarget())
-				.setIdentifier(itemId)
-				.setType(MenuAction.RUNELITE)
-				.onClick(e ->
-				{
-					boolean currentValue = cluePreferenceManager.getHighlightPreference(e.getIdentifier());
-					cluePreferenceManager.saveHighlightPreference(e.getIdentifier(), !currentValue);
-					panel.refresh();
-				});
-		}
-		if (!isInventoryMenu) return;
-
-		// Clue Details Option
-		if (Clues.isTrackedClueOrTornClue(clueId, clueDetailsPlugin.isDeveloperMode()))
-		{
-			ClueInstance clueSelected = trackedCluesInInventory.get(clueId);
-			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
+			clueIds.addAll(clueSelected.getClueIds());
 
 			MenuEntry parent = client.getMenu().createMenuEntry(-1)
 				.setOption("Clue details")
 				.setTarget(entry.getTarget())
 				.setType(MenuAction.RUNELITE);
 
-			Menu submenu = parent.createSubMenu();
-
-			for (int id : clueSelected.getClueIds())
-			{
-				Clues clue = Clues.forClueIdFiltered(id);
-				if (clue == null)
-				{
-					log.debug("Failed to find clue " + id);
-					return;
-				}
-
-				submenu.createMenuEntry(-1)
-					.setOption(clue.getDetail(configManager))
-					.setType(MenuAction.RUNELITE)
-					.onClick(e ->
-						SwingUtilities.invokeLater(() ->
-							chatboxPanelManager.openTextInput("Enter new clue detail:")
-								.value(clue.getDetail(configManager))
-								.onDone((newDetail) ->
-								{
-									configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
-									panel.refresh();
-								})
-								.build()));
-			}
+			menu = parent.createSubMenu();
 		}
 		else
 		{
-			client.getMenu().createMenuEntry(-1)
-				.setOption("Clue details")
-				.setTarget(entry.getTarget())
-				.setType(MenuAction.RUNELITE)
-				.onClick(e ->
-				{
-					Clues clue = Clues.forClueIdFiltered(clueId);
-					if (clue == null)
-					{
-						log.debug("Failed to find clue " + clueId);
-						return;
-					}
-
-					chatboxPanelManager.openTextInput("Enter new clue detail:")
-						.value(clue.getDetail(configManager))
-						.onDone((newDetail) ->
-						{
-							configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
-							panel.refresh();
-						})
-						.build();
-				});
+			menu = client.getMenu();
+			clueIds.add(itemId);
+			target = entry.getTarget();
+			option = "Clue details";
 		}
+
+		for (int id : clueIds)
+		{
+			Clues clue = Clues.forClueIdFiltered(id);
+			if (clue == null)
+			{
+				log.debug("Failed to find clue " + id);
+				return;
+			}
+			String newOption = option == null ? clue.getDetail(configManager) : option;
+			String newTarget = target == null ? "" : target;
+			addClueDetailsMenuEntry(panel, menu, newOption, newTarget, clue);
+		}
+	}
+
+	private void addClueDetailsMenuEntry(ClueDetailsParentPanel panel, Menu menu, String option, String target, Clues clue)
+	{
+		menu.createMenuEntry(-1)
+			.setOption(option)
+			.setTarget(target)
+			.setType(MenuAction.RUNELITE)
+			.onClick(e ->
+				chatboxPanelManager.openTextInput("Enter new clue detail:")
+					.value(clue.getDetail(configManager))
+					.onDone((newDetail) ->
+					{
+						configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
+						panel.refresh();
+					})
+					.build());
+	}
+
+	private void addHighlightItemMenu(CluePreferenceManager cluePreferenceManager, Clues clue, int itemId, MenuEntryAdded event)
+	{
+		if (clue == null) return;
+
+		boolean itemInCluePreference = cluePreferenceManager.itemsPreferenceContainsItem(clue.getClueID(), itemId);
+
+		String action = itemInCluePreference ? "Remove from " : "Add to ";
+		String tierName = WordUtils.capitalize(clue.getClueTier().name().toLowerCase()).replace("_", " ");
+		final String text = action + tierName + " clue";
+
+		// Add menu to item for clue
+		client.getMenu().createMenuEntry(-1)
+			.setOption(text)
+			.setTarget(event.getTarget())
+			.setIdentifier(itemId)
+			.setType(MenuAction.RUNELITE)
+			.onClick(e ->
+				updateClueItems(clue, itemId, cluePreferenceManager));
+	}
+
+	private void toggleMarkClue(CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, int clueId, boolean isMarked, String target)
+	{
+		// We don't want to have marking on masters I think
+		client.getMenu().createMenuEntry(-1)
+			.setOption(isMarked ? "Unmark" : "Mark")
+			.setTarget(target)
+			.setIdentifier(clueId)
+			.setType(MenuAction.RUNELITE)
+			.onClick(e ->
+			{
+				boolean currentValue = cluePreferenceManager.getHighlightPreference(e.getIdentifier());
+				cluePreferenceManager.saveHighlightPreference(e.getIdentifier(), !currentValue);
+				panel.refresh();
+			});
 	}
 
 	private void updateClueItems(Clues clue, int itemId, CluePreferenceManager cluePreferenceManager)
@@ -417,17 +420,9 @@ public class ClueInventoryManager
 		cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
 	}
 
-	public boolean isClueItem(MenuEntry entry)
+	private boolean hasClueName(String name)
 	{
-		String[] textOptions = new String[] { "Clue scroll", "Challenge scroll", "Key (" };
-		String target = entry.getTarget();
-		return Arrays.stream(textOptions).anyMatch(target::contains);
-	}
-
-	public boolean isExamineClue(MenuEntry entry)
-	{
-		String option = entry.getOption();
-		return isClueItem(entry) && option.equals("Examine");
+		return name.contains("Clue scroll") || (clueDetailsPlugin.isDeveloperMode() && name.contains("Daeyalt essence"));
 	}
 
 	public void onGameTick()
