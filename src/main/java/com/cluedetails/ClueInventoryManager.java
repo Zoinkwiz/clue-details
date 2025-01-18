@@ -277,8 +277,15 @@ public class ClueInventoryManager
 		// Add item highlight menu
 		if (!hasClueName(menuEntry.getTarget()))
 		{
-			Arrays.stream(cluesInInventory).forEach((clue) -> addHighlightItemMenu(cluePreferenceManager, clue, itemId, event));
-			trackedCluesInInventory.forEach((id, instance) -> instance.getClueIds().forEach((clueId) -> addHighlightItemMenu(cluePreferenceManager, Clues.forClueIdFiltered(clueId), itemId, event)));
+			if (cluesInInventory.length == 0 && trackedCluesInInventory.size() == 0) return;
+
+			MenuEntry clueDetailsEntry = client.getMenu().createMenuEntry(-1)
+				.setOption("Clue details")
+				.setTarget(menuEntry.getTarget())
+				.setType(MenuAction.RUNELITE);
+			Menu submenu = clueDetailsEntry.createSubMenu();
+			Arrays.stream(cluesInInventory).forEach((clue) -> addHighlightItemMenu(cluePreferenceManager, submenu, clue, itemId, event));
+			trackedCluesInInventory.forEach((id, instance) -> instance.getClueIds().forEach((clueId) -> addHighlightItemMenu(cluePreferenceManager, submenu, Clues.forClueIdFiltered(clueId), itemId, event)));
 			return;
 		}
 
@@ -358,7 +365,7 @@ public class ClueInventoryManager
 					.build());
 	}
 
-	private void addHighlightItemMenu(CluePreferenceManager cluePreferenceManager, Clues clue, int itemId, MenuEntryAdded event)
+	private void addHighlightItemMenu(CluePreferenceManager cluePreferenceManager, Menu menu, Clues clue, int itemId, MenuEntryAdded event)
 	{
 		if (clue == null) return;
 
@@ -369,7 +376,7 @@ public class ClueInventoryManager
 		final String text = action + "'" + clueDetail + "'";
 
 		// Add menu to item for clue
-		client.getMenu().createMenuEntry(-1)
+		menu.createMenuEntry(-1)
 			.setOption(text)
 			.setTarget(event.getTarget())
 			.setIdentifier(itemId)
