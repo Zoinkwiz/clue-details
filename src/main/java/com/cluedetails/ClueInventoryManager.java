@@ -261,7 +261,10 @@ public class ClueInventoryManager
 
 		int itemId = isInventoryMenu ? event.getItemId() : event.getIdentifier();
 		// Runs on both inventory and ground clues
-		handleMarkClue(cluePreferenceManager, panel, event.getTarget(), itemId);
+		if (hasClueName(event.getMenuEntry().getTarget()))
+		{
+			handleMarkClue(cluePreferenceManager, panel, event.getTarget(), itemId);
+		}
 
 		if (isInventoryMenu)
 		{
@@ -277,7 +280,7 @@ public class ClueInventoryManager
 		// Add item highlight menu
 		if (!hasClueName(menuEntry.getTarget()))
 		{
-			if (cluesInInventory.length == 0 && trackedCluesInInventory.size() == 0) return;
+			if (cluesInInventory.length == 0 && trackedCluesInInventory.isEmpty()) return;
 
 			MenuEntry clueDetailsEntry = client.getMenu().createMenuEntry(-1)
 				.setOption("Clue details")
@@ -319,12 +322,22 @@ public class ClueInventoryManager
 
 			clueIds.addAll(clueSelected.getClueIds());
 
-			MenuEntry parent = client.getMenu().createMenuEntry(-1)
-				.setOption("Clue details")
-				.setTarget(entry.getTarget())
-				.setType(MenuAction.RUNELITE);
+			// Only create submenu when needed
+			if (clueIds.size() > 1)
+			{
+				MenuEntry parent = client.getMenu().createMenuEntry(-1)
+					.setOption("Clue details")
+					.setTarget(entry.getTarget())
+					.setType(MenuAction.RUNELITE);
 
-			menu = parent.createSubMenu();
+				menu = parent.createSubMenu();
+			}
+			else
+			{
+				menu = client.getMenu();
+				target = entry.getTarget();
+				option = "Clue details";
+			}
 		}
 		else
 		{
@@ -429,7 +442,10 @@ public class ClueInventoryManager
 
 	private boolean hasClueName(String name)
 	{
-		return name.contains("Clue scroll") || (clueDetailsPlugin.isDeveloperMode() && name.contains("Daeyalt essence"));
+		return name.contains("Clue scroll")
+			|| name.contains("Challenge scroll")
+			|| name.contains("Key (medium)")
+			|| (clueDetailsPlugin.isDeveloperMode() && name.contains("Daeyalt essence"));
 	}
 
 	public void onGameTick()
