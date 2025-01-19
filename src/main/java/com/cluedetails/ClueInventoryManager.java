@@ -263,7 +263,7 @@ public class ClueInventoryManager
 		// Runs on both inventory and ground clues
 		if (hasClueName(event.getMenuEntry().getTarget()))
 		{
-			handleMarkClue(cluePreferenceManager, panel, event.getTarget(), itemId);
+			handleMarkMenuEntry(cluePreferenceManager, panel, itemId, event.getMenuEntry());
 		}
 
 		if (isInventoryMenu)
@@ -280,7 +280,7 @@ public class ClueInventoryManager
 		// Add item highlight menu
 		if (!hasClueName(menuEntry.getTarget()))
 		{
-			if (cluesInInventory.length == 0 && trackedCluesInInventory.size() == 0) return;
+			if (cluesInInventory.length == 0 && trackedCluesInInventory.isEmpty()) return;
 
 			MenuEntry clueDetailsEntry = client.getMenu().createMenuEntry(-1)
 				.setOption("Clue details")
@@ -294,17 +294,6 @@ public class ClueInventoryManager
 
 		// Is a clue item, add clue item menu entries
 		handleClueDetailsMenuEntry(panel, menuEntry, itemId);
-	}
-
-	private void handleMarkClue(CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, String name, int itemId)
-	{
-		boolean isMarked = cluePreferenceManager.getHighlightPreference(itemId);
-
-		// Mark Option
-		if (!Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
-		{
-			toggleMarkClue(cluePreferenceManager, panel, itemId, isMarked, name);
-		}
 	}
 
 	private void handleClueDetailsMenuEntry(ClueDetailsParentPanel panel, MenuEntry entry, int itemId)
@@ -388,13 +377,67 @@ public class ClueInventoryManager
 				updateClueItems(clue, itemId, cluePreferenceManager));
 	}
 
-	private void toggleMarkClue(CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, int clueId, boolean isMarked, String target)
+	private void handleMarkMenuEntry(CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, int itemId, MenuEntry entry)
 	{
-		// We don't want to have marking on masters I think
-		client.getMenu().createMenuEntry(-1)
-			.setOption(isMarked ? "Unmark" : "Mark")
+		List<Integer> clueIds = new ArrayList<>();
+		Menu menu;
+		boolean isMarked;
+		String target = null;
+
+		// If beginner or master clue
+		// TODO: Doesn't support clues on the ground
+		if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+		{
+			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
+			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
+
+			clueIds.addAll(clueSelected.getClueIds());
+
+			if (clueIds.size() > 1)
+			{
+				MenuEntry parent = client.getMenu().createMenuEntry(-1)
+					.setOption("Marked Clues")
+					.setTarget(entry.getTarget())
+					.setType(MenuAction.RUNELITE);
+
+				menu = parent.createSubMenu();
+			}
+			else
+			{
+				menu = client.getMenu();
+				target = entry.getTarget();
+			}
+		}
+		else
+		{
+			menu = client.getMenu();
+			clueIds.add(itemId);
+			target = entry.getTarget();
+		}
+
+		for (int id : clueIds)
+		{
+			Clues clue = Clues.forClueIdFiltered(id);
+			if (clue == null)
+			{
+				log.debug("Failed to find clue " + id);
+				return;
+			}
+			isMarked = cluePreferenceManager.getHighlightPreference(id);
+			String newAction = isMarked ? "Unmark" : "Mark";
+			String detail = clueIds.size() > 1 ? " '" + clue.getDetail(configManager) + "'" : "";
+			String newOption = newAction + detail;
+			String newTarget = target == null ? "" : target;
+			addMarkMenuEntry(panel, menu, newOption, newTarget, id, cluePreferenceManager);
+		}
+	}
+
+	private void addMarkMenuEntry(ClueDetailsParentPanel panel, Menu menu, String option, String target, int itemId, CluePreferenceManager cluePreferenceManager)
+	{
+		menu.createMenuEntry(-1)
+			.setOption(option)
 			.setTarget(target)
-			.setIdentifier(clueId)
+			.setIdentifier(itemId)
 			.setType(MenuAction.RUNELITE)
 			.onClick(e ->
 			{

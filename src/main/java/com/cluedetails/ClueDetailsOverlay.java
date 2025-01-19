@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 
+import lombok.Getter;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Menu;
@@ -430,11 +431,55 @@ public class ClueDetailsOverlay extends OverlayPanel
 		return Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode()) && option.equals("Read");
 	}
 
-	private boolean shouldHighlight(int id)
+	@Getter
+	static final class MarkedClue
 	{
-		if (id < 2677) return false; //TODO: Support fake beginner & master IDs
-		String shouldHighlight = configManager.getConfiguration("clue-details-highlights", String.valueOf(id));
-		return "true".equals(shouldHighlight);
+		private final boolean marked;
+		private final int clueID;
+
+		public MarkedClue(boolean highlighted, int clueID)
+		{
+			this.marked = highlighted;
+			this.clueID = clueID;
+		}
+	}
+
+	private MarkedClue shouldHighlight(int id, WorldPoint tileWp)
+	{
+		Integer itemId = Clues.forIdGetItemId(id);
+
+		if (itemId == null) return new MarkedClue(false, -1);
+
+		if (Clues.isTrackedClue(itemId, clueDetailsPlugin.isDeveloperMode())
+			&& clueDetailsPlugin.getClueGroundManager().hasGroundClues())
+		{
+			List<ClueInstance> groundClues = clueDetailsPlugin.getClueGroundManager().getGroundCluesByWorldPoint(tileWp);
+
+			if (groundClues == null || groundClues.isEmpty())
+			{
+				return new MarkedClue(false, -1);
+			}
+
+			for (ClueInstance clue : groundClues)
+			{
+				List<Integer> clueIds = clue.getClueIds();
+
+				for (Integer clueId : clueIds)
+				{
+					String shouldHighlight = configManager.getConfiguration("clue-details-highlights", String.valueOf(clueId));
+					if ("true".equals(shouldHighlight))
+					{
+						return new MarkedClue(true, clueId);
+					}
+				}
+			}
+			return new MarkedClue(false, -1);
+		}
+		else
+		{
+			String shouldHighlight = configManager.getConfiguration("clue-details-highlights", String.valueOf(id));
+			return new MarkedClue("true".equals(shouldHighlight), id);
+		}
 	}
 
 	private int getScrollID(MenuEntry menuEntry)
@@ -578,22 +623,27 @@ public class ClueDetailsOverlay extends OverlayPanel
 	@Subscribe
 	public void onItemSpawned(ItemSpawned itemSpawned)
 	{
+		// TODO: Race condition with ClueGroundManager means Beginner/Master are missed
 		TileItem item = itemSpawned.getItem();
 		Tile tile = itemSpawned.getTile();
-		if (shouldHighlight(item.getId()))
+		MarkedClue markedClue = shouldHighlight(item.getId(), tile.getWorldLocation());
+		if (markedClue.isMarked())
 		{
 			notifier.notify(config.markedClueDroppedNotification(), "A highlighted clue has dropped!");
-			tileHighlights.get(tile).add(item.getId());
+			tileHighlights.get(tile).add(markedClue.getClueID());
 		}
 	}
 
 	@Subscribe
 	public void onItemDespawned(ItemDespawned itemDespawned)
 	{
+		// TODO: Race condition with ClueGroundManager means Beginner/Master are missed
+		TileItem item = itemDespawned.getItem();
 		Tile tile = itemDespawned.getTile();
 		if (tileHighlights.containsKey(tile))
 		{
-			tileHighlights.get(tile).removeIf((i) -> i == itemDespawned.getItem().getId());
+			MarkedClue found = shouldHighlight(item.getId(), tile.getWorldLocation());
+			tileHighlights.get(tile).removeIf((i) -> i == found.getClueID());
 		}
 	}
 
@@ -621,9 +671,10 @@ public class ClueDetailsOverlay extends OverlayPanel
 						continue;
 					}
 
-					if (shouldHighlight(item.getId()))
+					MarkedClue found = shouldHighlight(item.getId(), tile.getWorldLocation());
+					if (found.isMarked())
 					{
-						tileHighlights.get(tile).add(item.getId());
+						tileHighlights.get(tile).add(found.getClueID());
 						break;
 					}
 				}
@@ -675,12 +726,25 @@ public class ClueDetailsOverlay extends OverlayPanel
 				return;
 			}
 
-			// TODO: Currently outlines all items in the tile
-			modelOutlineRenderer.drawOutline(
-				tile.getItemLayer(),
-				config.outlineWidth(),
-				JagexColors.CHAT_PUBLIC_TEXT_OPAQUE_BACKGROUND,
-				config.highlightFeather());
+			for (Integer id : ids)
+			{
+				Integer itemId = Clues.forIdGetItemId(id);
+				if (itemId != null)
+				{
+					for (TileItem tileItem : tile.getGroundItems())
+					{
+						if (itemId == tileItem.getId())
+						{
+							// TODO: Currently outlines all items in the tile
+							modelOutlineRenderer.drawOutline(
+								tile.getItemLayer(),
+								config.outlineWidth(),
+								JagexColors.CHAT_PUBLIC_TEXT_OPAQUE_BACKGROUND,
+								config.highlightFeather());
+						}
+					}
+				}
+			}
 		}
 	}
 }
