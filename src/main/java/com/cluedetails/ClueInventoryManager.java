@@ -311,12 +311,22 @@ public class ClueInventoryManager
 
 			clueIds.addAll(clueSelected.getClueIds());
 
-			MenuEntry parent = client.getMenu().createMenuEntry(-1)
-				.setOption("Clue details")
-				.setTarget(entry.getTarget())
-				.setType(MenuAction.RUNELITE);
+			// Only create submenu when needed
+			if (clueIds.size() > 1)
+			{
+				MenuEntry parent = client.getMenu().createMenuEntry(-1)
+					.setOption("Clue details")
+					.setTarget(entry.getTarget())
+					.setType(MenuAction.RUNELITE);
 
-			menu = parent.createSubMenu();
+				menu = parent.createSubMenu();
+			}
+			else
+			{
+				menu = client.getMenu();
+				target = entry.getTarget();
+				option = "Clue details";
+			}
 		}
 		else
 		{
@@ -393,6 +403,7 @@ public class ClueInventoryManager
 
 			clueIds.addAll(clueSelected.getClueIds());
 
+			// Only create submenu when needed
 			if (clueIds.size() > 1)
 			{
 				MenuEntry parent = client.getMenu().createMenuEntry(-1)
