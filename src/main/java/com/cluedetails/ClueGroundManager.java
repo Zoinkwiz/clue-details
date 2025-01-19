@@ -438,4 +438,14 @@ public class ClueGroundManager
 		groundClues.clear();
 		groundClues.putAll(clueGroundSaveDataManager.loadStateFromConfig(client));
 	}
+
+	public boolean hasGroundClues()
+	{
+		return !groundClues.isEmpty();
+	}
+
+	public List<ClueInstance> getGroundCluesByWorldPoint(WorldPoint tileWp)
+	{
+		return groundClues.get(tileWp);
+	}
 }
