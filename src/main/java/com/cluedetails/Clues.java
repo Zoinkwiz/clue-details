@@ -933,7 +933,7 @@ public class Clues
 		new Clues(563, "Saradomin's Encampment: Dig", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_CRYPTIC_20, List.of(new WorldPoint(2918, 3745, 0))),
 		new Clues(564, "Key Master: Talk", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_CRYPTIC_21, List.of(new WorldPoint(1310, 1251, 0))),
 		new Clues(565, "Piles: Talk", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_CRYPTIC_22, List.of(new WorldPoint(3185, 3934, 0))),
-		new Clues(566, "Demonic Ruins: Talk", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_CRYPTIC_23, List.of(new WorldPoint(3294, 3889, 0))),
+		new Clues(566, "Demonic Ruins: Dig", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_CRYPTIC_23, List.of(new WorldPoint(3294, 3889, 0))),
 		new Clues(567, "Robin: Talk", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_CRYPTIC_24, List.of(new WorldPoint(3676, 3494, 0))),
 		new Clues(568, "Lovada: Talk", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_CRYPTIC_25, List.of(new WorldPoint(1487, 3833, 0))),
 		new Clues(569, "Logosia: Talk", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_CRYPTIC_26, List.of(new WorldPoint(1633, 3808, 0))),
