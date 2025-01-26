@@ -238,10 +238,10 @@ public class ClueDetailsOverlay extends OverlayPanel
 			if (!isTakeOrMarkClue(menuEntry)) continue;
 
 			boolean showColor = shouldShowColor(menuEntry);
-			String regex = "(Clue scroll \\(.*?\\)|Challenge scroll \\(.*?\\))";
+			String regex = "(Clue scroll \\(.*?\\)( x [0-9]+)?|Challenge scroll \\(.*?\\)( x [0-9]+)?)";
 			if (clueDetailsPlugin.isDeveloperMode())
 			{
-				regex = "(Daeyalt essence|Clue scroll \\(.*?\\)|Challenge scroll \\(.*?\\))";
+				regex = "(Daeyalt essence|Clue scroll \\(.*?\\)( x [0-9]+)?|Challenge scroll \\(.*?\\)( x [0-9]+)?)";
 			}
 
 			// Compile the pattern
