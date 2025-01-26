@@ -633,4 +633,19 @@ public interface ClueDetailsConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigSection(name = "Helper Toggles", description = "Options to enable particular helper features.", position = 8)
+	String helperSection = "helperSection";
+
+	@ConfigItem(
+			keyName = "threeStepSaver",
+			name = "Three-step saver",
+			description = "Allows you to set a three-step master clue you wish to never combine. This will remove the ability combine the set clue.",
+			section = helperSection,
+			position = 1
+	)
+	default boolean threeStepSaver()
+	{
+		return true;
+	}
 }

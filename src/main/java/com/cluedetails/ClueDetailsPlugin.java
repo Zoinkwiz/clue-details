@@ -35,13 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.GameTick;
-import net.runelite.api.events.ItemContainerChanged;
-import net.runelite.api.events.ItemDespawned;
-import net.runelite.api.events.ItemSpawned;
-import net.runelite.api.events.MenuEntryAdded;
-import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.events.*;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
@@ -139,6 +133,9 @@ public class ClueDetailsPlugin extends Plugin
 
 	private CluePreferenceManager cluePreferenceManager;
 
+	@Inject
+	private ClueThreeStepSaver clueThreeStepSaver;
+
 	@Getter
 	@Inject
 	private ChatMessageManager chatMessageManager;
@@ -180,6 +177,7 @@ public class ClueDetailsPlugin extends Plugin
 		clueBankManager = new ClueBankManager(client, configManager, gson);
 		clueInventoryManager = new ClueInventoryManager(client, configManager, this, clueGroundManager, clueBankManager, chatboxPanelManager);
 		clueBankManager.startUp(clueInventoryManager);
+		clueThreeStepSaver.startUp(clueInventoryManager);
 
 		infoOverlay.startUp(this, clueGroundManager, clueInventoryManager);
 		groundOverlay.startUp(clueGroundManager);
@@ -227,6 +225,7 @@ public class ClueDetailsPlugin extends Plugin
 		if (event.getContainerId() == InventoryID.INVENTORY.getId())
 		{
 			clueInventoryManager.updateInventory(event.getItemContainer());
+			clueThreeStepSaver.onInventoryChanged();
 		}
 		else if (event.getContainerId() == InventoryID.BANK.getId())
 		{
@@ -310,6 +309,13 @@ public class ClueDetailsPlugin extends Plugin
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		clueInventoryManager.onMenuEntryAdded(event, cluePreferenceManager, panel);
+		clueThreeStepSaver.onMenuEntryAdded(event);
+	}
+
+	@Subscribe
+	public void onMenuOpened(MenuOpened event)
+	{
+		clueThreeStepSaver.onMenuOpened(event);
 	}
 
 	@Subscribe
