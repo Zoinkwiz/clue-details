@@ -1,19 +1,17 @@
 package com.cluedetails;
 
 import com.google.gson.Gson;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.*;
-import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.api.ChatMessageType;
+import net.runelite.api.Client;
+import net.runelite.api.MenuAction;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.ui.overlay.OverlayManager;
-import net.runelite.client.ui.overlay.OverlayUtil;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Slf4j
 public class ClueThreeStepSaver {
@@ -48,16 +46,14 @@ public class ClueThreeStepSaver {
 
         activeMaster = cim.getTrackedClueByClueItemId(MASTER_CLUE_ID);
 
-        if(activeMaster == null)
+        if(activeMaster == null || savedThreeStepper == null)
         {
             removeEntries = false;
             return;
         }
 
-        if (savedThreeStepper != null)
-        {
-            removeEntries = activeMaster.equals(savedThreeStepper);
-        }
+        removeEntries = activeMaster.equals(savedThreeStepper);
+
     }
 
 
@@ -71,11 +67,23 @@ public class ClueThreeStepSaver {
         if (activeMaster.getClueIds().size() == 3 && firstEntry.getWidget() != null && firstEntry.getTarget().contains("Clue scroll (master)"))
         {
             MenuEntry[] menuEntries = client.getMenu().getMenuEntries();
-            client.getMenu().createMenuEntry(-menuEntries.length)
-                    .setOption("Set three-stepper")
-                    .setTarget(event.getFirstEntry().getTarget())
-                    .setType(MenuAction.RUNELITE)
-                    .onClick(e -> saveThreeStepper());
+            if (activeMaster.equals(savedThreeStepper))
+            {
+                client.getMenu().createMenuEntry(-menuEntries.length)
+                        .setOption("Remove three-stepper")
+                        .setTarget(event.getFirstEntry().getTarget())
+                        .setType(MenuAction.RUNELITE)
+                        .onClick(e -> removeThreeStepper());
+
+            }
+            else
+            {
+                client.getMenu().createMenuEntry(-menuEntries.length)
+                        .setOption("Set three-stepper")
+                        .setTarget(event.getFirstEntry().getTarget())
+                        .setType(MenuAction.RUNELITE)
+                        .onClick(e -> saveThreeStepper());
+            }
         }
 
     }
@@ -103,6 +111,14 @@ public class ClueThreeStepSaver {
         onInventoryChanged();
     }
 
+    public void removeThreeStepper()
+    {
+        configManager.setConfiguration(CONFIG_GROUP, THREE_STEP_MASTER_KEY, "");
+        client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully removed clue as you're three-stepper.","");
+        updateThreeStepper();
+        onInventoryChanged();
+    }
+
     public void updateThreeStepper()
     {
         String threeStepMasterJson = configManager.getConfiguration(CONFIG_GROUP,THREE_STEP_MASTER_KEY);
@@ -113,6 +129,7 @@ public class ClueThreeStepSaver {
     public void startUp(ClueInventoryManager clueInventoryManager)
     {
         this.cim = clueInventoryManager;
+        updateThreeStepper();
     }
 
 
