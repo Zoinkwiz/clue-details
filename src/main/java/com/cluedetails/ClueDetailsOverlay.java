@@ -160,14 +160,16 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return;
 		}
 
-		if (isTakeClue(menuEntry) && config.changeClueText())
+		String clueText = getText(menuEntryAndPos, config.colorHoverText(), false);
+
+		if (clueText == null) return;
+
+		// Hide tooltip when changeClueText enabled except for master three-step cryptic
+		if (isTakeClue(menuEntry) && config.changeClueText() && !clueText.contains("<br>"))
 		{
 			return;
 		}
 
-		String clueText = getText(menuEntryAndPos, config.colorHoverText(), false);
-
-		if (clueText == null) return;
 		// tooltip only supports </br> for multiline strings
 		String tooltipClueText = clueText.replaceAll("<br>", "</br>");
 		tooltipManager.add(new Tooltip(tooltipClueText));
