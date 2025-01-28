@@ -24,13 +24,11 @@
  */
 package com.cluedetails;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import net.runelite.api.Client;
@@ -43,9 +41,13 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.OverlayUtil;
 import net.runelite.client.ui.overlay.components.TextComponent;
 import net.runelite.client.util.QuantityFormatter;
 import org.apache.commons.text.WordUtils;
+
+import static com.cluedetails.ClueDetailsConfig.SavedThreeStepEnum.BOTH;
+import static com.cluedetails.ClueDetailsConfig.SavedThreeStepEnum.GROUND;
 
 // Heavily lifted from net.runelite.client.plugins.grounditems.GroundItemsOverlay
 public class ClueGroundOverlay extends Overlay
@@ -67,9 +69,10 @@ public class ClueGroundOverlay extends Overlay
 	private final ConfigManager configManager;
 	private final ClueDetailsPlugin plugin;
 	private ClueGroundManager clueGroundManager;
+	private ClueThreeStepSaver clueThreeStepSaver;
 
 	@Inject
-	private ClueGroundOverlay(ClueDetailsPlugin plugin, Client client, ClueDetailsConfig config, ConfigManager configManager)
+	private ClueGroundOverlay(ClueDetailsPlugin plugin, Client client, ClueDetailsConfig config, ConfigManager configManager, ClueThreeStepSaver clueThreeStepSaver)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
@@ -77,11 +80,14 @@ public class ClueGroundOverlay extends Overlay
 		this.client = client;
 		this.config = config;
 		this.configManager = configManager;
+		this.clueThreeStepSaver = clueThreeStepSaver;
 	}
 
-	public void startUp(ClueGroundManager clueGroundManager)
+
+	public void startUp(ClueGroundManager clueGroundManager, ClueThreeStepSaver clueThreeStepSaver)
 	{
 		this.clueGroundManager = clueGroundManager;
+		this.clueThreeStepSaver = clueThreeStepSaver;
 	}
 
 	@Override
@@ -139,11 +145,33 @@ public class ClueGroundOverlay extends Overlay
 					int quantity = entry.getValue();
 					renderClueInstanceGroundOverlay(graphics, item, quantity, groundPoint, fm);
 				}
+
+				if (config.highlightSavedThreeStep() == BOTH || config.highlightSavedThreeStep() == GROUND)
+				{
+					renderSavedThreeStepper(graphics,item,groundPoint);
+				}
+
 			}
 		}
 
 		return null;
 	}
+
+	private void renderSavedThreeStepper(Graphics2D graphics,ClueInstance clueInstance,LocalPoint lp)
+	{
+		if (isSavedThreeStep(clueInstance))
+		{
+			Polygon savedThreeStepperPoly = Perspective.getCanvasTilePoly(client,lp);
+			OverlayUtil.renderPolygon(graphics,savedThreeStepperPoly,config.groundThreeStepHighlightColor());
+		}
+	}
+
+	private boolean isSavedThreeStep(ClueInstance clueInstance)
+	{
+		if (clueThreeStepSaver.getSavedThreeStepper() == null || !config.threeStepSaver()) return false;
+		return clueInstance.getClueIds().equals(clueThreeStepSaver.getSavedThreeStepper().getClueIds());
+	}
+
 
 	private Map<ClueInstance, Integer> getClueInstancesAtWpMap(WorldPoint wp, int currentTick)
 	{
@@ -185,23 +213,24 @@ public class ClueGroundOverlay extends Overlay
 			}
 
 			String clueText;
-			if (config.changeGroundClueText())
+			if (config.changeGroundClueText() && config.showGroundCluesText())
 			{
 				if (item.getClueIds().size() > 1)
 				{
-					clueText = "Three-step (master)";
+					clueText = isSavedThreeStep(item) ? "Saved three-step (master)" : "Three-step (master)";
 				}
 				else
 				{
 					clueText = clueDetails.getDetail(configManager);
 				}
+				itemStringBuilder.append(clueText);
 			}
-			else
+			else if (config.showGroundCluesText())
 			{
 				clueText = WordUtils.capitalizeFully(clueDetails.getClueTier().toString());
+				itemStringBuilder.append(clueText);
 			}
 
-			itemStringBuilder.append(clueText);
 
 			if (config.colorGroundClues())
 			{
@@ -240,14 +269,21 @@ public class ClueGroundOverlay extends Overlay
 			Integer despawnTime = item.getDespawnTick(client.getTickCount()) - client.getTickCount();
 			Color timerColor = Color.WHITE;
 
-			final String timerText = String.format(" - %d", despawnTime);
+			String timerText = String.format(" - %d", despawnTime);
+			java.awt.Point point = new java.awt.Point(textX + fm.stringWidth(itemString),textY);
+
+			if (!config.showGroundCluesText() && config.showGroundCluesDespawn())
+			{
+				point = new java.awt.Point(textX - 12,textY);
+				timerText = String.format("%d", despawnTime);
+			}
 
 			// The timer text is drawn separately to have its own color, and is intentionally not included
 			// in the getCanvasTextLocation() call because the timer text can change per frame and we do not
 			// use a monospaced font, which causes the text location on screen to jump around slightly each frame.
 			textComponent.setText(timerText);
 			textComponent.setColor(timerColor);
-			textComponent.setPosition(new java.awt.Point(textX + fm.stringWidth(itemString), textY));
+			textComponent.setPosition(point);
 			textComponent.render(graphics);
 		}
 

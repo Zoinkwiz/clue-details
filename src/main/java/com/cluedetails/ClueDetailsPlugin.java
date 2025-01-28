@@ -93,6 +93,9 @@ public class ClueDetailsPlugin extends Plugin
 	private ClueDetailsWidgetOverlay widgetOverlay;
 
 	@Inject
+	private ClueThreeStepSaverWidgetOverlay clueThreeStepSaverWidgetOverlay;
+
+	@Inject
 	private EventBus eventBus;
 
 	@Inject
@@ -169,6 +172,8 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.add(widgetOverlay);
 		eventBus.register(widgetOverlay);
 
+		overlayManager.add(clueThreeStepSaverWidgetOverlay);
+
 		Clues.setConfig(config);
 		ClueInventoryManager.setConfig(config);
 
@@ -180,8 +185,9 @@ public class ClueDetailsPlugin extends Plugin
 		clueThreeStepSaver.startUp(clueInventoryManager);
 
 		infoOverlay.startUp(this, clueGroundManager, clueInventoryManager);
-		groundOverlay.startUp(clueGroundManager);
+		groundOverlay.startUp(clueGroundManager,clueThreeStepSaver);
 		widgetOverlay.setClueInventoryManager(clueInventoryManager);
+		clueThreeStepSaverWidgetOverlay.setClueThreeStepSaver(clueThreeStepSaver);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -213,6 +219,8 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.remove(widgetOverlay);
 		eventBus.unregister(widgetOverlay);
 
+		overlayManager.remove(clueThreeStepSaverWidgetOverlay);
+
 		clientToolbar.removeNavigation(navButton);
 
 		clueGroundManager.saveStateToConfig();
@@ -225,13 +233,19 @@ public class ClueDetailsPlugin extends Plugin
 		if (event.getContainerId() == InventoryID.INVENTORY.getId())
 		{
 			clueInventoryManager.updateInventory(event.getItemContainer());
-			clueThreeStepSaver.onInventoryChanged();
+			clueThreeStepSaver.scanInventory();
 		}
 		else if (event.getContainerId() == InventoryID.BANK.getId())
 		{
 			clueBankManager.handleBankChange(event.getItemContainer());
 		}
 
+	}
+
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		System.out.println(event.getMessageNode().getValue());
 	}
 
 	@Subscribe
@@ -251,9 +265,11 @@ public class ClueDetailsPlugin extends Plugin
 				{
 					String text = clueScrollText.getText();
 					clueInventoryManager.updateClueText(text);
+					clueThreeStepSaver.scanInventory();
 				}
 			});
 		}
+
 	}
 
 	@Subscribe

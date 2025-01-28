@@ -512,11 +512,23 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+			keyName = "showGroundCluesText",
+			name = "Show ground clues text",
+			description = "Toggle whether to show clue details text to ground clues",
+			section = groundCluesSection,
+			position = 1
+	)
+	default boolean showGroundCluesText()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "changeGroundClueText",
 		name = "Change ground clue text",
 		description = "Toggle whether to change the ground clue text to the clue detail",
 		section = groundCluesSection,
-		position = 1
+		position = 2
 	)
 	default boolean changeGroundClueText()
 	{
@@ -528,7 +540,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Show ground clues despawn",
 		description = "Toggle whether to add despawn timers to the ground clues overlay",
 		section = groundCluesSection,
-		position = 2
+		position = 3
 	)
 	default boolean showGroundCluesDespawn()
 	{
@@ -540,7 +552,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Collapse ground clues",
 		description = "Toggle whether to combine duplicates in the ground clues overlay",
 		section = groundCluesSection,
-		position = 3
+		position = 4
 	)
 	default boolean collapseGroundClues()
 	{
@@ -552,7 +564,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Color ground clues",
 		description = "Toggle whether to apply clue details color to ground clue text",
 		section = groundCluesSection,
-		position = 4
+		position = 5
 	)
 	default boolean colorGroundClues()
 	{
@@ -647,5 +659,51 @@ public interface ClueDetailsConfig extends Config
 	default boolean threeStepSaver()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+			keyName = "highlightSavedThreeStep",
+			name = "Highlight saved three-stepper",
+			description = "Highlight you're saved three-stepper on the ground.",
+			section = helperSection,
+			position = 2
+	)
+	default SavedThreeStepEnum highlightSavedThreeStep()
+	{
+		return SavedThreeStepEnum.OFF;
+	}
+
+	enum SavedThreeStepEnum
+	{
+		OFF,
+		GROUND,
+		INVENTORY,
+		BOTH
+	}
+
+	@Alpha
+	@ConfigItem(
+			keyName = "groundThreeStepHighlightColor",
+			name = "Saved three-stepper ground highlight color",
+			description = "Configures the color for highlighted saved three-stepper on the ground",
+			section = helperSection,
+			position = 3
+	)
+	default Color groundThreeStepHighlightColor()
+	{
+		return Color.GREEN.darker();
+	}
+
+	@Alpha
+	@ConfigItem(
+			keyName = "threeStepHighlightColor",
+			name = "Saved three-stepper inventory highlight color",
+			description = "Configures the color for highlighted saved three-stepper in inventory",
+			section = helperSection,
+			position = 4
+	)
+	default Color invThreeStepHighlightColor()
+	{
+		return Color.GREEN.darker();
 	}
 }

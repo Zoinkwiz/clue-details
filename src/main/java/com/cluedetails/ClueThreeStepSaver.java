@@ -9,6 +9,8 @@ import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
+import net.runelite.client.Notifier;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 
 import javax.inject.Inject;
@@ -32,30 +34,35 @@ public class ClueThreeStepSaver {
 
     private ClueInstance activeMaster;
 
+    @Getter
     private ClueInstance savedThreeStepper;
 
     private boolean removeEntries = false;
 
-    private final int MASTER_CLUE_ID = 19835;
+    public static final int MASTER_CLUE_ID = 19835;
     private static final String CONFIG_GROUP = "clue-details";
     private static final String THREE_STEP_MASTER_KEY = "three-step-master";
 
-    public void onInventoryChanged()
+    public void scanInventory()
     {
         if (!config.threeStepSaver()) return;
 
         activeMaster = cim.getTrackedClueByClueItemId(MASTER_CLUE_ID);
-
         if(activeMaster == null || savedThreeStepper == null)
         {
             removeEntries = false;
             return;
         }
 
-        removeEntries = activeMaster.equals(savedThreeStepper);
-
+        //removes entries if we don't know what clue is in their inv, can be made a toggle.
+        removeEntries = activeMaster.equals(savedThreeStepper) || activeMaster.getClueIds().isEmpty();
     }
 
+    public boolean cluesMatch()
+    {
+        if (activeMaster == null || savedThreeStepper == null) return false;
+        else return activeMaster.equals(savedThreeStepper);
+    }
 
     public void onMenuOpened(MenuOpened event)
     {
@@ -74,7 +81,6 @@ public class ClueThreeStepSaver {
                         .setTarget(event.getFirstEntry().getTarget())
                         .setType(MenuAction.RUNELITE)
                         .onClick(e -> removeThreeStepper());
-
             }
             else
             {
@@ -108,7 +114,7 @@ public class ClueThreeStepSaver {
         configManager.setConfiguration(CONFIG_GROUP, THREE_STEP_MASTER_KEY, clueInstanceJson);
         client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully set clue as you're three-stepper.","");
         updateThreeStepper();
-        onInventoryChanged();
+        scanInventory();
     }
 
     public void removeThreeStepper()
@@ -116,7 +122,7 @@ public class ClueThreeStepSaver {
         configManager.setConfiguration(CONFIG_GROUP, THREE_STEP_MASTER_KEY, "");
         client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully removed clue as you're three-stepper.","");
         updateThreeStepper();
-        onInventoryChanged();
+        scanInventory();
     }
 
     public void updateThreeStepper()
@@ -130,6 +136,7 @@ public class ClueThreeStepSaver {
     {
         this.cim = clueInventoryManager;
         updateThreeStepper();
+        scanInventory();
     }
 
 
