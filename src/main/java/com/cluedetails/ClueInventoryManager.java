@@ -126,14 +126,10 @@ public class ClueInventoryManager
 
 			// If clue is already in previous, keep the same ClueInstance
 			clueInstance = previousTrackedCluesInInventory.get(itemId);
-			if (clueInstance != null)
+			if (clueInstance != null && Clues.isClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
 			{
 				trackedCluesInInventory.put(itemId, clueInstance);
-				continue;
 			}
-
-			clueInstance = new ClueInstance(new ArrayList<>(), itemId);
-			trackedCluesInInventory.put(itemId, clueInstance);
 		}
 
 		clueGroundManager.getDespawnedClueQueueForInventoryCheck().clear();
@@ -280,7 +276,7 @@ public class ClueInventoryManager
 		// Add item highlight menu
 		if (!hasClueName(menuEntry.getTarget()))
 		{
-			if (cluesInInventory.length == 0 && trackedCluesInInventory.isEmpty()) return;
+			if (Arrays.stream(cluesInInventory).allMatch(Objects::isNull) && trackedCluesInInventory.isEmpty()) return;
 
 			MenuEntry clueDetailsEntry = client.getMenu().createMenuEntry(-1)
 				.setOption("Clue details")

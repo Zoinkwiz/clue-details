@@ -160,14 +160,16 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return;
 		}
 
-		if (isTakeClue(menuEntry) && config.changeClueText())
+		String clueText = getText(menuEntryAndPos, config.colorHoverText(), false);
+
+		if (clueText == null) return;
+
+		// Hide tooltip when changeClueText enabled except for master three-step cryptic
+		if (isTakeClue(menuEntry) && config.changeClueText() && !clueText.contains("<br>"))
 		{
 			return;
 		}
 
-		String clueText = getText(menuEntryAndPos, config.colorHoverText(), false);
-
-		if (clueText == null) return;
 		// tooltip only supports </br> for multiline strings
 		String tooltipClueText = clueText.replaceAll("<br>", "</br>");
 		tooltipManager.add(new Tooltip(tooltipClueText));
@@ -503,22 +505,23 @@ public class ClueDetailsOverlay extends OverlayPanel
 		int scrollID = getScrollID(menuEntry);
 
 		String itemName = Text.removeTags(menuEntry.getTarget());
-		String color;
+		Color color = null;
+
 		Clues matchingClue = Clues.forItemId(scrollID);
 		if (matchingClue != null)
 		{
-			color = Integer.toHexString(matchingClue.getDetailColor(configManager).getRGB()).substring(2);
-			return "<col=" + color + ">" + itemName;
+			color = matchingClue.getDetailColor(configManager);
 		}
-
-		if (areEntriesInTile(menuEntry))
+		else if (areEntriesInTile(menuEntry))
 		{
 			color = getTrackedClueColor(menuEntryAndPos);
+		}
 
-			if (color != null)
-			{
-				return "<col=" + color + ">" + itemName;
-			}
+		// Only change ground item menu color if it's not the default
+		if (color != null && color != Color.WHITE)
+		{
+			String hexColor = Integer.toHexString(color.getRGB()).substring(2);
+			return "<col=" + hexColor + ">" + itemName;
 		}
 		return null;
 	}
@@ -545,7 +548,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor, isFloorText);
 	}
 
-	private String getTrackedClueColor(MenuEntryAndPos entry)
+	private Color getTrackedClueColor(MenuEntryAndPos entry)
 	{
 		ClueInstance clueInstance = getTrackedClueInstance(entry);
 
@@ -555,7 +558,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			Clues cluePart = Clues.forClueIdFiltered(clueInstance.getClueIds().get(0));
 			if (cluePart != null)
 			{
-				return Integer.toHexString(cluePart.getDetailColor(configManager).getRGB()).substring(2);
+				return cluePart.getDetailColor(configManager);
 			}
 		}
 		return null;
