@@ -112,7 +112,7 @@ public class ClueThreeStepSaver {
     {
         String clueInstanceJson = gson.toJson(activeMaster);
         configManager.setConfiguration(CONFIG_GROUP, THREE_STEP_MASTER_KEY, clueInstanceJson);
-        client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully set clue as you're three-stepper.","");
+        client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully set clue as your three-stepper.","");
         updateThreeStepper();
         scanInventory();
     }
