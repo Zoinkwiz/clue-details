@@ -664,7 +664,7 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 			keyName = "highlightSavedThreeStep",
 			name = "Highlight saved three-stepper",
-			description = "Highlight you're saved three-stepper on the ground.",
+			description = "Configures where to highlight your saved three-stepper",
 			section = helperSection,
 			position = 2
 	)
