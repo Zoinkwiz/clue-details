@@ -162,7 +162,7 @@ public class ClueGroundOverlay extends Overlay
 
 	private void renderSavedThreeStepper(Graphics2D graphics,ClueInstance clueInstance,LocalPoint lp)
 	{
-		if (isSavedThreeStep(clueInstance))
+		if (isSavedThreeStepper(clueInstance))
 		{
 			Polygon savedThreeStepperPoly = Perspective.getCanvasTilePoly(client,lp);
 			OverlayUtil.renderPolygon(graphics,savedThreeStepperPoly,config.groundThreeStepperHighlightColor());
@@ -174,7 +174,7 @@ public class ClueGroundOverlay extends Overlay
 		return config.threeStepperSaver() && (config.highlightSavedThreeStepper() == BOTH || config.highlightSavedThreeStepper() == GROUND);
 	}
 
-	private boolean isSavedThreeStep(ClueInstance clueInstance)
+	private boolean isSavedThreeStepper(ClueInstance clueInstance)
 	{
 		if (clueThreeStepSaver.getSavedThreeStepper() == null || !config.threeStepperSaver()) return false;
 		return clueInstance.getClueIds().equals(clueThreeStepSaver.getSavedThreeStepper().getClueIds());
@@ -224,7 +224,7 @@ public class ClueGroundOverlay extends Overlay
 			{
 				if (item.getClueIds().size() > 1)
 				{
-					clueText = isSavedThreeStep(item) ? "Saved three-step (master)" : "Three-step (master)";
+					clueText = isSavedThreeStepper(item) ? "Saved three-step (master)" : "Three-step (master)";
 				}
 				else
 				{
