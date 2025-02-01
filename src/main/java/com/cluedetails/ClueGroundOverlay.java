@@ -98,7 +98,7 @@ public class ClueGroundOverlay extends Overlay
 	{
 		if(clueGroundManager == null) return null;
 
-		if (!config.showGroundClues() && !shouldRenderThreeStepper())
+		if (!config.showGroundClues() && !shouldRenderSavedThreeStepper())
 		{
 			return null;
 		}
@@ -116,7 +116,7 @@ public class ClueGroundOverlay extends Overlay
 
 		// Handle beginner and master clues
 		if (clueGroundManager.getGroundClues().keySet().isEmpty()
-				|| (!config.beginnerDetails() && !config.masterDetails() && !shouldRenderThreeStepper()))
+				|| (!config.beginnerDetails() && !config.masterDetails() && !shouldRenderSavedThreeStepper()))
 		{
 			return null;
 		}
@@ -149,7 +149,7 @@ public class ClueGroundOverlay extends Overlay
 					renderClueInstanceGroundOverlay(graphics, item, quantity, groundPoint, fm);
 				}
 
-				if (shouldRenderThreeStepper())
+				if (shouldRenderSavedThreeStepper())
 				{
 					renderSavedThreeStepper(graphics,item,groundPoint);
 				}
@@ -169,7 +169,7 @@ public class ClueGroundOverlay extends Overlay
 		}
 	}
 
-	private boolean shouldRenderThreeStepper()
+	private boolean shouldRenderSavedThreeStepper()
 	{
 		return config.threeStepperSaver() && (config.highlightSavedThreeStepper() == BOTH || config.highlightSavedThreeStepper() == GROUND);
 	}
