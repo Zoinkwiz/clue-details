@@ -512,11 +512,23 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "showGroundCluesText",
+		name = "Show ground clues text",
+		description = "Toggle whether to show clue details text to ground clues",
+		section = groundCluesSection,
+		position = 1
+	)
+	default boolean showGroundCluesText()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "changeGroundClueText",
 		name = "Change ground clue text",
 		description = "Toggle whether to change the ground clue text to the clue detail",
 		section = groundCluesSection,
-		position = 1
+		position = 2
 	)
 	default boolean changeGroundClueText()
 	{
@@ -528,7 +540,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Show ground clues despawn",
 		description = "Toggle whether to add despawn timers to the ground clues overlay",
 		section = groundCluesSection,
-		position = 2
+		position = 3
 	)
 	default boolean showGroundCluesDespawn()
 	{
@@ -540,7 +552,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Collapse ground clues",
 		description = "Toggle whether to combine duplicates in the ground clues overlay",
 		section = groundCluesSection,
-		position = 3
+		position = 4
 	)
 	default boolean collapseGroundClues()
 	{
@@ -552,7 +564,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Color ground clues",
 		description = "Toggle whether to apply clue details color to ground clue text",
 		section = groundCluesSection,
-		position = 4
+		position = 5
 	)
 	default boolean colorGroundClues()
 	{
@@ -632,5 +644,66 @@ public interface ClueDetailsConfig extends Config
 	default boolean masterDetails()
 	{
 		return true;
+	}
+
+	@ConfigSection(name = "Helpers", description = "Options to configure particular helper features", position = 8)
+	String helperSection = "helperSection";
+
+	@ConfigItem(
+		keyName = "threeStepperSaver",
+		name = "Three-stepper saver",
+		description = "Allows you to set a three-step master clue you wish to save, removing the ability combine torn scrolls when the set clue is in your inventory",
+		section = helperSection,
+		position = 1
+	)
+	default boolean threeStepperSaver()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "highlightSavedThreeStepper",
+		name = "Highlight saved three-stepper",
+		description = "Configures where to highlight your saved three-stepper",
+		section = helperSection,
+		position = 2
+	)
+	default SavedThreeStepperEnum highlightSavedThreeStepper()
+	{
+		return SavedThreeStepperEnum.OFF;
+	}
+
+	enum SavedThreeStepperEnum
+	{
+		OFF,
+		GROUND,
+		INVENTORY,
+		BOTH
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "groundThreeStepperHighlightColor",
+		name = "Ground saved three-stepper highlight color",
+		description = "Configures the color for highlighted saved three-stepper on the ground",
+		section = helperSection,
+		position = 3
+	)
+	default Color groundThreeStepperHighlightColor()
+	{
+		return Color.GREEN.darker();
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "threeStepperHighlightColor",
+		name = "Inventory saved three-stepper highlight color",
+		description = "Configures the color for highlighted saved three-stepper in inventory",
+		section = helperSection,
+		position = 4
+	)
+	default Color invThreeStepperHighlightColor()
+	{
+		return Color.GREEN.darker();
 	}
 }

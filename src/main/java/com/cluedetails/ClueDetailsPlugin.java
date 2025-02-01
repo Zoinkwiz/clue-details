@@ -41,6 +41,7 @@ import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.api.events.MenuOpened;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
@@ -99,6 +100,9 @@ public class ClueDetailsPlugin extends Plugin
 	private ClueDetailsWidgetOverlay widgetOverlay;
 
 	@Inject
+	private ClueThreeStepSaverWidgetOverlay clueThreeStepSaverWidgetOverlay;
+
+	@Inject
 	private EventBus eventBus;
 
 	@Inject
@@ -139,6 +143,9 @@ public class ClueDetailsPlugin extends Plugin
 
 	private CluePreferenceManager cluePreferenceManager;
 
+	@Inject
+	private ClueThreeStepSaver clueThreeStepSaver;
+
 	@Getter
 	@Inject
 	private ChatMessageManager chatMessageManager;
@@ -172,6 +179,8 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.add(widgetOverlay);
 		eventBus.register(widgetOverlay);
 
+		overlayManager.add(clueThreeStepSaverWidgetOverlay);
+
 		Clues.setConfig(config);
 		ClueInventoryManager.setConfig(config);
 
@@ -180,10 +189,12 @@ public class ClueDetailsPlugin extends Plugin
 		clueBankManager = new ClueBankManager(client, configManager, gson);
 		clueInventoryManager = new ClueInventoryManager(client, configManager, this, clueGroundManager, clueBankManager, chatboxPanelManager);
 		clueBankManager.startUp(clueInventoryManager);
+		clueThreeStepSaver.startUp(clueInventoryManager);
 
 		infoOverlay.startUp(this, clueGroundManager, clueInventoryManager);
-		groundOverlay.startUp(clueGroundManager);
+		groundOverlay.startUp(clueGroundManager,clueThreeStepSaver);
 		widgetOverlay.setClueInventoryManager(clueInventoryManager);
+		clueThreeStepSaverWidgetOverlay.setClueThreeStepSaver(clueThreeStepSaver);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -215,6 +226,8 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.remove(widgetOverlay);
 		eventBus.unregister(widgetOverlay);
 
+		overlayManager.remove(clueThreeStepSaverWidgetOverlay);
+
 		clientToolbar.removeNavigation(navButton);
 
 		clueGroundManager.saveStateToConfig();
@@ -227,6 +240,7 @@ public class ClueDetailsPlugin extends Plugin
 		if (event.getContainerId() == InventoryID.INVENTORY.getId())
 		{
 			clueInventoryManager.updateInventory(event.getItemContainer());
+			clueThreeStepSaver.scanInventory();
 		}
 		else if (event.getContainerId() == InventoryID.BANK.getId())
 		{
@@ -252,9 +266,11 @@ public class ClueDetailsPlugin extends Plugin
 				{
 					String text = clueScrollText.getText();
 					clueInventoryManager.updateClueText(text);
+					clueThreeStepSaver.scanInventory();
 				}
 			});
 		}
+
 	}
 
 	@Subscribe
@@ -310,6 +326,13 @@ public class ClueDetailsPlugin extends Plugin
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		clueInventoryManager.onMenuEntryAdded(event, cluePreferenceManager, panel);
+		clueThreeStepSaver.onMenuEntryAdded(event);
+	}
+
+	@Subscribe
+	public void onMenuOpened(MenuOpened event)
+	{
+		clueThreeStepSaver.onMenuOpened(event);
 	}
 
 	@Subscribe
