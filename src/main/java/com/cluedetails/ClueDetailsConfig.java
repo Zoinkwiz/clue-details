@@ -697,7 +697,7 @@ public interface ClueDetailsConfig extends Config
 	@Alpha
 	@ConfigItem(
 			keyName = "threeStepHighlightColor",
-			name = "Saved three-stepper inventory highlight color",
+			name = "Inventory saved three-stepper highlight color",
 			description = "Configures the color for highlighted saved three-stepper in inventory",
 			section = helperSection,
 			position = 4
