@@ -77,7 +77,7 @@ public class ClueThreeStepSaver {
             if (activeMaster.equals(savedThreeStepper))
             {
                 client.getMenu().createMenuEntry(-menuEntries.length)
-                        .setOption("Remove three-stepper")
+                        .setOption("Unset three-stepper")
                         .setTarget(event.getFirstEntry().getTarget())
                         .setType(MenuAction.RUNELITE)
                         .onClick(e -> removeThreeStepper());
