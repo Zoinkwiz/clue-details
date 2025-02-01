@@ -120,7 +120,7 @@ public class ClueThreeStepSaver {
     public void removeThreeStepper()
     {
         configManager.setConfiguration(CONFIG_GROUP, THREE_STEP_MASTER_KEY, "");
-        client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully removed clue as you're three-stepper.","");
+        client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully unset clue as your three-stepper.","");
         updateThreeStepper();
         scanInventory();
     }
