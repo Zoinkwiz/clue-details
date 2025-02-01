@@ -646,7 +646,7 @@ public interface ClueDetailsConfig extends Config
 		return true;
 	}
 
-	@ConfigSection(name = "Helper Toggles", description = "Options to enable particular helper features.", position = 8)
+	@ConfigSection(name = "Helpers", description = "Options to configure particular helper features", position = 8)
 	String helperSection = "helperSection";
 
 	@ConfigItem(
