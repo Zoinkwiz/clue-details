@@ -35,7 +35,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
-import net.runelite.api.events.*;
+import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
+import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.api.events.ItemDespawned;
+import net.runelite.api.events.ItemSpawned;
+import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.api.events.MenuOpened;
+import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
@@ -240,12 +247,6 @@ public class ClueDetailsPlugin extends Plugin
 			clueBankManager.handleBankChange(event.getItemContainer());
 		}
 
-	}
-
-	@Subscribe
-	public void onChatMessage(ChatMessage event)
-	{
-		System.out.println(event.getMessageNode().getValue());
 	}
 
 	@Subscribe

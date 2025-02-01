@@ -1,20 +1,16 @@
 package com.cluedetails;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import lombok.Setter;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.WidgetItemOverlay;
-import net.runelite.client.util.ColorUtil;
-import net.runelite.client.util.ImageUtil;
-
 import javax.inject.Inject;
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
-import static com.cluedetails.ClueDetailsConfig.SavedThreeStepEnum.BOTH;
-import static com.cluedetails.ClueDetailsConfig.SavedThreeStepEnum.INVENTORY;
+import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.BOTH;
+import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.INVENTORY;
 import static com.cluedetails.ClueThreeStepSaver.MASTER_CLUE_ID;
 
 public class ClueThreeStepSaverWidgetOverlay extends WidgetItemOverlay {
@@ -24,7 +20,6 @@ public class ClueThreeStepSaverWidgetOverlay extends WidgetItemOverlay {
 
     @Setter
     private ClueThreeStepSaver clueThreeStepSaver;
-
 
     @Inject
     private ClueThreeStepSaverWidgetOverlay(ItemManager itemManager, ClueThreeStepSaver clueThreeStepSaver, ClueDetailsConfig config)
@@ -44,13 +39,10 @@ public class ClueThreeStepSaverWidgetOverlay extends WidgetItemOverlay {
         }
 
         Rectangle bounds = widgetItem.getCanvasBounds();
-        if (config.highlightSavedThreeStep() == BOTH || config.highlightSavedThreeStep() == INVENTORY)
+        if (config.threeStepperSaver() && (config.highlightSavedThreeStepper() == BOTH || config.highlightSavedThreeStepper() == INVENTORY))
         {
-            final BufferedImage outline = itemManager.getItemOutline(itemId, widgetItem.getQuantity(), config.invThreeStepHighlightColor());
+            final BufferedImage outline = itemManager.getItemOutline(itemId, widgetItem.getQuantity(), config.invThreeStepperHighlightColor());
             graphics.drawImage(outline, (int) bounds.getX(), (int) bounds.getY(), null);
         }
     }
-
-
-
 }

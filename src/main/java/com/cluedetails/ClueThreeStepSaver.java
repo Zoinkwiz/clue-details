@@ -9,10 +9,7 @@ import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
-import net.runelite.client.Notifier;
-import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
-
 import javax.inject.Inject;
 
 @Slf4j
@@ -45,7 +42,7 @@ public class ClueThreeStepSaver {
 
     public void scanInventory()
     {
-        if (!config.threeStepSaver()) return;
+        if (!config.threeStepperSaver()) return;
 
         activeMaster = cim.getTrackedClueByClueItemId(MASTER_CLUE_ID);
         if(activeMaster == null || savedThreeStepper == null)
@@ -66,7 +63,7 @@ public class ClueThreeStepSaver {
 
     public void onMenuOpened(MenuOpened event)
     {
-        if (!config.threeStepSaver()) return;
+        if (!config.threeStepperSaver()) return;
         if (activeMaster == null) return;
 
         MenuEntry firstEntry = event.getFirstEntry();
@@ -96,7 +93,7 @@ public class ClueThreeStepSaver {
 
     public void onMenuEntryAdded(MenuEntryAdded event)
     {
-        if (!config.threeStepSaver()) return;
+        if (!config.threeStepperSaver()) return;
 
         MenuEntry menuEntry = event.getMenuEntry();
         if (menuEntry.getTarget().contains("Torn clue scroll") && removeEntries)
@@ -138,7 +135,4 @@ public class ClueThreeStepSaver {
         updateThreeStepper();
         scanInventory();
     }
-
-
-
 }

@@ -512,11 +512,11 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "showGroundCluesText",
-			name = "Show ground clues text",
-			description = "Toggle whether to show clue details text to ground clues",
-			section = groundCluesSection,
-			position = 1
+		keyName = "showGroundCluesText",
+		name = "Show ground clues text",
+		description = "Toggle whether to show clue details text to ground clues",
+		section = groundCluesSection,
+		position = 1
 	)
 	default boolean showGroundCluesText()
 	{
@@ -650,30 +650,30 @@ public interface ClueDetailsConfig extends Config
 	String helperSection = "helperSection";
 
 	@ConfigItem(
-			keyName = "threeStepSaver",
-			name = "Three-step saver",
-			description = "Allows you to set a three-step master clue you wish to save, removing the ability combine torn scrolls when the set clue is in your inventory",
-			section = helperSection,
-			position = 1
+		keyName = "threeStepperSaver",
+		name = "Three-stepper saver",
+		description = "Allows you to set a three-step master clue you wish to save, removing the ability combine torn scrolls when the set clue is in your inventory",
+		section = helperSection,
+		position = 1
 	)
-	default boolean threeStepSaver()
+	default boolean threeStepperSaver()
 	{
 		return true;
 	}
 
 	@ConfigItem(
-			keyName = "highlightSavedThreeStep",
-			name = "Highlight saved three-stepper",
-			description = "Configures where to highlight your saved three-stepper",
-			section = helperSection,
-			position = 2
+		keyName = "highlightSavedThreeStepper",
+		name = "Highlight saved three-stepper",
+		description = "Configures where to highlight your saved three-stepper",
+		section = helperSection,
+		position = 2
 	)
-	default SavedThreeStepEnum highlightSavedThreeStep()
+	default SavedThreeStepperEnum highlightSavedThreeStepper()
 	{
-		return SavedThreeStepEnum.OFF;
+		return SavedThreeStepperEnum.OFF;
 	}
 
-	enum SavedThreeStepEnum
+	enum SavedThreeStepperEnum
 	{
 		OFF,
 		GROUND,
@@ -683,26 +683,26 @@ public interface ClueDetailsConfig extends Config
 
 	@Alpha
 	@ConfigItem(
-			keyName = "groundThreeStepHighlightColor",
-			name = "Ground saved three-stepper highlight color",
-			description = "Configures the color for highlighted saved three-stepper on the ground",
-			section = helperSection,
-			position = 3
+		keyName = "groundThreeStepperHighlightColor",
+		name = "Ground saved three-stepper highlight color",
+		description = "Configures the color for highlighted saved three-stepper on the ground",
+		section = helperSection,
+		position = 3
 	)
-	default Color groundThreeStepHighlightColor()
+	default Color groundThreeStepperHighlightColor()
 	{
 		return Color.GREEN.darker();
 	}
 
 	@Alpha
 	@ConfigItem(
-			keyName = "threeStepHighlightColor",
-			name = "Inventory saved three-stepper highlight color",
-			description = "Configures the color for highlighted saved three-stepper in inventory",
-			section = helperSection,
-			position = 4
+		keyName = "threeStepperHighlightColor",
+		name = "Inventory saved three-stepper highlight color",
+		description = "Configures the color for highlighted saved three-stepper in inventory",
+		section = helperSection,
+		position = 4
 	)
-	default Color invThreeStepHighlightColor()
+	default Color invThreeStepperHighlightColor()
 	{
 		return Color.GREEN.darker();
 	}
