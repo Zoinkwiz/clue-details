@@ -96,7 +96,10 @@ public class ClueDetailsPlugin extends Plugin
 	private ClueDetailsTagsOverlay tagsOverlay;
 
 	@Inject
-	private ClueDetailsWidgetOverlay widgetOverlay;
+	private ClueDetailsInventoryOverlay inventoryOverlay;
+
+	@Inject
+	private ClueDetailsItemsOverlay itemsOverlay;
 
 	@Inject
 	private EventBus eventBus;
@@ -169,8 +172,11 @@ public class ClueDetailsPlugin extends Plugin
 
 		overlayManager.add(tagsOverlay);
 
-		overlayManager.add(widgetOverlay);
-		eventBus.register(widgetOverlay);
+		overlayManager.add(inventoryOverlay);
+		eventBus.register(inventoryOverlay);
+
+		overlayManager.add(itemsOverlay);
+		eventBus.register(itemsOverlay);
 
 		Clues.setConfig(config);
 		ClueInventoryManager.setConfig(config);
@@ -183,7 +189,8 @@ public class ClueDetailsPlugin extends Plugin
 
 		infoOverlay.startUp(this, clueGroundManager, clueInventoryManager);
 		groundOverlay.startUp(clueGroundManager);
-		widgetOverlay.setClueInventoryManager(clueInventoryManager);
+		inventoryOverlay.setClueInventoryManager(clueInventoryManager);
+		itemsOverlay.setClueInventoryManager(clueInventoryManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -212,8 +219,11 @@ public class ClueDetailsPlugin extends Plugin
 
 		overlayManager.remove(tagsOverlay);
 
-		overlayManager.remove(widgetOverlay);
-		eventBus.unregister(widgetOverlay);
+		overlayManager.remove(inventoryOverlay);
+		eventBus.unregister(inventoryOverlay);
+
+		overlayManager.remove(itemsOverlay);
+		eventBus.unregister(itemsOverlay);
 
 		clientToolbar.removeNavigation(navButton);
 

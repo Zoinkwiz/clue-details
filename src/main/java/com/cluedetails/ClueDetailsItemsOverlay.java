@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Zoinkwiz <https://github.com/Zoinkwiz>
+ * Copyright (c) 2024, TheLope <https://github.com/TheLope>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,20 +24,17 @@
  */
 package com.cluedetails;
 
+import com.cluedetails.filters.ClueTier;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
-
-import com.cluedetails.filters.ClueTier;
 import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
-import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
@@ -46,11 +43,10 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
-import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 
-public class ClueDetailsWidgetOverlay extends OverlayPanel
+public class ClueDetailsItemsOverlay extends OverlayPanel
 {
 	private final Client client;
 	private final ClueDetailsPlugin clueDetailsPlugin;
@@ -60,10 +56,8 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 	private ClueInventoryManager clueInventoryManager;
 	private final ItemManager itemManager;
 
-	private static final Color TITLED_CONTENT_COLOR = new Color(190, 190, 190);
-
 	@Inject
-	public ClueDetailsWidgetOverlay(Client client, ClueDetailsPlugin clueDetailsPlugin, ClueDetailsConfig config, ConfigManager configManager, ItemManager itemManager)
+	public ClueDetailsItemsOverlay(Client client, ClueDetailsPlugin clueDetailsPlugin, ClueDetailsConfig config, ConfigManager configManager, ItemManager itemManager)
 	{
 		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.itemManager = itemManager;
@@ -79,64 +73,12 @@ public class ClueDetailsWidgetOverlay extends OverlayPanel
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (config.showInventoryCluesOverlay())
-		{
-			createInventoryCluesOverlay();
-		}
-
 		if (config.highlightInventoryClueItems())
 		{
 			createHighlightInventoryClueItems(graphics);
 		}
 
 		return super.render(graphics);
-	}
-
-	private void createInventoryCluesOverlay()
-	{
-		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
-		if (inventory == null) return;
-
-		for (Item item : inventory.getItems())
-		{
-			Clues clue = Clues.forItemId(item.getId());
-			if (clue != null && !Arrays.asList(
-				ClueTier.MEDIUM_CHALLENGE,
-				ClueTier.HARD_CHALLENGE,
-				ClueTier.ELITE_CHALLENGE).contains(clue.getClueTier()))
-			{
-				Color color = TITLED_CONTENT_COLOR;
-				if (config.colorInventoryCluesOverlay())
-				{
-					color = clue.getDetailColor(configManager);
-				}
-
-				panelComponent.getChildren().add(LineComponent.builder()
-					.left(clue.getDetail(configManager))
-					.leftColor(color)
-					.build());
-			}
-
-			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(item.getId());
-			if (clueInstance == null || clueInstance.getClueIds().isEmpty()) continue;
-
-			for (Integer clueId : clueInstance.getClueIds())
-			{
-				Clues cluePart = Clues.forClueIdFiltered(clueId);
-				if (cluePart == null) continue;
-
-				Color color = TITLED_CONTENT_COLOR;
-				if (config.colorInventoryCluesOverlay())
-				{
-					color = cluePart.getDetailColor(configManager);
-				}
-
-				panelComponent.getChildren().add(LineComponent.builder()
-					.left(cluePart.getDetail(configManager))
-					.leftColor(color)
-					.build());
-			}
-		}
 	}
 
 	private void createHighlightInventoryClueItems(Graphics2D graphics)
