@@ -684,7 +684,7 @@ public interface ClueDetailsConfig extends Config
 	@Alpha
 	@ConfigItem(
 			keyName = "groundThreeStepHighlightColor",
-			name = "Saved three-stepper ground highlight color",
+			name = "Ground saved three-stepper highlight color",
 			description = "Configures the color for highlighted saved three-stepper on the ground",
 			section = helperSection,
 			position = 3
