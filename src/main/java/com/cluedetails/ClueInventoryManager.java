@@ -96,44 +96,15 @@ public class ClueInventoryManager
 		{
 			if (item == null) continue;
 
-			// Track Easy->Elite clues in inventory
-			if (!Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
-			{
-				Clues clue = Clues.forItemId(item.getId());
-				if (clue != null)
-				{
-					cluesInInventory[clue.getClueTier().getValue()] = clue;
-				}
-			}
-
 			int itemId = item.getId();
-
-			ClueInstance clueInstance = null;
-			// If we have a clue we've picked up this tick, we've probably dropped and picked up a clue same tick
-			for (ClueInstance clueFromFloor : clueGroundManager.getDespawnedClueQueueForInventoryCheck())
+			
+			if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 			{
-				if (clueFromFloor.getItemId() == item.getId())
-				{
-					clueInstance = new ClueInstance(clueFromFloor.getClueIds(), itemId);
-					break;
-				}
+				checkItemAsBeginnerOrMasterClue(itemId);
 			}
-			if (clueInstance != null)
+			else
 			{
-				trackedCluesInInventory.put(itemId, clueInstance);
-				continue;
-			}
-
-			// If clue is already in previous, keep the same ClueInstance
-			clueInstance = previousTrackedCluesInInventory.get(itemId);
-			if (clueInstance != null && Clues.isClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
-			{
-				trackedCluesInInventory.put(itemId, clueInstance);
-			}
-			else if (Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode()))
-			{
-				clueInstance = new ClueInstance(new ArrayList<>(), itemId);
-				trackedCluesInInventory.put(itemId, clueInstance);
+				checkItemAsEasyToMediumClue(itemId);
 			}
 		}
 
@@ -152,6 +123,43 @@ public class ClueInventoryManager
 					clueBankManager.addToRemovedClues(removedClue);
 				}
 			}
+		}
+	}
+
+	private void checkItemAsEasyToMediumClue(int id)
+	{
+		Clues clue = Clues.forItemId(id);
+		if (clue != null)
+		{
+			cluesInInventory[clue.getClueTier().getValue()] = clue;
+		}
+	}
+
+	private void checkItemAsBeginnerOrMasterClue(int itemId)
+	{
+		ClueInstance clueInstance;
+
+		// If we have a clue we've picked up this tick, we've probably dropped and picked up a clue same tick
+		Optional<ClueInstance> clueFromFloorInInv = clueGroundManager.getDespawnedClueQueueForInventoryCheck().stream()
+			.filter(clueFromFloor ->  clueFromFloor.getItemId() == itemId)
+			.findFirst();
+		if (clueFromFloorInInv.isPresent())
+		{
+			trackedCluesInInventory.put(itemId, new ClueInstance(clueFromFloorInInv.get().getClueIds(), itemId));
+			return;
+		}
+
+		// If clue is already in previous, keep the same ClueInstance
+		// This check is after the floor check as you could drop and pick up a clue in the same tick
+		clueInstance = previousTrackedCluesInInventory.get(itemId);
+		if (clueInstance != null && Clues.isClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
+		{
+			trackedCluesInInventory.put(itemId, clueInstance);
+		}
+		else
+		{
+			clueInstance = new ClueInstance(new ArrayList<>(), itemId);
+			trackedCluesInInventory.put(itemId, clueInstance);
 		}
 	}
 
