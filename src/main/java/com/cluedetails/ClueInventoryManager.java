@@ -130,6 +130,11 @@ public class ClueInventoryManager
 			{
 				trackedCluesInInventory.put(itemId, clueInstance);
 			}
+			else if (Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+			{
+				clueInstance = new ClueInstance(new ArrayList<>(), itemId);
+				trackedCluesInInventory.put(itemId, clueInstance);
+			}
 		}
 
 		clueGroundManager.getDespawnedClueQueueForInventoryCheck().clear();
