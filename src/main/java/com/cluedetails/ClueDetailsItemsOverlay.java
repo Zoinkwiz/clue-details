@@ -25,28 +25,31 @@
 package com.cluedetails;
 
 import com.cluedetails.filters.ClueTier;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import javax.inject.Inject;
 import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemContainer;
-import net.runelite.api.widgets.ComponentID;
-import net.runelite.api.widgets.Widget;
+import net.runelite.api.ItemID;
+import net.runelite.api.widgets.InterfaceID;
+import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.ItemManager;
-import net.runelite.client.ui.overlay.OverlayLayer;
-import net.runelite.client.ui.overlay.OverlayPanel;
-import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.plugins.inventorytags.InventoryTagsConfig;
+import net.runelite.client.ui.overlay.WidgetItemOverlay;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 
-public class ClueDetailsItemsOverlay extends OverlayPanel
+public class ClueDetailsItemsOverlay extends WidgetItemOverlay
 {
 	private final Client client;
 	private final ClueDetailsPlugin clueDetailsPlugin;
@@ -55,33 +58,43 @@ public class ClueDetailsItemsOverlay extends OverlayPanel
 	@Setter
 	private ClueInventoryManager clueInventoryManager;
 	private final ItemManager itemManager;
+	private final Cache<Long, Image> fillCache;
+	private final Cache<Integer, Clues> clueCache;
 
 	@Inject
 	public ClueDetailsItemsOverlay(Client client, ClueDetailsPlugin clueDetailsPlugin, ClueDetailsConfig config, ConfigManager configManager, ItemManager itemManager)
 	{
 		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.itemManager = itemManager;
-		setPriority(PRIORITY_HIGHEST);
-		setLayer(OverlayLayer.ABOVE_WIDGETS);
-		setPosition(OverlayPosition.DYNAMIC);
-
 		this.client = client;
 		this.config = config;
 		this.configManager = configManager;
+		showOnBank();
+		showOnEquipment();
+		showOnInventory();
+		fillCache = CacheBuilder.newBuilder()
+			.concurrencyLevel(1)
+			.maximumSize(32)
+			.build();
+		clueCache = CacheBuilder.newBuilder()
+			.concurrencyLevel(1)
+			.maximumSize(39)
+			.build();
+		setPriority(-1); // run before inventory tags
 	}
 
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (config.highlightInventoryClueItems())
+		if (config.highlightInventoryClueScrolls() || config.highlightInventoryClueItems())
 		{
-			createHighlightInventoryClueItems(graphics);
+			populateCache();
 		}
 
 		return super.render(graphics);
 	}
 
-	private void createHighlightInventoryClueItems(Graphics2D graphics)
+	private void populateCache()
 	{
 		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
 		if (inventory == null || clueInventoryManager == null ) return;
@@ -93,7 +106,14 @@ public class ClueDetailsItemsOverlay extends OverlayPanel
 
 			if (isEnabled(clue))
 			{
-				checkInvAndHighlightItems(graphics, clue);
+				if (config.highlightInventoryClueScrolls())
+				{
+					cacheClueScrolls(clue);
+				}
+				if (config.highlightInventoryClueItems())
+				{
+					cacheClueItems(clue);
+				}
 			}
 		}
 
@@ -109,7 +129,14 @@ public class ClueDetailsItemsOverlay extends OverlayPanel
 				if (clue == null) return;
 				if (isEnabled(clue))
 				{
-					checkInvAndHighlightItems(graphics, clue);
+					if (config.highlightInventoryClueScrolls())
+					{
+						cacheClueScrolls(clue);
+					}
+					if (config.highlightInventoryClueItems())
+					{
+						cacheClueItems(clue);
+					}
 				}
 			});
 		}
@@ -148,12 +175,21 @@ public class ClueDetailsItemsOverlay extends OverlayPanel
 		return true;
 	}
 
-	protected Widget getInventoryWidget()
+	private void cacheClueScrolls(Clues clue)
 	{
-		return client.getWidget(ComponentID.INVENTORY_CONTAINER);
+		int clueItemID = clue.getItemID();
+
+		// Convert beginner map clues
+		if (clueItemID >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
+			&& clueItemID <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER)
+		{
+			clueItemID = ItemID.CLUE_SCROLL_BEGINNER;
+		}
+
+		clueCache.put(clueItemID, clue);
 	}
 
-	private void checkInvAndHighlightItems(Graphics2D graphics, Clues clue)
+	private void cacheClueItems(Clues clue)
 	{
 		List<Integer> highlightItems = clue.getItems(clueDetailsPlugin, configManager);
 
@@ -162,44 +198,67 @@ public class ClueDetailsItemsOverlay extends OverlayPanel
 			return;
 		}
 
-		Widget inventoryWidget = getInventoryWidget();
-		if (inventoryWidget == null || inventoryWidget.isHidden())
-		{
-			return;
-		}
-
-		if (inventoryWidget.getDynamicChildren() == null)
-		{
-			return;
-		}
-
-		for (Widget item : inventoryWidget.getDynamicChildren())
-		{
-			if (highlightItems.contains(item.getItemId()))
-			{
-				Color itemHighlightColor = config.itemHighlightColor();
-
-				Color clueColor = clue.getDetailColor(configManager);
-				if (config.colorInventoryClueItems() && clueColor != Color.WHITE)
-				{
-					itemHighlightColor = clueColor;
-				}
-				renderItemOverlay(graphics, item, itemHighlightColor);
-			}
-		}
+		highlightItems.forEach(item -> clueCache.put(item, clue));
 	}
 
-	public void renderItemOverlay(Graphics2D graphics, Widget item, Color color)
+	@Override
+	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem)
 	{
-		Rectangle bounds = item.getBounds();
-		final Image image = getFillImage(color, item.getItemId(), item.getItemQuantity());
-		graphics.drawImage(image, (int) bounds.getX(), (int) bounds.getY(), null);
+		final Clues clue = clueCache.getIfPresent(itemId);
+		if (clue == null || clue.getClueDetailColor() == null)
+		{
+			return;
+		}
+
+		Color color = clue.getDetailColor(configManager);
+
+		// Apply default item highlight color
+		if (!Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode()) && !config.colorInventoryClueItems())
+		{
+			color = config.itemHighlightColor();
+		}
+
+		Rectangle bounds = widgetItem.getCanvasBounds();
+		if (Boolean.TRUE.equals(configManager.getConfiguration(InventoryTagsConfig.GROUP,
+			"showTagOutline", Boolean.class)))
+		{
+			final BufferedImage outline = itemManager.getItemOutline(itemId, widgetItem.getQuantity(), color);
+			graphics.drawImage(outline, (int) bounds.getX(), (int) bounds.getY(), null);
+		}
+
+		if (Boolean.TRUE.equals(configManager.getConfiguration(InventoryTagsConfig.GROUP,
+			"tagFill", Boolean.class)))
+		{
+			final Image image = getFillImage(color, widgetItem.getId(), widgetItem.getQuantity());
+			graphics.drawImage(image, (int) bounds.getX(), (int) bounds.getY(), null);
+		}
+
+		if (Boolean.TRUE.equals(configManager.getConfiguration(InventoryTagsConfig.GROUP,
+			"tagUnderline", Boolean.class)))
+		{
+			int heightOffSet = (int) bounds.getY() + (int) bounds.getHeight() + 2;
+			graphics.setColor(color);
+			graphics.drawLine((int) bounds.getX(), heightOffSet, (int) bounds.getX() + (int) bounds.getWidth(), heightOffSet);
+		}
 	}
 
 	private Image getFillImage(Color color, int itemId, int qty)
 	{
-		final Color fillColor = ColorUtil.colorWithAlpha(color, 100);
+		long key = (((long) itemId) << 32) | qty;
+		Image image = fillCache.getIfPresent(key);
+		if (image == null)
+		{
+			final Color fillColor = ColorUtil.colorWithAlpha(color,
+				Integer.parseInt(configManager.getConfiguration(InventoryTagsConfig.GROUP,  "fillOpacity")));
+			image = ImageUtil.fillImage(itemManager.getImage(itemId, qty, false), fillColor);
+			fillCache.put(key, image);
+		}
+		return image;
+	}
 
-		return ImageUtil.fillImage(itemManager.getImage(itemId, qty, false), fillColor);
+	void invalidateCache()
+	{
+		fillCache.invalidateAll();
+		clueCache.invalidateAll();
 	}
 }

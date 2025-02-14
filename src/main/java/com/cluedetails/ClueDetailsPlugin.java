@@ -236,6 +236,7 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		if (event.getContainerId() == InventoryID.INVENTORY.getId())
 		{
+			itemsOverlay.invalidateCache();
 			clueInventoryManager.updateInventory(event.getItemContainer());
 		}
 		else if (event.getContainerId() == InventoryID.BANK.getId())
@@ -328,6 +329,15 @@ public class ClueDetailsPlugin extends Plugin
 		if (event.getGroup().equals("clue-details-highlights"))
 		{
 			infoOverlay.refreshHighlights();
+		}
+
+		if (event.getGroup().equals("clue-details-color")
+			|| event.getGroup().equals("clue-details-items")
+			|| event.getKey().equals("highlightInventoryClueScrolls")
+			|| event.getKey().equals("highlightInventoryClueItems")
+			|| event.getKey().equals("colorInventoryClueItems"))
+		{
+			itemsOverlay.invalidateCache();
 		}
 
 		if (!event.getGroup().equals(ClueDetailsConfig.class.getAnnotation(ConfigGroup.class).value()))

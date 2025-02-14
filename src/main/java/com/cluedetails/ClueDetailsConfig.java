@@ -383,28 +383,29 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "highlightInventoryClueItems",
-		name = "Highlight inventory clue items",
-		description = "Toggle whether to highlight configured items for each clue in your inventory",
+		keyName = "highlightInventoryClueScrolls",
+		name = "Inventory tag clue scrolls",
+		warning = "Display mode is managed by Inventory Tags configuration",
+		description = "Toggle whether to apply inventory tags to clues with clue details color",
 		section = overlaysSection,
 		position = 6
+	)
+	default boolean highlightInventoryClueScrolls()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "highlightInventoryClueItems",
+		name = "Inventory tag clue items",
+		warning = "Display mode is managed by Inventory Tags configuration",
+		description = "Toggle whether to apply inventory tags to configured items for each clue in your inventory",
+		section = overlaysSection,
+		position = 7
 	)
 	default boolean highlightInventoryClueItems()
 	{
 		return true;
-	}
-
-	@Alpha
-	@ConfigItem(
-		keyName = "itemHighlightColor",
-		name = "Item highlight color",
-		description = "Configures the default color for highlighted inventory clue items",
-		section = overlaysSection,
-		position = 7
-	)
-	default Color itemHighlightColor()
-	{
-		return Color.YELLOW.darker();
 	}
 
 	@ConfigSection(name = "Overlay Colors", description = "Options that effect overlay colors", position = 5)
@@ -460,8 +461,8 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "colorInventoryClueItems",
-		name = "Color inventory clue items",
-		description = "Toggle whether apply clue details color to highlighted inventory clue items",
+		name = "Color clue items",
+		description = "Toggle whether apply clue details color to clue items inventory tags",
 		section = overlayColorsSection,
 		position = 4
 	)
@@ -470,13 +471,26 @@ public interface ClueDetailsConfig extends Config
 		return true;
 	}
 
+	@Alpha
+	@ConfigItem(
+		keyName = "itemHighlightColor",
+		name = "Clue items color",
+		description = "Clue items inventory tag color used when Color clue items is toggled off",
+		section = overlayColorsSection,
+		position = 5
+	)
+	default Color itemHighlightColor()
+	{
+		return Color.YELLOW.darker();
+	}
+
 	@ConfigItem(
 		keyName = "colorGroundItems",
 		name = "Overwrite Ground Items colors",
 		description = "When updating clue details colors, apply the color to the Ground Items plugin",
 		warning = "Does apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
 		section = overlayColorsSection,
-		position = 5
+		position = 7
 	)
 	default boolean colorGroundItems()
 	{

@@ -41,7 +41,11 @@ The "Change ground item menu text" toggle in the plugin's settings adjusts the a
 
 ![Screenshot 2024-09-01 221305](https://github.com/user-attachments/assets/72685ba5-f441-4cac-b18c-6cc0ddf42d98)
 
-The "Highlight inventory clue items" toggle highlights configured items for each clue in your inventory
+The "Inventory tag clue scrolls" toggle applies inventory tags to clues in your inventory using configured clue colors
+
+![image](https://github.com/user-attachments/assets/ba9ca49f-df55-48c5-a112-5302ecef1683)
+
+The "Inventory tag clue items" toggle applies inventory tags configured items for each clue in your inventory
 
 ![image](https://github.com/user-attachments/assets/3dc33f5b-f300-4614-b6bf-db7359f23ae5)
 
@@ -75,9 +79,9 @@ Updating Ground Items and Inventory Tags colors is also supported.
 
 ### Items
 You can edit the clue details items for each clue, this can be done 3 different ways.
-1. If you have the clue in your inventory for which you would like to highlight an item:
+1. If you have the clue in your inventory for which you would like to inventory tag an item:
     - Right-click the desired inventory item and choose "Add" or "Remove" for the clue via the option specifying its tier
-2. In the sidebar, right-click the clue you would like to highlight an item for, and select "Add/Remove item"
+2. In the sidebar, right-click the clue you would like to inventory tag an item for, and select "Add/Remove item"
 3. Via Import/Export. See below
 
 ## Import/Export clue details
