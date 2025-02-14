@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.swing.*;
@@ -52,7 +51,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import lombok.Getter;
 import net.runelite.api.ChatMessageType;
-import net.runelite.api.ItemID;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
@@ -277,31 +275,48 @@ public class ClueDetailsParentPanel extends PluginPanel
 		{
 			ListItem item = (ListItem) clueTableModel.getValueAt(row, 0);
 			Clues clue = item.getClue();
+			int clueItemId = clue.getItemID();
+			int clueClueID = clue.getClueID();
 
 			RuneliteColorPicker colorPicker = getColorPicker(clue.getDetailColor(configManager));
 			colorPicker.setOnColorChange(c ->
 			{
-				// Default color is white, so we don't need to store if user selects white
-				if (Objects.equals(c, Color.decode("#FFFFFF")))
+				// Default color is white, so white is used to unset configurations
+				if (ClueIdToDetails.equalRGB(c, Color.WHITE))
 				{
-					configManager.unsetConfiguration("clue-details-color", String.valueOf(clue.getClueID()));
+					configManager.unsetConfiguration("clue-details-color", String.valueOf(clueClueID));
+
+					// Reset Ground Items and Inventory Tags
+					// Beginner & master clues are not supported by these plugins
+					if (clueClueID >= 2677)
+					{
+						if (config.colorGroundItems())
+						{
+							configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueClueID);
+						}
+						if (config.colorInventoryTags())
+						{
+							configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueClueID);
+						}
+					}
 				}
 				else
 				{
-					configManager.setConfiguration("clue-details-color", String.valueOf(clue.getClueID()), c);
-				}
+					configManager.setConfiguration("clue-details-color", String.valueOf(clueClueID), c);
 
-				int clueItemId = clue.getItemID();
-				if (clueItemId != ItemID.CLUE_SCROLL_BEGINNER && clueItemId != ItemID.CLUE_SCROLL_MASTER)
-				{
-					if (config.colorGroundItems())
+					// Apply color to Ground Items and Inventory Tags
+					// Beginner & master clues are not supported by these plugins
+					if (clueClueID >= 2677)
 					{
-						configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueItemId, c);
-					}
-					if (config.colorInventoryTags())
-					{
-						configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueItemId,
-							plugin.getGson().toJson(Map.of("color", c)));
+						if (config.colorGroundItems())
+						{
+							configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueItemId, c);
+						}
+						if (config.colorInventoryTags())
+						{
+							configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueItemId,
+								plugin.getGson().toJson(Map.of("color", c)));
+						}
 					}
 				}
 			});

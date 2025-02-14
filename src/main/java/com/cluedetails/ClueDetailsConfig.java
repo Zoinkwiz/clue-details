@@ -474,7 +474,7 @@ public interface ClueDetailsConfig extends Config
 		keyName = "colorGroundItems",
 		name = "Overwrite Ground Items colors",
 		description = "When updating clue details colors, apply the color to the Ground Items plugin",
-		warning = "Does not work for Beginner and Master clues. Colors must be reset via Ground Items plugin.",
+		warning = "Does apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
 		section = overlayColorsSection,
 		position = 5
 	)
@@ -487,7 +487,7 @@ public interface ClueDetailsConfig extends Config
 		keyName = "colorInventoryTags",
 		name = "Overwrite Inventory Tags colors",
 		description = "When updating clue details colors, apply the color to the Inventory Tags plugin",
-		warning = "Does not work for Beginner and Master clues. Colors must be reset via Inventory Tags plugin.",
+		warning = "Does apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
 		section = overlayColorsSection,
 		position = 6
 	)
