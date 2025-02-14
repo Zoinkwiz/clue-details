@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -254,30 +253,45 @@ public class ClueDetailsSharingManager
 			}
 			if (importPoint.color != null)
 			{
-				// Default color is white, so we don't need to store if user selects white
-				if (Objects.equals(importPoint.color, Color.decode("#FFFFFF")))
+				// Default color is white, so white is used to unset configurations
+				if (ClueIdToDetails.equalRGB(importPoint.color, Color.WHITE))
 				{
 					configManager.unsetConfiguration("clue-details-color", String.valueOf(importPoint.id));
+
+					// Reset Ground Items and Inventory Tags
+					// Beginner & master clues are not supported by these plugins
+					if (importPoint.id >= 2677)
+					{
+						if (config.colorGroundItems())
+						{
+							configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id);
+						}
+						if (config.colorInventoryTags())
+						{
+							configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id);
+						}
+					}
 				}
 				else
 				{
 					configManager.setConfiguration("clue-details-color", String.valueOf(importPoint.id), importPoint.color);
-				}
 
-				// Ground Items and Inventory Tags cannot support unique colors for beginner & master clues
-				if (importPoint.id >= 2677 && (config.colorGroundItems() || config.colorInventoryTags()))
-				{
-					// Ensure ARGB format
-					Color color = Color.decode(configManager.getConfiguration("clue-details-color", String.valueOf(importPoint.id)));
+					// Apply color to Ground Items and Inventory Tags
+					// Beginner & master clues are not supported by these plugins
+					if (importPoint.id >= 2677)
+					{
+						// Ensure ARGB format
+						Color color = Color.decode(configManager.getConfiguration("clue-details-color", String.valueOf(importPoint.id)));
 
-					if (config.colorGroundItems())
-					{
-						configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id, color);
-					}
-					if (config.colorInventoryTags())
-					{
-						configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id,
-							gson.toJson(Map.of("color", color)));
+						if (config.colorGroundItems())
+						{
+							configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id, color);
+						}
+						if (config.colorInventoryTags())
+						{
+							configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id,
+								gson.toJson(Map.of("color", color)));
+						}
 					}
 				}
 			}
