@@ -109,7 +109,7 @@ public class ClueInstance
 		}
 		return clue.getClueTier();
 	}
-
+	
 	public String getGroundText(ClueDetailsPlugin plugin, ClueDetailsConfig config, ConfigManager configManager, int quantity)
 	{
 		StringBuilder itemStringBuilder = new StringBuilder();
