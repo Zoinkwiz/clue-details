@@ -24,7 +24,9 @@
  */
 package com.cluedetails;
 
+import com.cluedetails.filters.ClueTier;
 import java.awt.Color;
+import java.util.Collections;
 import java.util.List;
 import lombok.Data;
 import lombok.Getter;
@@ -75,6 +77,35 @@ public class ClueInstance
 		this.location = location;
 		this.tileItem = tileItem;
 		this.timeToDespawnFromDataInTicks = currentTick;
+	}
+
+	public List<Integer> getClueIds()
+	{
+		if (clueIds.isEmpty() && !(itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER))
+		{
+			return Collections.singletonList(itemId);
+		}
+		return clueIds;
+	}
+
+	public ClueTier getTier()
+	{
+		Clues clue;
+
+		if (clueIds.isEmpty())
+		{
+			clue = Clues.forItemId(itemId);
+		}
+		else
+		{
+			clue = Clues.forClueId(getClueIds().get(0));
+		}
+
+		if (clue == null)
+		{
+			return null;
+		}
+		return clue.getClueTier();
 	}
 
 	public int getDespawnTick(int currentTick)
@@ -143,7 +174,23 @@ public class ClueInstance
 		{
 			return config.beginnerDetails();
 		}
-		else if (itemId == ItemID.CLUE_SCROLL_MASTER )
+		else if (getTier() == ClueTier.EASY)
+		{
+			return config.easyDetails();
+		}
+		else if (getTier() == ClueTier.MEDIUM)
+		{
+			return config.mediumDetails();
+		}
+		else if (getTier() == ClueTier.HARD)
+		{
+			return config.hardDetails();
+		}
+		else if (getTier() == ClueTier.ELITE)
+		{
+			return config.eliteDetails();
+		}
+		else if (itemId == ItemID.CLUE_SCROLL_MASTER)
 		{
 			return config.masterDetails();
 		}

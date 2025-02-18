@@ -551,8 +551,8 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "collapseGroundClues",
-		name = "Collapse ground clues",
-		description = "Toggle whether to combine duplicates in the ground clues overlay",
+		name = "Collapse ground clues by step",
+		description = "Toggle whether to combine duplicate steps in the ground clues overlay",
 		section = groundCluesSection,
 		position = 3
 	)
@@ -562,11 +562,24 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "collapseGroundCluesByTier",
+		name = "Collapse ground clues by tier",
+		description = "Toggle whether to combine duplicate tiers in the ground clues overlay" +
+			"<br><i>Not compatible with 'Change ground clue text'</i>",
+		section = groundCluesSection,
+		position = 4
+	)
+	default boolean collapseGroundCluesByTier()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "colorGroundClues",
 		name = "Color ground clues",
 		description = "Toggle whether to apply clue details color to ground clue text",
 		section = groundCluesSection,
-		position = 4
+		position = 5
 	)
 	default boolean colorGroundClues()
 	{

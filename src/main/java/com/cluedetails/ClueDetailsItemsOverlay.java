@@ -124,7 +124,8 @@ public class ClueDetailsItemsOverlay extends WidgetItemOverlay
 			ClueInstance instance = clueInventoryManager.getTrackedClueByClueItemId(itemID);
 			if (instance == null) continue;
 
-			instance.getClueIds().forEach((clueId) -> {
+			instance.getClueIds().forEach((clueId) ->
+			{
 				Clues clue = Clues.forClueIdFiltered(clueId);
 				if (clue == null) return;
 				if (isEnabled(clue))

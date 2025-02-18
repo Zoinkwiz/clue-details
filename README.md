@@ -49,7 +49,7 @@ The "Inventory tag clue items" toggle applies inventory tags configured items fo
 
 ![image](https://github.com/user-attachments/assets/3dc33f5b-f300-4614-b6bf-db7359f23ae5)
 
-The "Show ground clues" toggle shows text overlay for Beginner and Master ground clues, similar to the Ground Items plugin.
+The "Show ground clues" toggle shows text overlay for ground clues, similar to the Ground Items plugin.
 
 ![ground_clues](https://github.com/user-attachments/assets/bb067da3-faaf-4d5f-a521-d1c3b030ab9b)
 

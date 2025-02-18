@@ -24,16 +24,20 @@
  */
 package com.cluedetails;
 
+import com.cluedetails.filters.ClueTier;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import net.runelite.api.Client;
+import net.runelite.api.ItemID;
 import net.runelite.api.Perspective;
 import net.runelite.api.Player;
 import net.runelite.api.Point;
@@ -72,7 +76,7 @@ public class ClueGroundOverlay extends Overlay
 	private ClueGroundOverlay(ClueDetailsPlugin plugin, Client client, ClueDetailsConfig config, ConfigManager configManager)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
-		setLayer(OverlayLayer.ABOVE_SCENE);
+		setLayer(OverlayLayer.UNDER_WIDGETS);
 		this.plugin = plugin;
 		this.client = client;
 		this.config = config;
@@ -105,9 +109,7 @@ public class ClueGroundOverlay extends Overlay
 		offsetMap.clear();
 		final LocalPoint localLocation = player.getLocalLocation();
 
-		// Handle beginner and master clues
-		if (clueGroundManager.getGroundClues().keySet().isEmpty()
-			|| (!config.beginnerDetails() && !config.masterDetails()))
+		if (clueGroundManager.getGroundClues().keySet().isEmpty())
 		{
 			return null;
 		}
@@ -123,14 +125,14 @@ public class ClueGroundOverlay extends Overlay
 			}
 
 			// Get list of ClueInstances at wp with optionally collapsed quantities
-			Map<ClueInstance, Integer> clueInstancesAtWpMap = getClueInstancesAtWpMap(wp, client.getTickCount());
+			Map<ClueInstance, Integer> clueInstancesWithQuantityAtWp = getClueInstancesWithQuantityAtWp(wp, client.getTickCount());
 
-			if (clueInstancesAtWpMap == null)
+			if (clueInstancesWithQuantityAtWp == null)
 			{
 				continue;
 			}
 
-			for (Map.Entry<ClueInstance, Integer> entry : clueInstancesAtWpMap.entrySet())
+			for (Map.Entry<ClueInstance, Integer> entry : clueInstancesWithQuantityAtWp.entrySet())
 			{
 				ClueInstance item = entry.getKey();
 
@@ -145,14 +147,38 @@ public class ClueGroundOverlay extends Overlay
 		return null;
 	}
 
-	private Map<ClueInstance, Integer> getClueInstancesAtWpMap(WorldPoint wp, int currentTick)
+	class ClueInstanceComparator implements Comparator<ClueInstance>
+	{
+		@Override
+		public int compare(ClueInstance o1, ClueInstance o2)
+		{
+			// Primary comparison: Compare by despawn time
+			int despawnComparison = Integer.compare(o1.getTicksToDespawnConsideringTileItem(client.getTickCount()),
+				o2.getTicksToDespawnConsideringTileItem(client.getTickCount()));;
+			if (despawnComparison != 0)
+			{
+				return despawnComparison;
+			}
+			else
+			{
+				// Secondary comparison: If despawn times are the same, compare by itemId
+				return Integer.compare(o1.getItemId(), o2.getItemId());
+			}
+		}
+	}
+
+	private TreeMap<ClueInstance, Integer> getClueInstancesWithQuantityAtWp(WorldPoint wp, int currentTick)
 	{
 		if (clueGroundManager.getGroundClues().get(wp).isEmpty()) return null;
 
 		List<ClueInstance> groundItemList = clueGroundManager.getGroundClues().get(wp);
 		Map<ClueInstance, Integer> groundItemMap = new HashMap<>();
 
-		if (config.collapseGroundClues())
+		if (config.collapseGroundCluesByTier())
+		{
+			groundItemMap = keepOldestTierClues(groundItemList, currentTick);
+		}
+		else if (config.collapseGroundClues())
 		{
 			groundItemMap = keepOldestUniqueClues(groundItemList, currentTick);
 		}
@@ -163,14 +189,21 @@ public class ClueGroundOverlay extends Overlay
 				groundItemMap.put(item, 1);
 			}
 		}
-		return groundItemMap;
+
+		// Sort ClueInstances by despawn time
+		ClueInstanceComparator clueInstanceComparator = new ClueInstanceComparator();
+		TreeMap<ClueInstance, Integer> clueInstancesWithQuantityAtWp = new TreeMap<>(clueInstanceComparator);
+		clueInstancesWithQuantityAtWp.putAll(groundItemMap);
+		return clueInstancesWithQuantityAtWp;
 	}
 
 	private void renderClueInstanceGroundOverlay(Graphics2D graphics, ClueInstance item, int quantity, LocalPoint groundPoint, FontMetrics fm)
 	{
 		Color color = Color.WHITE;
 
-		if (item.getClueIds().isEmpty())
+		List<Integer> clueIds = item.getClueIds();
+
+		if (clueIds.isEmpty())
 		{
 			itemStringBuilder.append(item.getItemName(plugin));
 		}
@@ -185,9 +218,9 @@ public class ClueGroundOverlay extends Overlay
 			}
 
 			String clueText;
-			if (config.changeGroundClueText())
+			if (config.changeGroundClueText() && !config.collapseGroundCluesByTier())
 			{
-				if (item.getClueIds().size() > 1)
+				if (clueIds.size() > 1)
 				{
 					clueText = "Three-step (master)";
 				}
@@ -198,7 +231,7 @@ public class ClueGroundOverlay extends Overlay
 			}
 			else
 			{
-				clueText = WordUtils.capitalizeFully(clueDetails.getClueTier().toString());
+				clueText = WordUtils.capitalizeFully(clueDetails.getClueTier().toString().replace("_", " "));
 			}
 
 			itemStringBuilder.append(clueText);
@@ -209,7 +242,7 @@ public class ClueGroundOverlay extends Overlay
 			}
 		}
 
-		if (config.collapseGroundClues() && quantity > 1)
+		if ((config.collapseGroundClues() || config.collapseGroundCluesByTier()) && quantity > 1)
 		{
 			itemStringBuilder.append(" (")
 				.append(QuantityFormatter.quantityToStackSize(quantity))
@@ -257,21 +290,55 @@ public class ClueGroundOverlay extends Overlay
 		textComponent.render(graphics);
 	}
 
-	// Remove duplicate clues, maintaining a count of the original amount of each
-	public static Map<ClueInstance, Integer> keepOldestUniqueClues(List<ClueInstance> items, int currentTick) {
+	// Remove duplicate step clues, maintaining a count of the original amount of each
+	public static Map<ClueInstance, Integer> keepOldestUniqueClues(List<ClueInstance> items, int currentTick)
+	{
 		Map<List<Integer>, ClueInstance> lowestValueItems = new HashMap<>();
 		Map<List<Integer>, Integer> uniqueCount = new HashMap<>();
 
-		for (ClueInstance item : items) {
-			if (!lowestValueItems.containsKey(item.getClueIds()) || item.getDespawnTick(currentTick) < lowestValueItems.get(item.getClueIds()).getDespawnTick(currentTick)) {
-				lowestValueItems.put(item.getClueIds(), item);
-				uniqueCount.put(item.getClueIds(), 1);
-			} else {
-				uniqueCount.put(item.getClueIds(), uniqueCount.get(item.getClueIds()) + 1);
+		for (ClueInstance item : items)
+		{
+			List<Integer> clueIds = item.getClueIds();
+
+			if (!lowestValueItems.containsKey(clueIds)
+				|| item.getDespawnTick(currentTick) < lowestValueItems.get(clueIds).getDespawnTick(currentTick))
+			{
+				lowestValueItems.put(clueIds, item);
+				uniqueCount.put(clueIds, 1);
+			}
+			else
+			{
+				uniqueCount.put(clueIds, uniqueCount.get(clueIds) + 1);
 			}
 		}
 
 		return lowestValueItems.values().stream()
 			.collect(Collectors.toMap(item -> item, item -> uniqueCount.get(item.getClueIds())));
+	}
+
+	// Remove duplicate tier clues, maintaining a count of the original amount of each
+	public static Map<ClueInstance, Integer> keepOldestTierClues(List<ClueInstance> items, int currentTick)
+	{
+		Map<ClueTier, ClueInstance> lowestValueItems = new HashMap<>();
+		Map<ClueTier, Integer> uniqueCount = new HashMap<>();
+
+		for (ClueInstance item : items)
+		{
+			ClueTier tier = item.getTier();
+
+			if (!lowestValueItems.containsKey(tier)
+				|| item.getDespawnTick(currentTick) < lowestValueItems.get(tier).getDespawnTick(currentTick))
+			{
+				lowestValueItems.put(tier, item);
+				uniqueCount.put(tier, 1);
+			}
+			else
+			{
+				uniqueCount.put(tier, uniqueCount.get(tier) + 1);
+			}
+		}
+
+		return lowestValueItems.values().stream()
+			.collect(Collectors.toMap(item -> item, item ->	uniqueCount.get(item.getTier())));
 	}
 }

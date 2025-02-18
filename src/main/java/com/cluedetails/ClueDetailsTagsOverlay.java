@@ -72,7 +72,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 			// If clue can't be found by Clue ID, check if it can be found by Clue text
 			else
 			{
-				if (Clues.isTrackedClue(itemId, clueDetailsPlugin.isDeveloperMode())
+				if (Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode())
 					&& clueDetailsPlugin.getClueInventoryManager().hasTrackedClues())
 				{
 					// Check if clue tier is enabled
