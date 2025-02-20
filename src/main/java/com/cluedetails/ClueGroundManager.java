@@ -67,7 +67,7 @@ public class ClueGroundManager
 		// If log in on tile with clues on it, spawned. Won't be dropped, but could be dropped?
 		// Main issue is we don't want to create a new groundClue if it was dropped, as we will then also be doing another new one after.
 		TileItem item = event.getItem();
-		if (!Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
+		if (!Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
 		if (checkIfItemMatchesKnownItem(event.getTile(), item, event.getTile().getWorldLocation())) return;
 
 		// New despawn timer, probably been dropped. Track to see what it was.
@@ -86,7 +86,7 @@ public class ClueGroundManager
 	public void onItemDespawned(ItemDespawned event)
 	{
 		TileItem item = event.getItem();
-		if (!Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
+		if (!Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
 		WorldPoint location = event.getTile().getWorldLocation();
 		List<ClueInstance> cluesAtLocation = groundClues.get(location);
 
@@ -191,7 +191,8 @@ public class ClueGroundManager
 
 	private void processEmptyTiles()
 	{
-		groundClues.entrySet().removeIf(entry -> {
+		groundClues.entrySet().removeIf(entry ->
+		{
 			Tile tile = getTileAtWorldPoint(entry.getKey());
 			if (tile == null) return false;
 
@@ -424,7 +425,7 @@ public class ClueGroundManager
 			return Collections.emptyList();
 		}
 		return items.stream()
-			.filter(item -> Clues.isTrackedClueOrTornClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
+			.filter(item -> Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 			.collect(Collectors.toList());
 	}
 
