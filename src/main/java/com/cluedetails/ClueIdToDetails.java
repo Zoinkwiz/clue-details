@@ -82,4 +82,13 @@ public class ClueIdToDetails
 		this.color = color;
 		this.itemIds = itemIds;
 	}
+
+	public static boolean equalRGB(Color color1, Color color2)
+	{
+		boolean equalRed = color1.getRed() == color2.getRed();
+		boolean equalGreen = color1.getGreen() == color2.getGreen();
+		boolean equalBlue = color1.getBlue() == color2.getBlue();
+
+		return equalRed && equalGreen && equalBlue;
+	}
 }

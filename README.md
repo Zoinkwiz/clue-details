@@ -68,8 +68,10 @@ Colors will now be updated for the specific clue depending on the configuration 
 
 Updating Ground Items and Inventory Tags colors is also supported. 
 
-- Enable the "Overwrite ..." configuration options in the "Overlay Colors" section prior to editing colors. This is applied at the time the colors are edited/imported.
-    - Resetting Ground Items and Inventory Tags colors must be done via those plugins.
+- Enable the "Overwrite ..." configuration option(s) in the "Overlay Colors" section.
+    - This is applied only at the time the colors are edited/imported.
+    - Does apply to Beginner and Master clues.
+    - Resetting Ground Items and Inventory Tags colors can must be done via setting the clue's color to white (#FFFFFF).
 
 ### Items
 You can edit the clue details items for each clue, this can be done 3 different ways.
