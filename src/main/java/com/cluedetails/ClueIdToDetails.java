@@ -85,10 +85,10 @@ public class ClueIdToDetails
 
 	public static boolean equalRGB(Color color1, Color color2)
 	{
-		int deltaRed = color1.getRed() - color2.getRed();
-		int deltaGreen = color1.getGreen() - color2.getGreen();
-		int deltaBlue = color1.getBlue() - color2.getBlue();
+		boolean equalRed = color1.getRed() == color2.getRed();
+		boolean equalGreen = color1.getGreen() == color2.getGreen();
+		boolean equalBlue = color1.getBlue() == color2.getBlue();
 
-		return (deltaRed + deltaGreen + deltaBlue) == 0;
+		return equalRed && equalGreen && equalBlue;
 	}
 }
