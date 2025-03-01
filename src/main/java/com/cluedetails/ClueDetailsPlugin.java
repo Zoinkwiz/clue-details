@@ -28,6 +28,12 @@ import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 import javax.inject.Inject;
 import javax.inject.Named;
 import lombok.Getter;
@@ -35,6 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
+import net.runelite.api.ItemID;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -45,6 +53,7 @@ import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
+import net.runelite.client.Notifier;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
@@ -64,6 +73,7 @@ import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ImageUtil;
 
 @Slf4j
@@ -154,6 +164,15 @@ public class ClueDetailsPlugin extends Plugin
 	@Getter
 	private ChatboxItemSearch itemSearch;
 
+	@Inject
+	private Notifier notifier;
+
+	@Inject
+	private InfoBoxManager infoBoxManager;
+
+	@Getter
+	private final List<ClueGroundTimer> clueGroundTimers = new ArrayList<>();
+
 	@Getter
 	private ClueDetailsParentPanel panel;
 
@@ -229,6 +248,11 @@ public class ClueDetailsPlugin extends Plugin
 
 		clueGroundManager.saveStateToConfig();
 		clueBankManager.saveStateToConfig();
+
+		for (ClueGroundTimer timer : clueGroundTimers)
+		{
+			infoBoxManager.removeInfoBox(timer);
+		}
 	}
 
 	@Subscribe
@@ -297,6 +321,24 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		clueGroundManager.onGameTick();
 		clueInventoryManager.onGameTick();
+
+		renderGroundClueTimers(); // TODO: Call more efficiently
+		infoBoxManager.cull(); // Explict call to clean up timers faster
+		// Ground clue timers notifications
+		if (!clueGroundTimers.isEmpty())
+		{
+			if (showNotifications())
+			{
+				for (ClueGroundTimer timer : clueGroundTimers)
+				{
+					if (!timer.isNotified() && timer.getDuration().compareTo(Duration.ofSeconds(config.groundClueTimersNotificationTime())) < 0)
+					{
+						notifier.notify("Your clue scroll is about to disappear!");
+						timer.setNotified(true);
+					}
+				}
+			}
+		}
 	}
 
 	/* This gets called when:
@@ -357,6 +399,24 @@ public class ClueDetailsPlugin extends Plugin
 			}
 		}
 
+		// renderGroundClueTimers if showGroundClueTimers toggled or tier toggled
+		if ("showGroundClueTimers".equals(event.getKey()) || event.getKey().contains("Details"))
+		{
+			if ("showGroundClueTimers".equals(event.getKey()) && "false".equals(event.getNewValue()))
+			{
+				// Reset timers
+				for (ClueGroundTimer timer : clueGroundTimers)
+				{
+					infoBoxManager.removeInfoBox(timer);
+				}
+				clueGroundTimers.clear();
+			}
+			else
+			{
+				renderGroundClueTimers();
+			}
+		}
+
 		panel.refresh();
 	}
 
@@ -371,5 +431,59 @@ public class ClueDetailsPlugin extends Plugin
 	ClueDetailsConfig provideConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(ClueDetailsConfig.class);
+	}
+
+	private boolean showNotifications()
+	{
+		return config.groundClueTimersNotificationTime() > 0;
+	}
+
+	public void renderGroundClueTimers()
+	{
+		if (!config.showGroundClueTimers()) return;
+
+		Set<WorldPoint> worldPoints = clueGroundManager.getGroundClues().keySet();
+
+		// Remove timers if worldPoint not managed by clueGroundManager
+		clueGroundTimers.removeIf(timer-> !worldPoints.contains(timer.getWorldPoint()));
+
+		// Populate timers
+		for (WorldPoint worldPoint : worldPoints)
+		{
+			TreeMap<ClueInstance, Integer> clueInstancesWithQuantityAtWp = clueGroundManager.getClueInstancesWithQuantityAtWp(config, worldPoint, client.getTickCount());
+
+			if (clueInstancesWithQuantityAtWp != null)
+			{
+				boolean createNewTimer = true;
+				long oldestPeriod = clueInstancesWithQuantityAtWp.firstEntry().getKey().getTicksToDespawnConsideringTileItem(client.getTickCount()) * 600L;
+
+				// Update existing timers
+				for (ClueGroundTimer timer : clueGroundTimers)
+				{
+					if (worldPoint.equals(timer.getWorldPoint()))
+					{
+						timer.setClueInstancesWithQuantity(clueInstancesWithQuantityAtWp);
+						createNewTimer = false;
+						break;
+					}
+				}
+
+				if (createNewTimer)
+				{
+					ClueGroundTimer timer = new ClueGroundTimer(
+						this,
+						config,
+						configManager,
+						oldestPeriod,
+						ChronoUnit.MILLIS,
+						worldPoint,
+						clueInstancesWithQuantityAtWp,
+						itemManager.getImage(ItemID.CLUE_SCROLL_23815)
+					);
+					clueGroundTimers.add(timer);
+					infoBoxManager.addInfoBox(timer);
+				}
+			}
+		}
 	}
 }

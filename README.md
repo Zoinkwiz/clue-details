@@ -53,6 +53,10 @@ The "Show ground clues" toggle shows text overlay for ground clues, similar to t
 
 ![ground_clues](https://github.com/user-attachments/assets/bb067da3-faaf-4d5f-a521-d1c3b030ab9b)
 
+The "Show ground clue timers" toggle shows despawn timers for ground clues, similar to the Clue Juggling Timer plugin.
+
+![ground_clue_timers](https://github.com/user-attachments/assets/73e70e22-a541-48a2-a9ef-92f324a8f38e)
+
 ## Editing clue details
 
 ### Text

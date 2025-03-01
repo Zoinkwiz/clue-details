@@ -586,6 +586,30 @@ public interface ClueDetailsConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "showGroundClueTimers",
+		name = "Show ground clue timers",
+		description = "Toggle whether to show timer infoboxes for ground clues",
+		section = groundCluesSection,
+		position = 6
+	)
+	default boolean showGroundClueTimers()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "groundClueTimersNotificationTime",
+		name = "Timer notifications",
+		description = "Time remaining (seconds) until despawn to send notification. Set to 0 to disable the notification.",
+		section = groundCluesSection,
+		position = 7
+	)
+	default int groundClueTimersNotificationTime()
+	{
+		return 60;
+	}
+
 	@ConfigSection(name = "Tier Toggles", description = "Options to enable particular clue tiers", position = 7)
 	String tierTogglesSection = "Tier Toggles";
 
