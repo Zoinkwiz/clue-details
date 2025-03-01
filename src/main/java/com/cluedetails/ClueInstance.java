@@ -181,6 +181,77 @@ public class ClueInstance
 		return color;
 	}
 
+	public String getGroundText(ClueDetailsPlugin plugin, ClueDetailsConfig config, ConfigManager configManager, int quantity)
+	{
+		StringBuilder itemStringBuilder = new StringBuilder();
+		List<Integer> clueIds = this.getClueIds();
+
+		if (clueIds.isEmpty())
+		{
+			itemStringBuilder.append(this.getItemName(plugin));
+		}
+		else
+		{
+			int clueId = this.getClueIds().get(0);
+			Clues clueDetails = Clues.forClueIdFiltered(clueId);
+
+			if (clueDetails == null)
+			{
+				return null;
+			}
+
+			String clueText;
+			if (config.changeGroundClueText() && !config.collapseGroundCluesByTier())
+			{
+				if (clueIds.size() > 1)
+				{
+					clueText = "Three-step (master)";
+				}
+				else
+				{
+					clueText = clueDetails.getDetail(configManager);
+				}
+			}
+			else
+			{
+				clueText = WordUtils.capitalizeFully(clueDetails.getClueTier().toString().replace("_", " "));
+			}
+
+			itemStringBuilder.append(clueText);
+		}
+
+		if ((config.collapseGroundClues() || config.collapseGroundCluesByTier()) && quantity > 1)
+		{
+			itemStringBuilder.append(" (")
+				.append(QuantityFormatter.quantityToStackSize(quantity))
+				.append(')');
+		}
+		return itemStringBuilder.toString();
+	}
+
+	public Color getGroundColor(ClueDetailsConfig config, ConfigManager configManager)
+	{
+		Color color = Color.WHITE;
+		List<Integer> clueIds = this.getClueIds();
+
+		if (!clueIds.isEmpty())
+		{
+			int clueId = this.getClueIds().get(0);
+			Clues clueDetails = Clues.forClueIdFiltered(clueId);
+
+			if (clueDetails == null)
+			{
+				return color;
+			}
+
+			if (config.colorGroundClues())
+			{
+				color = clueDetails.getDetailColor(configManager);
+			}
+		}
+		return color;
+	}
+
 	public int getDespawnTick(int currentTick)
 	{
 		if (tileItem != null)
