@@ -78,24 +78,6 @@ public class ClueDetailsInventoryOverlay extends OverlayPanel
 
 		for (Item item : inventory.getItems())
 		{
-			Clues clue = Clues.forItemId(item.getId());
-			if (clue != null && !Arrays.asList(
-				ClueTier.MEDIUM_CHALLENGE,
-				ClueTier.HARD_CHALLENGE,
-				ClueTier.ELITE_CHALLENGE).contains(clue.getClueTier()))
-			{
-				Color color = TITLED_CONTENT_COLOR;
-				if (config.colorInventoryCluesOverlay())
-				{
-					color = clue.getDetailColor(configManager);
-				}
-
-				panelComponent.getChildren().add(LineComponent.builder()
-					.left(clue.getDetail(configManager))
-					.leftColor(color)
-					.build());
-			}
-
 			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(item.getId());
 			if (clueInstance == null || clueInstance.getClueIds().isEmpty()) continue;
 
