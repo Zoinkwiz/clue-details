@@ -30,13 +30,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import net.runelite.api.ItemID;
-import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.WidgetItemOverlay;
 import net.runelite.client.ui.overlay.components.TextComponent;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 {
@@ -56,75 +55,66 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 	@Override
 	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem)
 	{
-		if (config.showInventoryClueTags())
+		if (!config.showInventoryClueTags()) return;
+
+		Clues clue = Clues.forItemId(itemId);
+
+		// If it's an easy-elite clue (so id=clue step)
+		if (clue != null && clue.isEnabled(config))
 		{
-			Clues clue = Clues.forItemId(itemId);
-			String clueDetail = null;
-			Color clueDetailColor = Color.WHITE;
-
-			if (clue != null
-				&& !(itemId >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
-					&& itemId <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER))
-			{
-				clueDetail = clue.getDetail(configManager);
-				clueDetailColor = clue.getDetailColor(configManager);
-			}
-			// If clue can't be found by Clue ID, check if it can be found by Clue text
-			else
-			{
-				if (Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode())
-					&& clueDetailsPlugin.getClueInventoryManager().hasTrackedClues())
-				{
-					// Check if clue tier is enabled
-					if (((itemId == ItemID.CLUE_SCROLL_BEGINNER || (itemId >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
-						&& itemId <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER)) && !config.beginnerDetails())
-						|| itemId == ItemID.CLUE_SCROLL_MASTER && !config.masterDetails())
-					{
-						return;
-					}
-
-					ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueItemId(itemId);
-					if (readClues == null)
-					{
-						return;
-					}
-					List<Integer> ids = readClues.getClueIds();
-
-					if (ids.isEmpty()) return;
-
-					boolean isFirst = true;
-					StringBuilder text = new StringBuilder();
-					StringBuilder detail = new StringBuilder();
-					for (Integer id : ids)
-					{
-						Clues clueDetails = Clues.forClueIdFiltered(id);
-						if (!isFirst)
-						{
-							text.append("<br>");
-							detail.append("<br>");
-						}
-						text.append(clueDetails == null ? "error" : clueDetails.getClueText());
-						detail.append(clueDetails == null ? "error" : clueDetails.getDetail(configManager));
-						clueDetailColor = clueDetails == null ? Color.WHITE : clueDetails.getDetailColor(configManager);
-						isFirst = false;
-					}
-
-					// Handle three step cryptic clues
-					final ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(text.toString());
-					if (threeStepCrypticClue != null)
-					{
-						threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
-						clueDetail = threeStepCrypticClue.getDetail(configManager, config);
-						clueDetailColor = Color.WHITE;
-					}
-					else
-					{
-						clueDetail = detail.toString();
-					}
-				}
-			}
-			renderText(graphics, widgetItem.getCanvasBounds(), clueDetail, clueDetailColor);
+			renderText(graphics, widgetItem.getCanvasBounds(), clue.getDetail(configManager), clue.getDetailColor(configManager));
+			return;
 		}
+
+		// Check if it's a beginner/master clue
+		ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueItemId(itemId);
+		if (readClues == null || !readClues.isEnabled(config)) return;
+
+		List<Integer> ids = readClues.getClueIds();
+
+		if (ids.isEmpty()) return;
+
+		Pair<String, Color> textAndColor = getClueTextFromClueIds(ids);
+
+		renderText(graphics, widgetItem.getCanvasBounds(), textAndColor.getLeft(), textAndColor.getRight());
+	}
+
+	private Pair<String, Color> getClueTextFromClueIds(List<Integer> ids)
+	{
+		String clueDetail = null;
+		Color clueDetailColor = Color.WHITE;
+
+		boolean isFirst = true;
+		StringBuilder text = new StringBuilder();
+		StringBuilder detail = new StringBuilder();
+		for (Integer id : ids)
+		{
+			Clues clueDetails = Clues.forClueIdFiltered(id);
+			if (!isFirst)
+			{
+				text.append("<br>");
+				detail.append("<br>");
+			}
+			text.append(clueDetails == null ? "error" : clueDetails.getClueText());
+			detail.append(clueDetails == null ? "error" : clueDetails.getDetail(configManager));
+			clueDetailColor = clueDetails == null ? Color.WHITE : clueDetails.getDetailColor(configManager);
+			isFirst = false;
+		}
+
+		// Handle three step cryptic clues
+		final ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(text.toString());
+		if (threeStepCrypticClue != null)
+		{
+			threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
+			clueDetail = threeStepCrypticClue.getDetail(configManager, config);
+			clueDetailColor = Color.WHITE;
+		}
+		else
+		{
+			clueDetail = detail.toString();
+		}
+
+		return Pair.of(clueDetail, clueDetailColor);
 	}
 
 	public int textPosition(Graphics2D graphics, Rectangle bounds, int i, int detailCount)

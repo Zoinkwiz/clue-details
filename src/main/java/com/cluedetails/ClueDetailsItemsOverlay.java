@@ -104,7 +104,7 @@ public class ClueDetailsItemsOverlay extends WidgetItemOverlay
 		{
 			if (clue == null) continue;
 
-			if (isEnabled(clue))
+			if (clue.isEnabled(config))
 			{
 				if (config.highlightInventoryClueScrolls())
 				{
@@ -128,7 +128,7 @@ public class ClueDetailsItemsOverlay extends WidgetItemOverlay
 			{
 				Clues clue = Clues.forClueIdFiltered(clueId);
 				if (clue == null) return;
-				if (isEnabled(clue))
+				if (clue.isEnabled(config))
 				{
 					if (config.highlightInventoryClueScrolls())
 					{
