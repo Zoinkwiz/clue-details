@@ -143,39 +143,6 @@ public class ClueDetailsItemsOverlay extends WidgetItemOverlay
 		}
 	}
 
-	private boolean isEnabled(Clues clue)
-	{
-		ClueTier tier = clue.getClueTier();
-
-		if (config == null) return true;
-
-		if (tier == ClueTier.BEGINNER)
-		{
-			return config.beginnerDetails();
-		}
-		if (tier == ClueTier.EASY)
-		{
-			return config.easyDetails();
-		}
-		if (tier == ClueTier.MEDIUM || tier == ClueTier.MEDIUM_CHALLENGE || tier == ClueTier.MEDIUM_KEY)
-		{
-			return config.mediumDetails();
-		}
-		if (tier == ClueTier.HARD || tier == ClueTier.HARD_CHALLENGE)
-		{
-			return config.hardDetails();
-		}
-		if (tier == ClueTier.ELITE || tier == ClueTier.ELITE_CHALLENGE)
-		{
-			return config.eliteDetails();
-		}
-		if (tier == ClueTier.MASTER)
-		{
-			return config.masterDetails();
-		}
-		return true;
-	}
-
 	private void cacheClueScrolls(Clues clue)
 	{
 		int clueItemID = clue.getItemID();
