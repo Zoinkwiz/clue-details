@@ -536,7 +536,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		WorldPoint itemWp = WorldPoint.fromLocalInstance(client, itemLp);
 		List<ClueInstance> trackedClues = clueGroundManager.getGroundClues().get(itemWp);
 		if (trackedClues == null) return null;
-		// TODO: Fix, when a clue is picked up, posOnTile doesn't work any more. Needs shifting
+		if (trackedClues.size() <= entry.getPosOnTile()) return trackedClues.get(entry.getPosOnTile() - 1);
 		return trackedClues.get(entry.getPosOnTile());
 	}
 
