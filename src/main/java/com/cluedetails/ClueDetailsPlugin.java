@@ -29,7 +29,6 @@ import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -75,6 +74,7 @@ import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.RSTimeUnit;
 
 @Slf4j
 @PluginDescriptor(
@@ -454,14 +454,30 @@ public class ClueDetailsPlugin extends Plugin
 
 			if (clueInstancesWithQuantityAtWp != null)
 			{
+				// Find oldest enabled clue instance at the world point
+				ClueInstance oldestEnabledClueInstance = clueInstancesWithQuantityAtWp.firstEntry().getKey();
+				for (ClueInstance clueInstance : clueInstancesWithQuantityAtWp.keySet())
+				{
+					if (clueInstance.isEnabled(config))
+					{
+						oldestEnabledClueInstance =  clueInstance;
+						break;
+					}
+				}
+
+				Duration duration = Duration.of(
+					oldestEnabledClueInstance.getTicksToDespawnConsideringTileItem(client.getTickCount()),
+					RSTimeUnit.GAME_TICKS
+				);
+
 				boolean createNewTimer = true;
-				long oldestPeriod = clueInstancesWithQuantityAtWp.firstEntry().getKey().getTicksToDespawnConsideringTileItem(client.getTickCount()) * 600L;
 
 				// Update existing timers
 				for (ClueGroundTimer timer : clueGroundTimers)
 				{
 					if (worldPoint.equals(timer.getWorldPoint()))
 					{
+						timer.updateDuration(duration);
 						timer.setClueInstancesWithQuantity(clueInstancesWithQuantityAtWp);
 						createNewTimer = false;
 						break;
@@ -474,8 +490,7 @@ public class ClueDetailsPlugin extends Plugin
 						this,
 						config,
 						configManager,
-						oldestPeriod,
-						ChronoUnit.MILLIS,
+						duration,
 						worldPoint,
 						clueInstancesWithQuantityAtWp,
 						itemManager.getImage(ItemID.CLUE_SCROLL_23815)

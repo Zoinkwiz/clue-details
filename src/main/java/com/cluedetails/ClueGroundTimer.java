@@ -33,14 +33,13 @@ class ClueGroundTimer extends Timer
 		ClueDetailsPlugin plugin,
 		ClueDetailsConfig config,
 		ConfigManager configManager,
-		long period,
-		ChronoUnit unit,
+		Duration duration,
 		WorldPoint worldPoint,
 		Map<ClueInstance, Integer> clueInstancesWithQuantityAtWp,
 		BufferedImage image
 	)
 	{
-		super(period, unit, image, plugin);
+		super(duration.toMillis(), ChronoUnit.MILLIS, image, plugin);
 		this.plugin = plugin;
 		this.config = config;
 		this.configManager = configManager;
@@ -55,9 +54,9 @@ class ClueGroundTimer extends Timer
 		int seconds = (int)(timeLeft.toMillis() / 1000L);
 		int minutes = seconds / 60;
 		int secs = seconds % 60;
-		if (minutes == 0)
+		if (minutes < 1)
 		{
-			return String.format("%d:%02d", minutes, secs);
+			return String.format("%ds", secs);
 		}
 		return String.format("%dm", minutes);
 	}
