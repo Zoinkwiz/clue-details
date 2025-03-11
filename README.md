@@ -1,6 +1,6 @@
 # Clue Details
 
-This plugin provides additional details on clue scrolls. This can be particularly useful for snowflake ironmen who can only do particular subsets of clues, allowing them to ignore ones they can't do.
+This plugin provides additional details and overlays for clue scrolls. This can be particularly useful when juggling clues or for snowflake ironmen who can only do particular subsets of clues, allowing them to ignore ones they can't do.
 
 **NOTE**: This plugin will only work for beginner and master clues after you have read them once. After that, the plugin should keep track of them as long as they are in your inventory, dropped by you, or banked.
 
@@ -45,7 +45,7 @@ The "Inventory tag clue scrolls" toggle applies inventory tags to clues in your 
 
 ![image](https://github.com/user-attachments/assets/ba9ca49f-df55-48c5-a112-5302ecef1683)
 
-The "Inventory tag clue items" toggle applies inventory tags configured items for each clue in your inventory
+The "Inventory tag clue items" toggle applies inventory tags to configured items for each clue in your inventory
 
 ![image](https://github.com/user-attachments/assets/3dc33f5b-f300-4614-b6bf-db7359f23ae5)
 
