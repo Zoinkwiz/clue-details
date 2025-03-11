@@ -74,11 +74,11 @@ You can edit the clue details colors shown to you, this can be done 2 different 
 
 Colors will now be updated for the specific clue depending on the configuration toggles shown below.
 
-Updating Ground Items and Inventory Tags colors is also supported. 
+Updating colors for the Ground Items and Inventory Tags plugins is also supported. 
 
 - Enable the "Overwrite ..." configuration option(s) in the "Overlay Colors" section.
     - This is applied only at the time the colors are edited/imported.
-    - Does apply to Beginner and Master clues.
+    - Does not apply to Beginner and Master clues.
     - Resetting Ground Items and Inventory Tags colors can must be done via setting the clue's color to white (#FFFFFF).
 
 ### Items
