@@ -385,8 +385,8 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "highlightInventoryClueScrolls",
 		name = "Inventory tag clue scrolls",
-		warning = "Display mode is managed by Inventory Tags configuration",
-		description = "Toggle whether to apply inventory tags to clues with clue details color",
+		description = "Toggle whether to apply inventory tags to clues with clue details color" +
+			"<br>Display mode is managed by Inventory Tags configuration",
 		section = overlaysSection,
 		position = 6
 	)
@@ -398,8 +398,8 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "highlightInventoryClueItems",
 		name = "Inventory tag clue items",
-		warning = "Display mode is managed by Inventory Tags configuration",
-		description = "Toggle whether to apply inventory tags to configured items for each clue in your inventory",
+		description = "Toggle whether to apply inventory tags to configured items for each clue in your inventory" +
+			"<br>Display mode is managed by Inventory Tags configuration",
 		section = overlaysSection,
 		position = 7
 	)
@@ -487,8 +487,8 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "colorGroundItems",
 		name = "Overwrite Ground Items colors",
-		description = "When updating clue details colors, apply the color to the Ground Items plugin",
-		warning = "Does apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
+		description = "When updating clue details colors, apply the color to the Ground Items plugin" +
+			"<br>Does apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
 		section = overlayColorsSection,
 		position = 7
 	)
@@ -500,8 +500,8 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "colorInventoryTags",
 		name = "Overwrite Inventory Tags colors",
-		description = "When updating clue details colors, apply the color to the Inventory Tags plugin",
-		warning = "Does apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
+		description = "When updating clue details colors, apply the color to the Inventory Tags plugin" +
+			"<br>Does apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
 		section = overlayColorsSection,
 		position = 6
 	)
@@ -590,6 +590,7 @@ public interface ClueDetailsConfig extends Config
 		keyName = "showGroundClueTimers",
 		name = "Show ground clue timers",
 		description = "Toggle whether to show timer infoboxes for ground clues",
+		warning = "Experimental feature! Behavior is not correct across logouts, notifications misbehave, etc.",
 		section = groundCluesSection,
 		position = 6
 	)
