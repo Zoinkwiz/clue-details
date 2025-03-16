@@ -331,10 +331,14 @@ public class ClueDetailsPlugin extends Plugin
 			{
 				for (ClueGroundTimer timer : clueGroundTimers)
 				{
-					if (!timer.isNotified() && timer.getDuration().compareTo(Duration.ofSeconds(config.groundClueTimersNotificationTime())) < 0)
+					if (!timer.isNotified() && timer.shouldNotify())
 					{
 						notifier.notify("Your clue scroll is about to disappear!");
 						timer.setNotified(true);
+					}
+					else if (timer.isNotified() && !timer.shouldNotify())
+					{
+						timer.setNotified(false);
 					}
 				}
 			}

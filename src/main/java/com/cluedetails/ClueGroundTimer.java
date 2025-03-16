@@ -47,11 +47,16 @@ class ClueGroundTimer extends Timer
 		this.clueInstancesWithQuantity = clueInstancesWithQuantityAtWp;
 	}
 
+	private int getSecondsLeft()
+	{
+		Duration timeLeft = Duration.between(Instant.now(), this.getEndTime());
+		return (int)(timeLeft.toMillis() / 1000L);
+	}
+
 	@Override
 	public String getText()
 	{
-		Duration timeLeft = Duration.between(Instant.now(), this.getEndTime());
-		int seconds = (int)(timeLeft.toMillis() / 1000L);
+		int seconds = getSecondsLeft();
 		int minutes = seconds / 60;
 		int secs = seconds % 60;
 		if (minutes < 1)
@@ -92,7 +97,7 @@ class ClueGroundTimer extends Timer
 	@Override
 	public Color getTextColor()
 	{
-		return getDuration().compareTo(Duration.ofSeconds(config.groundClueTimersNotificationTime())) < 0
+		return shouldNotify()
 			? Color.RED
 			: Color.WHITE;
 	}
@@ -125,5 +130,10 @@ class ClueGroundTimer extends Timer
 			}
 		}
 		return false;
+	}
+
+	public boolean shouldNotify()
+	{
+		return getSecondsLeft() < config.groundClueTimersNotificationTime();
 	}
 }

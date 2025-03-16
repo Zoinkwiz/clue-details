@@ -590,7 +590,7 @@ public interface ClueDetailsConfig extends Config
 		keyName = "showGroundClueTimers",
 		name = "Show ground clue timers",
 		description = "Toggle whether to show timer infoboxes for ground clues",
-		warning = "Experimental feature! Behavior is not correct across logouts, notifications misbehave, etc.",
+		warning = "Experimental feature! Timers may not behave as expected. Please use caution",
 		section = groundCluesSection,
 		position = 6
 	)
