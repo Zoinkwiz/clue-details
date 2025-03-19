@@ -3,22 +3,24 @@ package com.cluedetails;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimerTask;
 import lombok.Getter;
 import lombok.Setter;
+import net.runelite.api.Client;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.ui.overlay.infobox.Timer;
+import net.runelite.client.ui.overlay.infobox.InfoBox;
 
-class ClueGroundTimer extends Timer
+class ClueGroundTimer extends InfoBox
 {
+	private final Client client;
 	private final ClueDetailsPlugin plugin;
 	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
+	@Setter
+	private int despawnTick;
 	@Setter
 	@Getter
 	private Map<ClueInstance, Integer> clueInstancesWithQuantity;
@@ -28,29 +30,36 @@ class ClueGroundTimer extends Timer
 	@Setter
 	@Getter
 	private boolean notified = false;
+	@Setter
+	@Getter
+	private boolean renotifying = false;
 
 	ClueGroundTimer(
+		Client client,
 		ClueDetailsPlugin plugin,
 		ClueDetailsConfig config,
 		ConfigManager configManager,
-		Duration duration,
+		int despawnTick,
 		WorldPoint worldPoint,
 		Map<ClueInstance, Integer> clueInstancesWithQuantityAtWp,
 		BufferedImage image
 	)
 	{
-		super(duration.toMillis(), ChronoUnit.MILLIS, image, plugin);
+		super(image, plugin);
+		this.client = client;
 		this.plugin = plugin;
 		this.config = config;
 		this.configManager = configManager;
+		this.despawnTick = despawnTick;
 		this.worldPoint = worldPoint;
 		this.clueInstancesWithQuantity = clueInstancesWithQuantityAtWp;
 	}
 
 	private int getSecondsLeft()
 	{
-		Duration timeLeft = Duration.between(Instant.now(), this.getEndTime());
-		return (int)(timeLeft.toMillis() / 1000L);
+		int ticksLeft = despawnTick - client.getTickCount();
+		int millisLeft = ticksLeft * 600;
+		return (int) (millisLeft / 1000L);
 	}
 
 	@Override
@@ -59,9 +68,13 @@ class ClueGroundTimer extends Timer
 		int seconds = getSecondsLeft();
 		int minutes = seconds / 60;
 		int secs = seconds % 60;
-		if (minutes < 1)
+		if (minutes < 10)
 		{
-			return String.format("%ds", secs);
+			if (minutes < 1)
+			{
+				return String.format("%ds", secs);
+			}
+			return String.format("%d:%02d", minutes, secs);
 		}
 		return String.format("%dm", minutes);
 	}
@@ -111,8 +124,15 @@ class ClueGroundTimer extends Timer
 		{
 			return true;
 		}
-		Duration timeLeft = Duration.between(Instant.now(), getEndTime());
-		return timeLeft.isZero() || timeLeft.isNegative();
+		int timeLeft = getSecondsLeft();
+		return timeLeft == 0 || timeLeft < 0;
+	}
+
+	private boolean activeWorldPoint()
+	{
+		// Remove timers if worldPoint not managed by clueGroundManager
+		Set<WorldPoint> worldPoints = plugin.getClueGroundManager().getTrackedWorldPoints();
+		return worldPoints.contains(worldPoint);
 	}
 
 	@Override
@@ -134,6 +154,24 @@ class ClueGroundTimer extends Timer
 
 	public boolean shouldNotify()
 	{
-		return getSecondsLeft() < config.groundClueTimersNotificationTime();
+		return activeWorldPoint() && (getSecondsLeft() < config.groundClueTimersNotificationTime());
+	}
+
+	public void startRenotification()
+	{
+		setRenotifying(true);
+
+		// Start renotification timer
+		java.util.Timer t = new java.util.Timer();
+		TimerTask task = new TimerTask()
+		{
+			@Override
+			public void run()
+			{
+				setNotified(!shouldNotify());
+				setRenotifying(false);
+			}
+		};
+		t.schedule(task, config.groundClueTimersRenotificationTime() * 1000L);
 	}
 }

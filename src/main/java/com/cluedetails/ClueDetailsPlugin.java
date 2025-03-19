@@ -32,6 +32,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TimerTask;
 import java.util.TreeMap;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -74,7 +75,6 @@ import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ImageUtil;
-import net.runelite.client.util.RSTimeUnit;
 
 @Slf4j
 @PluginDescriptor(
@@ -162,6 +162,7 @@ public class ClueDetailsPlugin extends Plugin
 	private ChatboxItemSearch itemSearch;
 
 	@Inject
+	@Getter
 	private Notifier notifier;
 
 	@Inject
@@ -346,10 +347,17 @@ public class ClueDetailsPlugin extends Plugin
 			{
 				for (ClueGroundTimer timer : clueGroundTimers)
 				{
-					if (!timer.isNotified() && timer.shouldNotify())
+					if (!timer.isNotified() && timer.shouldNotify() && !timer.isRenotifying())
 					{
 						notifier.notify("Your clue scroll is about to disappear!");
-						timer.setNotified(true);
+						if (config.groundClueTimersRenotificationTime() != 0)
+						{
+							timer.startRenotification();
+						}
+						else
+						{
+							timer.setNotified(true);
+						}
 					}
 					else if (timer.isNotified() && !timer.shouldNotify())
 					{
@@ -428,22 +436,15 @@ public class ClueDetailsPlugin extends Plugin
 			}
 		}
 
-		// renderGroundClueTimers if showGroundClueTimers toggled or tier toggled
-		if ("showGroundClueTimers".equals(event.getKey()) || event.getKey().contains("Details"))
+		// Reset clueGroundTimers when showGroundClueTimers toggled off
+		if ("showGroundClueTimers".equals(event.getKey()) && "false".equals(event.getNewValue()))
 		{
-			if ("showGroundClueTimers".equals(event.getKey()) && "false".equals(event.getNewValue()))
+			// Reset timers
+			for (ClueGroundTimer timer : clueGroundTimers)
 			{
-				// Reset timers
-				for (ClueGroundTimer timer : clueGroundTimers)
-				{
-					infoBoxManager.removeInfoBox(timer);
-				}
-				clueGroundTimers.clear();
+				infoBoxManager.removeInfoBox(timer);
 			}
-			else
-			{
-				renderGroundClueTimers();
-			}
+			clueGroundTimers.clear();
 		}
 
 		panel.refresh();
@@ -494,10 +495,7 @@ public class ClueDetailsPlugin extends Plugin
 					}
 				}
 
-				Duration duration = Duration.of(
-					oldestEnabledClueInstance.getTicksToDespawnConsideringTileItem(client.getTickCount()),
-					RSTimeUnit.GAME_TICKS
-				);
+				int despawnTick = oldestEnabledClueInstance.getDespawnTick(client.getTickCount());
 
 				boolean createNewTimer = true;
 
@@ -506,8 +504,8 @@ public class ClueDetailsPlugin extends Plugin
 				{
 					if (worldPoint.equals(timer.getWorldPoint()))
 					{
-						timer.updateDuration(duration);
 						timer.setClueInstancesWithQuantity(clueInstancesWithQuantityAtWp);
+						timer.setDespawnTick(despawnTick);
 						createNewTimer = false;
 						break;
 					}
@@ -516,10 +514,11 @@ public class ClueDetailsPlugin extends Plugin
 				if (createNewTimer)
 				{
 					ClueGroundTimer timer = new ClueGroundTimer(
+						client,
 						this,
 						config,
 						configManager,
-						duration,
+						despawnTick,
 						worldPoint,
 						clueInstancesWithQuantityAtWp,
 						itemManager.getImage(ItemID.CLUE_SCROLL_23815)

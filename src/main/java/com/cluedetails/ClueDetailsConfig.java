@@ -602,13 +602,26 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "groundClueTimersNotificationTime",
 		name = "Timer notifications",
-		description = "Time remaining (seconds) until despawn to send notification. Set to 0 to disable the notification.",
+		description = "Seconds remaining until despawn per tile to send notification. Set to 0 to disable the notification.",
 		section = groundCluesSection,
 		position = 7
 	)
 	default int groundClueTimersNotificationTime()
 	{
 		return 60;
+	}
+
+	@ConfigItem(
+		keyName = "groundClueTimersRenotificationTime",
+		name = "Timer renotifications",
+		description = "Seconds after initial notificiaton to periodically renotify. Set to 0 to disable the notification." +
+			"<br> This also acts as a cooldown between notifications for clues in the same tile",
+		section = groundCluesSection,
+		position = 8
+	)
+	default int groundClueTimersRenotificationTime()
+	{
+		return 0;
 	}
 
 	@ConfigSection(name = "Tier Toggles", description = "Options to enable particular clue tiers", position = 7)

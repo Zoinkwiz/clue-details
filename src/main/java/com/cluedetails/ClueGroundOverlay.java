@@ -141,6 +141,36 @@ public class ClueGroundOverlay extends Overlay
 		return null;
 	}
 
+	private int getSecondsLeft(ClueInstance item)
+	{
+		int ticksLeft = item.getDespawnTick(client.getTickCount()) - client.getTickCount();
+		int millisLeft = ticksLeft * 600;
+		return (int) (millisLeft / 1000L);
+	}
+
+	public String getDespawnText(ClueInstance item)
+	{
+		int seconds = getSecondsLeft(item);
+		int minutes = seconds / 60;
+		int secs = seconds % 60;
+		if (minutes < 10)
+		{
+			if (minutes < 1)
+			{
+				return String.format("%ds", secs);
+			}
+			return String.format("%d:%02d", minutes, secs);
+		}
+		return String.format("%dm", minutes);
+	}
+
+	public Color getTextColor(ClueInstance item)
+	{
+		return getSecondsLeft(item) < config.groundClueTimersNotificationTime()
+			? Color.RED
+			: Color.WHITE;
+	}
+
 	private void renderClueInstanceGroundOverlay(Graphics2D graphics, ClueInstance item, int quantity, LocalPoint groundPoint, FontMetrics fm)
 	{
 		final String itemString = item.getGroundText(plugin, config, configManager, quantity);
@@ -163,10 +193,9 @@ public class ClueGroundOverlay extends Overlay
 
 		if (config.showGroundCluesDespawn())
 		{
-			Integer despawnTime = item.getDespawnTick(client.getTickCount()) - client.getTickCount();
-			Color timerColor = Color.WHITE;
+			Color timerColor = getTextColor(item);
 
-			final String timerText = String.format(" - %d", despawnTime);
+			final String timerText = String.format(" - %s", getDespawnText(item));
 
 			// The timer text is drawn separately to have its own color, and is intentionally not included
 			// in the getCanvasTextLocation() call because the timer text can change per frame and we do not
