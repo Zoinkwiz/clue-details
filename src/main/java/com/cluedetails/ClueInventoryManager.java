@@ -30,7 +30,6 @@ import java.util.*;
 import javax.inject.Singleton;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import lombok.Getter;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
@@ -60,8 +59,6 @@ public class ClueInventoryManager
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
-	@Getter
-	private Clues[] cluesInInventory = new Clues[6];
 
 	// To be initialized to avoid passing around
 	@Setter
@@ -87,9 +84,6 @@ public class ClueInventoryManager
 		// Clear current tracked clues
 		trackedCluesInInventory.clear();
 
-		// Clear current clues in inventory
-		cluesInInventory = new Clues[6];
-
 		Item[] inventoryItems = inventoryContainer.getItems();
 
 		for (Item item : inventoryItems)
@@ -98,13 +92,9 @@ public class ClueInventoryManager
 
 			int itemId = item.getId();
 			
-			if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+			if (Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 			{
-				checkItemAsBeginnerOrMasterClue(itemId);
-			}
-			else
-			{
-				checkItemAsEasyToMediumClue(itemId);
+				checkItemAsClue(itemId);
 			}
 		}
 
@@ -126,16 +116,7 @@ public class ClueInventoryManager
 		}
 	}
 
-	private void checkItemAsEasyToMediumClue(int id)
-	{
-		Clues clue = Clues.forItemId(id);
-		if (clue != null)
-		{
-			cluesInInventory[clue.getClueTier().getValue()] = clue;
-		}
-	}
-
-	private void checkItemAsBeginnerOrMasterClue(int itemId)
+	private void checkItemAsClue(int itemId)
 	{
 		ClueInstance clueInstance;
 
@@ -289,14 +270,13 @@ public class ClueInventoryManager
 		// Add item highlight menu
 		if (!hasClueName(menuEntry.getTarget()))
 		{
-			if (Arrays.stream(cluesInInventory).allMatch(Objects::isNull) && trackedCluesInInventory.isEmpty()) return;
+			if (trackedCluesInInventory.isEmpty()) return;
 
 			MenuEntry clueDetailsEntry = client.getMenu().createMenuEntry(-1)
 				.setOption("Clue details")
 				.setTarget(menuEntry.getTarget())
 				.setType(MenuAction.RUNELITE);
 			Menu submenu = clueDetailsEntry.createSubMenu();
-			Arrays.stream(cluesInInventory).forEach((clue) -> addHighlightItemMenu(cluePreferenceManager, submenu, clue, itemId, event));
 			trackedCluesInInventory.forEach((id, instance) -> instance.getClueIds().forEach((clueId) -> addHighlightItemMenu(cluePreferenceManager, submenu, Clues.forClueIdFiltered(clueId), itemId, event)));
 			return;
 		}
