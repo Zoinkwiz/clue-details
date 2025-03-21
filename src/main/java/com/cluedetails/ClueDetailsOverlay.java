@@ -391,7 +391,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			LocalPoint itemLp = new LocalPoint(x, y, wv);
 			WorldPoint itemWp = WorldPoint.fromLocal(client, itemLp);
 			int currentPosForTile = foundPosForWp.getOrDefault(itemWp, 0);
-			if (Clues.isTrackedClueOrTornClue(menuEntries[i].getIdentifier(), clueDetailsPlugin.isDeveloperMode()))
+			if (Clues.isClue(menuEntries[i].getIdentifier(), clueDetailsPlugin.isDeveloperMode()))
 			{
 				mappedEntries.add(new MenuEntryAndPos(menuEntries[i], menuEntries.length - i - 1, currentPosForTile));
 				if (isTakeClue(menuEntries[i])) foundPosForWp.put(itemWp, currentPosForTile + 1);
