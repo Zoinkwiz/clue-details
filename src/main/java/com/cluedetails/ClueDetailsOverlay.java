@@ -121,7 +121,10 @@ public class ClueDetailsOverlay extends OverlayPanel
 	{
 		if (client.isMenuOpen())
 		{
-			showMenuItem();
+			if (config.showHoverText() && !config.changeClueText())
+			{
+				showMenuItem();
+			}
 		}
 		else
 		{
@@ -190,26 +193,23 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 		List<MenuEntryAndPos> entriesByTile = getEntriesByTile(currentMenuEntries);
 
-		if (config.showHoverText() && !config.changeClueText())
-		{
-			addTooltip(entriesByTile);
-		}
+		addTooltip(entriesByTile);
 	}
 
 	// Using onClientTick for compatability with Ground Items "Collapse ground item menu"
 	@Subscribe
 	public void onClientTick(ClientTick event)
 	{
-		final MenuEntry[] menuEntries = client.getMenuEntries();
-		if (Arrays.stream(menuEntries).noneMatch(this::isTakeClue))
-		{
-			return;
-		}
-
-		List<MenuEntryAndPos> entriesByTile = getEntriesByTile(menuEntries);
-
 		if (config.changeClueText() || config.colorChangeClueText())
 		{
+			final MenuEntry[] menuEntries = client.getMenuEntries();
+			if (Arrays.stream(menuEntries).noneMatch(this::isTakeClue))
+			{
+				return;
+			}
+
+			List<MenuEntryAndPos> entriesByTile = getEntriesByTile(menuEntries);
+
 			changeGroundItemMenu(entriesByTile);
 		}
 	}
@@ -217,16 +217,16 @@ public class ClueDetailsOverlay extends OverlayPanel
 	@Subscribe
 	public void onMenuOpened(MenuOpened event)
 	{
-		MenuEntry[] entries = event.getMenuEntries();
-		if (Arrays.stream(entries).noneMatch(this::isTakeClue))
-		{
-			return;
-		}
-
-		List<MenuEntryAndPos> entriesByTile = getEntriesByTile(entries);
-
 		if (config.changeClueText())
 		{
+			MenuEntry[] entries = event.getMenuEntries();
+			if (Arrays.stream(entries).noneMatch(this::isTakeClue))
+			{
+				return;
+			}
+
+			List<MenuEntryAndPos> entriesByTile = getEntriesByTile(entries);
+
 			addClueSubmenus(entriesByTile);
 		}
 	}
@@ -582,9 +582,9 @@ public class ClueDetailsOverlay extends OverlayPanel
 	public void onItemSpawned(ItemSpawned itemSpawned)
 	{
 		TileItem item = itemSpawned.getItem();
-		Tile tile = itemSpawned.getTile();
 		if (shouldHighlight(item.getId()))
 		{
+			Tile tile = itemSpawned.getTile();
 			notifier.notify(config.markedClueDroppedNotification(), "A highlighted clue has dropped!");
 			tileHighlights.get(tile).add(item.getId());
 		}
