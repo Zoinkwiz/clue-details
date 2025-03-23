@@ -377,6 +377,16 @@ public class ClueDetailsPlugin extends Plugin
 			infoOverlay.refreshHighlights();
 		}
 
+		if (event.getKey().equals("beginnerDetails")
+			|| event.getKey().equals("easyDetails")
+			|| event.getKey().equals("mediumDetails")
+			|| event.getKey().equals("hardDetails")
+			|| event.getKey().equals("eliteDetails")
+			|| event.getKey().equals("masterDetails"))
+		{
+			Clues.rebuildFilteredCluesCache();
+		}
+
 		if (event.getGroup().equals("clue-details-color")
 			|| event.getGroup().equals("clue-details-items")
 			|| event.getKey().equals("highlightInventoryClueScrolls")
