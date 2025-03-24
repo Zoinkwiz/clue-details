@@ -177,6 +177,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 	private void showMenuItem()
 	{
+		if (!(config.showHoverText() && !config.changeClueText())) return;
 		Menu menu = client.getMenu();
 		MenuEntry[] currentMenuEntries = menu.getMenuEntries();
 
@@ -188,47 +189,35 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return;
 		}
 
-		List<MenuEntryAndPos> entriesByTile = getEntriesByTile(currentMenuEntries);
-
-		if (config.showHoverText() && !config.changeClueText())
-		{
-			addTooltip(entriesByTile);
-		}
+		addTooltip(getEntriesByTile(currentMenuEntries));
 	}
 
 	// Using onClientTick for compatability with Ground Items "Collapse ground item menu"
 	@Subscribe
 	public void onClientTick(ClientTick event)
 	{
-		final MenuEntry[] menuEntries = client.getMenuEntries();
+		if (!(config.changeClueText() || config.colorChangeClueText())) return;
+		final MenuEntry[] menuEntries = client.getMenu().getMenuEntries();
 		if (Arrays.stream(menuEntries).noneMatch(this::isTakeClue))
 		{
 			return;
 		}
 
-		List<MenuEntryAndPos> entriesByTile = getEntriesByTile(menuEntries);
-
-		if (config.changeClueText() || config.colorChangeClueText())
-		{
-			changeGroundItemMenu(entriesByTile);
-		}
+		changeGroundItemMenu(getEntriesByTile(client.getMenu().getMenuEntries()));
 	}
 
 	@Subscribe
 	public void onMenuOpened(MenuOpened event)
 	{
+		if (!config.changeClueText()) return;
+
 		MenuEntry[] entries = event.getMenuEntries();
 		if (Arrays.stream(entries).noneMatch(this::isTakeClue))
 		{
 			return;
 		}
 
-		List<MenuEntryAndPos> entriesByTile = getEntriesByTile(entries);
-
-		if (config.changeClueText())
-		{
-			addClueSubmenus(entriesByTile);
-		}
+		addClueSubmenus(getEntriesByTile(entries));
 	}
 
 	private void changeGroundItemMenu(List<MenuEntryAndPos> entriesByTile)
@@ -391,7 +380,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			LocalPoint itemLp = new LocalPoint(x, y, wv);
 			WorldPoint itemWp = WorldPoint.fromLocal(client, itemLp);
 			int currentPosForTile = foundPosForWp.getOrDefault(itemWp, 0);
-			if (Clues.isTrackedClueOrTornClue(menuEntries[i].getIdentifier(), clueDetailsPlugin.isDeveloperMode()))
+			if (Clues.isClue(menuEntries[i].getIdentifier(), clueDetailsPlugin.isDeveloperMode()))
 			{
 				mappedEntries.add(new MenuEntryAndPos(menuEntries[i], menuEntries.length - i - 1, currentPosForTile));
 				if (isTakeClue(menuEntries[i])) foundPosForWp.put(itemWp, currentPosForTile + 1);
@@ -534,7 +523,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		int wv = menuEntry.getWorldViewId();
 		LocalPoint itemLp = new LocalPoint(sceneX * SCENE_TO_LOCAL, sceneY * SCENE_TO_LOCAL, wv);
 		WorldPoint itemWp = WorldPoint.fromLocalInstance(client, itemLp);
-		List<ClueInstance> trackedClues = clueGroundManager.getGroundClues().get(itemWp);
+		List<ClueInstance> trackedClues = clueGroundManager.getAllGroundClues().get(itemWp);
 		if (trackedClues == null) return null;
 		if (trackedClues.size() <= entry.getPosOnTile()) return trackedClues.get(entry.getPosOnTile() - 1);
 		return trackedClues.get(entry.getPosOnTile());

@@ -106,7 +106,7 @@ class ClueGroundTimer extends Timer
 	public boolean cull()
 	{
 		// Remove timers if worldPoint no managed by clueGroundManager
-		Set<WorldPoint> worldPoints = plugin.getClueGroundManager().getGroundClues().keySet();
+		Set<WorldPoint> worldPoints = plugin.getClueGroundManager().getTrackedWorldPoints();
 		if (!worldPoints.contains(worldPoint))
 		{
 			return true;

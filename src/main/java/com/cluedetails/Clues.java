@@ -1226,9 +1226,9 @@ public class Clues
 		return filteredClues().stream().anyMatch((clue) -> clue.getItemID() == itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
 	}
 
-	public static boolean isBeginnerOrMasterClue(int itemId)
+	public static boolean isBeginnerOrMasterClue(int itemId, boolean isDeveloperMode)
 	{
-		return TRACKED_CLUE_IDS.contains(itemId);
+		return TRACKED_CLUE_IDS.contains(itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
 	}
 
 	public static boolean isTrackedClueOrTornClue(int itemId, boolean isDeveloperMode)

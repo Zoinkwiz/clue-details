@@ -100,15 +100,15 @@ public class ClueGroundOverlay extends Overlay
 		offsetMap.clear();
 		final LocalPoint localLocation = player.getLocalLocation();
 
-		if (clueGroundManager.getGroundClues().keySet().isEmpty())
+		if (clueGroundManager.getTrackedWorldPoints().isEmpty())
 		{
 			return null;
 		}
 
-		for (WorldPoint wp : clueGroundManager.getGroundClues().keySet())
+		for (WorldPoint wp : clueGroundManager.getTrackedWorldPoints())
 		{
 			// Check if wp in clueGroundManager is within range of the player
-			final LocalPoint groundPoint = LocalPoint.fromWorld(client, wp);
+			final LocalPoint groundPoint = LocalPoint.fromWorld(client.getTopLevelWorldView(), wp);
 
 			if (groundPoint == null || localLocation.distanceTo(groundPoint) > MAX_DISTANCE)
 			{

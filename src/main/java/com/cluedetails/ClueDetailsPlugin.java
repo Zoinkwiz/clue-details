@@ -302,11 +302,15 @@ public class ClueDetailsPlugin extends Plugin
 			profileChanged = true;
 		}
 
-		if (event.getGameState() == GameState.LOGGED_IN && profileChanged)
+		if (event.getGameState() == GameState.LOGGED_IN)
 		{
-			profileChanged = false;
-			clueGroundManager.loadStateFromConfig();
-			clueBankManager.loadStateFromConfig();
+			clueGroundManager.clearEasyToEliteClues();
+			if (profileChanged)
+			{
+				profileChanged = false;
+				clueGroundManager.loadStateFromConfig();
+				clueBankManager.loadStateFromConfig();
+			}
 		}
 	}
 
@@ -456,7 +460,7 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		if (!config.showGroundClueTimers()) return;
 
-		Set<WorldPoint> worldPoints = clueGroundManager.getGroundClues().keySet();
+		Set<WorldPoint> worldPoints = clueGroundManager.getTrackedWorldPoints();
 
 		// Remove timers if worldPoint not managed by clueGroundManager
 		clueGroundTimers.removeIf(timer-> !worldPoints.contains(timer.getWorldPoint()));
