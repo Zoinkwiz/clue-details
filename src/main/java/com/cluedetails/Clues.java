@@ -1078,11 +1078,13 @@ public class Clues
 
 	private static List<Clues> cachedFilteredClues = createFilteredCluesCache();
 
-	public static void rebuildFilteredCluesCache() {
+	public static void rebuildFilteredCluesCache()
+	{
 		cachedFilteredClues = createFilteredCluesCache();
 	}
 
-	private static List<Clues> createFilteredCluesCache() {
+	private static List<Clues> createFilteredCluesCache()
+	{
 		if (config == null)
 		{
 			return Clues.CLUES;
