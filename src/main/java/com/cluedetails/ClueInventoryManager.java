@@ -119,7 +119,6 @@ public class ClueInventoryManager
 				ClueInstance removedClue = previousTrackedCluesInInventory.get(itemId);
 				if (removedClue != null)
 				{
-					clueGroundManager.processPendingGroundCluesFromInventoryChanged(removedClue);
 					clueBankManager.addToRemovedClues(removedClue);
 				}
 			}
