@@ -28,6 +28,7 @@ import com.cluedetails.filters.ClueTier;
 import java.awt.Color;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -78,7 +79,7 @@ public class ClueInstance
 		this.itemId = itemId;
 		this.location = location;
 		this.tileItem = tileItem;
-		this.timeToDespawnFromDataInTicks = currentTick;
+		this.timeToDespawnFromDataInTicks = tileItem.getDespawnTime() - currentTick;
 	}
 
 	public List<Integer> getClueIds()
@@ -109,7 +110,7 @@ public class ClueInstance
 		}
 		return clue.getClueTier();
 	}
-	
+
 	public String getGroundText(ClueDetailsPlugin plugin, ClueDetailsConfig config, ConfigManager configManager, int quantity)
 	{
 		StringBuilder itemStringBuilder = new StringBuilder();
@@ -268,5 +269,46 @@ public class ClueInstance
 			return config.masterDetails();
 		}
 		else return getTier() != null;
+	}
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o) return true;
+		if (!(o instanceof ClueInstance)) return false;
+		ClueInstance clueInstance = (ClueInstance) o;
+
+		int diff1;
+		int diff2;
+		if (tileItem != null && clueInstance.tileItem != null)
+		{
+			diff1 = tileItem.getDespawnTime();
+			diff2 = clueInstance.tileItem.getDespawnTime();
+		}
+		else if (tileItem == null && clueInstance.tileItem == null)
+		{
+			diff1 = timeToDespawnFromDataInTicks;
+			diff2 = clueInstance.timeToDespawnFromDataInTicks;
+		}
+		else
+		{
+			return false;
+		}
+		// Should this really be considering it equal without consideration for the clueIds?
+		return itemId == clueInstance.itemId && diff1 == diff2 && location.equals(clueInstance.location);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		int despawnTime = tileItem != null ? tileItem.getDespawnTime() : timeToDespawnFromDataInTicks;
+		return Objects.hash(itemId, despawnTime, location);
+	}
+
+	@Override
+	public String toString()
+	{
+		int despawnTime = tileItem != null ? tileItem.getDespawnTime() : timeToDespawnFromDataInTicks;
+		return "ClueInstance{" + "itemId=" + itemId + ", despawnTick=" + despawnTime  + ", worldPoint=" + location + "}";
 	}
 }
