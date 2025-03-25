@@ -97,8 +97,8 @@ public class ClueInventoryManager
 			if (item == null) continue;
 
 			int itemId = item.getId();
-			
-			if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+
+			if (Clues.isBeginnerOrMasterClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 			{
 				checkItemAsBeginnerOrMasterClue(itemId);
 			}
@@ -309,7 +309,7 @@ public class ClueInventoryManager
 		boolean isMarked = cluePreferenceManager.getHighlightPreference(itemId);
 
 		// Mark Option
-		if (!Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+		if (!Clues.isBeginnerOrMasterClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 		{
 			toggleMarkClue(cluePreferenceManager, panel, itemId, isMarked, name);
 		}
@@ -322,8 +322,7 @@ public class ClueInventoryManager
 		String option = null;
 		String target = null;
 
-		// If beginner or master clue
-		if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+		if (Clues.isBeginnerOrMasterClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 		{
 			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
