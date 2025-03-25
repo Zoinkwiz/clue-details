@@ -98,7 +98,7 @@ public class ClueInventoryManager
 
 			int itemId = item.getId();
 
-			if (Clues.isBeginnerOrMasterClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+			if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 			{
 				checkItemAsBeginnerOrMasterClue(itemId);
 			}

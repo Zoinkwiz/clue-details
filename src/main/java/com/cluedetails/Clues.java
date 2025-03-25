@@ -1231,6 +1231,11 @@ public class Clues
 		return TRACKED_CLUE_IDS.contains(itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
 	}
 
+	public static boolean isTrackedClueOrTornClue(int itemId, boolean isDeveloperMode)
+	{
+		return TRACKED_CLUE_IDS.contains(itemId) || TRACKED_TORN_CLUE_IDS.contains(itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
+	}
+
 	public static Collection<Integer> getTrackedClueAndTornClueIds(boolean isDevMode)
 	{
 		Collection<Integer> allIds = new ArrayList<>();
