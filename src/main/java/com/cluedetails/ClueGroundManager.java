@@ -50,6 +50,7 @@ public class ClueGroundManager
 	private Zone currentZone;
 	private WorldPointToClueInstances trackedClues;
 	private boolean loggedInStateOccuredThisTick;
+	private Set<WorldPoint> tileClearedThisTick = new HashSet<>();
 
 	public ClueGroundManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin)
 	{
@@ -78,10 +79,10 @@ public class ClueGroundManager
 		if (!Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 		{
 			// We don't get items removed when a loading->logged in state occurs. This clears the tile
-			if (loggedInStateOccuredThisTick)
+			if (loggedInStateOccuredThisTick && !tileClearedThisTick.contains(tile.getWorldLocation()))
 			{
+				tileClearedThisTick.add(tile.getWorldLocation());
 				clearEasyToEliteCluesAtWorldPoint(tile.getWorldLocation());
-				loggedInStateOccuredThisTick = false;
 			}
 			ClueInstance clueInstance = new ClueInstance(List.of(), item.getId(), tile.getWorldLocation(), item, client.getTickCount());
 			trackedClues.addClue(clueInstance);
