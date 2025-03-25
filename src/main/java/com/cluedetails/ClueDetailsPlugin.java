@@ -198,6 +198,7 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.register(itemsOverlay);
 
 		Clues.setConfig(config);
+		Clues.rebuildFilteredCluesCache();
 		ClueInventoryManager.setConfig(config);
 
 		cluePreferenceManager = new CluePreferenceManager(this, configManager);
