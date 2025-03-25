@@ -96,7 +96,7 @@ public class ClueInstance
 
 	public List<Integer> getClueIds()
 	{
-		if (clueIds.isEmpty() && !(itemId == ItemID.CLUE_SCROLL_BEGINNER || itemId == ItemID.CLUE_SCROLL_MASTER))
+		if (clueIds.isEmpty() && !Clues.isBeginnerOrMasterClue(itemId, true))
 		{
 			return Collections.singletonList(itemId);
 		}
@@ -256,7 +256,7 @@ public class ClueInstance
 
 	public boolean isEnabled(ClueDetailsConfig config)
 	{
-		if (itemId == ItemID.CLUE_SCROLL_BEGINNER)
+		if (itemId == ItemID.CLUE_SCROLL_BEGINNER || Clues.DEV_MODE_IDS.contains(itemId))
 		{
 			return config.beginnerDetails();
 		}
