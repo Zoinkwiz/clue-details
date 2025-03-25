@@ -49,7 +49,7 @@ public class ClueGroundSaveDataManager
 		this.gson = gson;
 	}
 
-	public void saveStateToConfig(Client client, Map<WorldPoint, List<ClueInstance>> groundClues)
+	public void saveStateToConfig(Client client, List<ClueInstance> groundClues)
 	{
 		// Serialize groundClues save to config
 		updateData(client, groundClues);
@@ -57,18 +57,14 @@ public class ClueGroundSaveDataManager
 		configManager.setConfiguration(CONFIG_GROUP, GROUND_CLUES_KEY, groundCluesJson);
 	}
 
-	private void updateData(Client client, Map<WorldPoint, List<ClueInstance>> groundClues)
+	private void updateData(Client client, List<ClueInstance> groundClues)
 	{
 		int currentTick = client.getTickCount();
 
 		List<ClueInstanceData> newData = new ArrayList<>();
-		for (Map.Entry<WorldPoint, List<ClueInstance>> entry : groundClues.entrySet())
+		for (ClueInstance groundClue : groundClues)
 		{
-			List<ClueInstance> clueDataList = entry.getValue();
-			for (ClueInstance data : clueDataList)
-			{
-				newData.add(new ClueInstanceData(data, currentTick));
-			}
+			newData.add(new ClueInstanceData(groundClue, currentTick));
 		}
 		clueInstanceData.clear();
 		clueInstanceData.addAll(newData);
@@ -111,7 +107,7 @@ public class ClueGroundSaveDataManager
 			} catch (Exception err)
 			{
 				groundClues.clear();
-				saveStateToConfig(client, groundClues);
+				saveStateToConfig(client, new ArrayList<>());
 			}
 		}
 

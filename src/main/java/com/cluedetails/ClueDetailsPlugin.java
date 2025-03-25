@@ -42,6 +42,7 @@ import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -65,7 +66,6 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.game.ItemManager;
-import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -126,9 +126,6 @@ public class ClueDetailsPlugin extends Plugin
 	@Inject
 	private ConfigManager configManager;
 
-	@Inject
-	private KeyManager keyManager;
-
 	@Getter
 	@Inject
 	private ItemManager itemManager;
@@ -179,6 +176,9 @@ public class ClueDetailsPlugin extends Plugin
 	private NavigationButton navButton;
 
 	private boolean profileChanged;
+
+	@Getter
+	public static int currentTick;
 
 	@Override
 	protected void startUp() throws Exception
@@ -302,9 +302,14 @@ public class ClueDetailsPlugin extends Plugin
 			profileChanged = true;
 		}
 
+		if (event.getGameState() == GameState.LOADING)
+		{
+			clueGroundManager.setLoggedInOccuredThisTick(true);
+		}
+
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
-			clueGroundManager.clearEasyToEliteClues();
+			clueGroundManager.setLoggedInOccuredThisTick(true);
 			if (profileChanged)
 			{
 				profileChanged = false;
@@ -318,6 +323,12 @@ public class ClueDetailsPlugin extends Plugin
 	public void onRuneScapeProfileChanged(RuneScapeProfileChanged event)
 	{
 		profileChanged = true;
+	}
+
+	@Subscribe
+	public void onClientTick(ClientTick event)
+	{
+		currentTick = client.getTickCount();
 	}
 
 	@Subscribe

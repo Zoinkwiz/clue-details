@@ -28,8 +28,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
@@ -123,7 +127,12 @@ public class ClueGroundOverlay extends Overlay
 				continue;
 			}
 
-			for (Map.Entry<ClueInstance, Integer> entry : clueInstancesWithQuantityAtWp.entrySet())
+			List<Map.Entry<ClueInstance, Integer>> entrySet = new ArrayList<>(clueInstancesWithQuantityAtWp.entrySet());
+
+			// Text added from bottom to top on screen, so reverse order so first element appears on top
+			Collections.reverse(entrySet);
+
+			for (Map.Entry<ClueInstance, Integer> entry : entrySet)
 			{
 				ClueInstance item = entry.getKey();
 

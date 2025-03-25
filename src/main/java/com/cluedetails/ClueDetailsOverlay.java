@@ -198,12 +198,13 @@ public class ClueDetailsOverlay extends OverlayPanel
 	{
 		if (!(config.changeClueText() || config.colorChangeClueText())) return;
 		final MenuEntry[] menuEntries = client.getMenu().getMenuEntries();
+
 		if (Arrays.stream(menuEntries).noneMatch(this::isTakeClue))
 		{
 			return;
 		}
 
-		changeGroundItemMenu(getEntriesByTile(client.getMenu().getMenuEntries()));
+		changeGroundItemMenu(getEntriesByTile(menuEntries));
 	}
 
 	@Subscribe
@@ -227,7 +228,6 @@ public class ClueDetailsOverlay extends OverlayPanel
 		{
 			MenuEntry menuEntry = entryAndPos.getMenuEntry();
 			if (!isTakeOrMarkClue(menuEntry)) continue;
-
 			boolean showColor = shouldShowColor(menuEntry);
 			String regex = "(Clue scroll \\(.*?\\)( x [0-9]+)?|Challenge scroll \\(.*?\\)( x [0-9]+)?)";
 			if (clueDetailsPlugin.isDeveloperMode())
@@ -452,28 +452,10 @@ public class ClueDetailsOverlay extends OverlayPanel
 	private String getText(MenuEntryAndPos menuEntryAndPos, boolean showColor, boolean isFloorText)
 	{
 		MenuEntry menuEntry = menuEntryAndPos.getMenuEntry();
-		int scrollID = getScrollID(menuEntry);
-
-		Clues matchingClue = Clues.forItemId(scrollID);
-		if (matchingClue != null)
-		{
-			String text = matchingClue.getDetail(configManager);
-			if (showColor)
-			{
-				Color color = matchingClue.getDetailColor(configManager);
-
-				// Only change floor text color if it's not the default
-				if (!(isFloorText && color == Color.WHITE))
-				{
-					String hexColor = Integer.toHexString(color.getRGB()).substring(2);
-					return "<col=" + hexColor + ">" + text;
-				}
-			}
-			return text;
-		}
 
 		if (isReadClue(menuEntry))
 		{
+			int scrollID = getScrollID(menuEntry);
 			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(scrollID);
 			if (clueInstance != null && !clueInstance.getClueIds().isEmpty())
 			{
@@ -523,8 +505,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		int wv = menuEntry.getWorldViewId();
 		LocalPoint itemLp = new LocalPoint(sceneX * SCENE_TO_LOCAL, sceneY * SCENE_TO_LOCAL, wv);
 		WorldPoint itemWp = WorldPoint.fromLocalInstance(client, itemLp);
-		List<ClueInstance> trackedClues = clueGroundManager.getAllGroundClues().get(itemWp);
-		if (trackedClues == null) return null;
+		List<ClueInstance> trackedClues = new ArrayList<>(clueGroundManager.getAllGroundCluesOnWp(itemWp));
 		if (trackedClues.size() <= entry.getPosOnTile()) return trackedClues.get(entry.getPosOnTile() - 1);
 		return trackedClues.get(entry.getPosOnTile());
 	}

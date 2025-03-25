@@ -28,7 +28,6 @@ import com.cluedetails.filters.ClueTier;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import net.runelite.api.*;
-import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
@@ -43,19 +42,14 @@ public class ClueGroundManager
 	private final ClueDetailsPlugin clueDetailsPlugin;
 	@Getter
 	private final ClueGroundSaveDataManager clueGroundSaveDataManager;
-//	@Getter
-	private final Map<WorldPoint, List<ClueInstance>> groundCluesBeginnerAndMaster = new HashMap<>();
-
-	@Getter
-	private final Map<WorldPoint, List<ClueInstance>> groundCluesEasyToElite = new HashMap<>();
 	private final Set<Tile> itemHasSpawnedOnTileThisTick = new HashSet<>();
-
 	@Getter
 	private final List<ClueInstance> despawnedClueQueueForInventoryCheck = new ArrayList<>();
 	private final int MAX_DESPAWN_TIMER = 6100;
 	private Zone lastZone;
 	private Zone currentZone;
-	private Set<Zone> zonesSeenThisSession = new HashSet<>();
+	private WorldPointToClueInstances trackedClues;
+	private boolean loggedInStateOccuredThisTick;
 
 	public ClueGroundManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin)
 	{
@@ -63,26 +57,19 @@ public class ClueGroundManager
 		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.clueGroundSaveDataManager = new ClueGroundSaveDataManager(configManager, clueDetailsPlugin.gson);
 		clueGroundSaveDataManager.loadStateFromConfig(client);
+
+		trackedClues = new WorldPointToClueInstances(client, clueDetailsPlugin);
 	}
 
-	// Three spawn scenarios:
-	// 1. Item spawns with max despawn time. Means dropped/drop. Can work out by if in inventory or not.
-	// 1a. If in inventory, set ClueInstance from there to floor. ALSO REMOVE FROM INVENTORY?
-	// 1b. If not, fresh ClueInstance.
-	// 2. Item doesn't have max despawn time. Probably something we already know about.
-	// 2a. We've got a store of clues for the tile from this session. Unless you did something weird like kill on same tile as stack and tele out
-	//     It will be the same as before, so just need to iterate whole pile after
-	// 2b. Not seen stack this session. Still need to check it I guess?
+	public SortedSet<ClueInstance> getAllGroundCluesOnWp(WorldPoint worldPoint)
+	{
+		return trackedClues.getAllCluesAtWorldPoint(worldPoint);
+	}
 
-	// CURRENTLY:
-	// Check if easy-elite, if so just add it as no tracking needed.
-	// Next, check if new clue. If it is and it came from the inventory, copy the ClueInstance from the inventory.
-	// If it's not dropped and is beginner/master clue, then add pile to the to be considered pile in onGameTick
 	public void onItemSpawned(ItemSpawned event)
 	{
 		TileItem item = event.getItem();
 		Tile tile = event.getTile();
-		WorldPoint wp = tile.getWorldLocation();
 
 		if (!Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
 
@@ -90,9 +77,14 @@ public class ClueGroundManager
 		// TODO: Maybe also means torn clues and such?
 		if (!Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 		{
-			// TODO: Should final arguement be client.getTickCount, or MAX_DESPAWN_TIME?
+			// We don't get items removed when a loading->logged in state occurs. This clears the tile
+			if (loggedInStateOccuredThisTick)
+			{
+				clearEasyToEliteCluesAtWorldPoint(tile.getWorldLocation());
+				loggedInStateOccuredThisTick = false;
+			}
 			ClueInstance clueInstance = new ClueInstance(List.of(), item.getId(), tile.getWorldLocation(), item, client.getTickCount());
-			addEasyToEliteClue(clueInstance);
+			trackedClues.addClue(clueInstance);
 			return;
 		}
 
@@ -101,7 +93,7 @@ public class ClueGroundManager
 		if (isNewGroundClue(item.getId(), item.getDespawnTime()) && inventoryClue != null)
 		{
 			ClueInstance newGroundClue = new ClueInstance(inventoryClue.getClueIds(), inventoryClue.getItemId(), tile.getWorldLocation(), item, client.getTickCount());
-			addClue(newGroundClue);
+			trackedClues.addClue(newGroundClue);
 			return;
 		}
 
@@ -129,11 +121,11 @@ public class ClueGroundManager
 		if (!Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 		{
 			ClueInstance clueInstance = new ClueInstance(List.of(), item.getId(), location, item, client.getTickCount());
-			removeEasyToEliteClue(clueInstance);
+			trackedClues.removeClue(clueInstance);
 			return;
 		}
 
-		List<ClueInstance> cluesAtLocation = groundCluesBeginnerAndMaster.get(location);
+		List<ClueInstance> cluesAtLocation = trackedClues.getBeginnerAndMasterCluesAtWorldPoint(location);
 
 		// Catch despawn in vicinity
 		if (cluesAtLocation == null) return;
@@ -144,11 +136,11 @@ public class ClueGroundManager
 			Optional<ClueInstance> optionalClue = cluesAtLocation.stream()
 				.filter((clue) -> clue.getTileItem() == item)
 				.findFirst();
-			optionalClue.ifPresent(this::removeClue);
+			optionalClue.ifPresent((clueInstance -> trackedClues.removeClue(clueInstance)));
 			return;
 		}
 
-		if (getTileAtWorldPoint(location) == null)
+		if (trackedClues.getTileAtWorldPoint(location) == null)
 		{
 			return;
 		}
@@ -174,111 +166,28 @@ public class ClueGroundManager
 			.filter((clue) -> clue.getTileItem() == item)
 			.findFirst();
 		optionalClue.ifPresent(despawnedClueQueueForInventoryCheck::add);
-
-		// Remove the clue with matching tileItem
-		cluesAtLocation.removeIf(clue -> clue.getTileItem() == item);
-
-		// Clue despawned, don't know if it will spawn again as a new TileItem, or if it is gonezo
-		// If it does respawn, we need it still in groundItems to check
-		// If it doesn't respawn, we have nothing which is checking the tile
-
-		if (cluesAtLocation.isEmpty())
-		{
-			groundCluesBeginnerAndMaster.remove(location);
-		}
-	}
-
-	private void addClue(ClueInstance clue)
-	{
-		groundCluesBeginnerAndMaster.computeIfAbsent(clue.getLocation(), k -> new ArrayList<>()).add(clue);
-	}
-
-	private void addEasyToEliteClue(ClueInstance clueInstance)
-	{
-		groundCluesEasyToElite.computeIfAbsent(clueInstance.getLocation(), k -> new ArrayList<>()).add(clueInstance);
-	}
-
-	private void removeClue(ClueInstance clue)
-	{
-		groundCluesBeginnerAndMaster.get(clue.getLocation()).remove(clue);
-	}
-
-	private void removeEasyToEliteClue(ClueInstance clueInstance)
-	{
-		groundCluesEasyToElite.get(clueInstance.getLocation()).remove(clueInstance);
-	}
-
-	public void clearEasyToEliteClues()
-	{
-		groundCluesEasyToElite.clear();
-	}
-
-	public Map<WorldPoint, List<ClueInstance>> getAllGroundClues()
-	{
-		Map<WorldPoint, List<ClueInstance>> allGroundClues = new HashMap<>();
-		for (Map.Entry<WorldPoint, List<ClueInstance>> entry : groundCluesEasyToElite.entrySet()) {
-			allGroundClues.put(entry.getKey(), new ArrayList<>(entry.getValue()));
-		}
-
-		for (Map.Entry<WorldPoint, List<ClueInstance>> entry : groundCluesBeginnerAndMaster.entrySet()) {
-			allGroundClues.computeIfAbsent(entry.getKey(), k -> new ArrayList<>())
-				.addAll(entry.getValue());
-		}
-
-		allGroundClues.forEach(((worldPoint, clueInstances) -> {
-			clueInstances.sort(Comparator.comparingInt((clue) -> clue.getTicksToDespawnConsideringTileItem(client.getTickCount())));
-		}));
-
-		return allGroundClues;
+		optionalClue.ifPresent((clueInstance -> trackedClues.removeClue(clueInstance)));
 	}
 
 	public Set<WorldPoint> getTrackedWorldPoints()
 	{
-		Set<WorldPoint> allWorldPointsTracked = new HashSet<>();
-		allWorldPointsTracked.addAll(groundCluesEasyToElite.keySet());
-		allWorldPointsTracked.addAll(groundCluesBeginnerAndMaster.keySet());
-
-		return allWorldPointsTracked;
+		return trackedClues.getAllTrackedWorldPoints();
 	}
 
 	public void onGameTick()
 	{
+		loggedInStateOccuredThisTick = false;
 		currentZone = new Zone(client.getLocalPlayer().getWorldLocation());
-		processEmptyTiles();
+		trackedClues.clearEmptyTiles(currentZone);
 
 		for (Tile tile : itemHasSpawnedOnTileThisTick)
 		{
 			checkClueThroughRelativeDespawnTimers(tile);
 		}
 		itemHasSpawnedOnTileThisTick.clear();
-		removeDespawnedClues();
+		trackedClues.removeDespawnedClues();
 
 		lastZone = currentZone;
-	}
-
-	private void processEmptyTiles()
-	{
-		groundCluesBeginnerAndMaster.entrySet().removeIf(entry ->
-		{
-			Tile tile = getTileAtWorldPoint(entry.getKey());
-			if (tile == null) return false;
-
-			Zone clueZone = new Zone(tile.getWorldLocation());
-			// Item won't have potentially spawned if too far, so don't remove
-			int zonesDistance = clueZone.maxDistanceTo(currentZone);
-			if (zonesDistance >= 4) return false;
-			return tile.getGroundItems() == null || tile.getGroundItems().isEmpty();
-		});
-	}
-
-	private void removeDespawnedClues()
-	{
-		groundCluesBeginnerAndMaster.entrySet().removeIf(entry ->
-		{
-			List<ClueInstance> cluesList = entry.getValue();
-			cluesList.removeIf(clueInstance -> clueInstance.getDespawnTick(client.getTickCount()) <= client.getTickCount());
-			return cluesList.isEmpty();
-		});
 	}
 
 	private void checkClueThroughRelativeDespawnTimers(Tile tile)
@@ -291,26 +200,26 @@ public class ClueGroundManager
 			return;
 		}
 
-		if (!groundCluesBeginnerAndMaster.containsKey(tileWp))
-		{
-			groundCluesBeginnerAndMaster.put(tileWp, new ArrayList<>());
-		}
-
-		List<ClueInstance> storedClues = groundCluesBeginnerAndMaster.get(tileWp);
+		List<ClueInstance> storedClues = trackedClues.getBeginnerAndMasterCluesAtWorldPoint(tileWp);
 
 		List<ClueInstance> updatedStoredClues = generateNewCluesOnTile(tileWp, storedClues, itemsOnTile);
 
 		if (updatedStoredClues.isEmpty())
 		{
-			groundCluesBeginnerAndMaster.remove(tileWp);
+			trackedClues.clearBeginnerAndMasterCluesAtWorldPoint(tileWp);
 		}
 		else
 		{
 			// If we didn't find an item for it on the tile, remove it
 			updatedStoredClues.removeIf((clue) -> clue.getTileItem() == null);
 
+			trackedClues.clearBeginnerAndMasterCluesAtWorldPoint(tileWp);
+
 			// Update the stored clues
-			groundCluesBeginnerAndMaster.put(tileWp, updatedStoredClues);
+			for (ClueInstance updatedStoredClue : updatedStoredClues)
+			{
+				trackedClues.addClue(updatedStoredClue);
+			}
 		}
 	}
 
@@ -374,12 +283,7 @@ public class ClueGroundManager
 			.map(tileItem -> sortedStoredClues.stream()
 				.filter(clue -> clue.getTileItem() == tileItem)
 				.findFirst()
-				.orElseGet(() ->
-				{
-					ClueInstance clueInstance = new ClueInstance(List.of(), tileItem.getId(), tileWp, tileItem, client.getTickCount());
-					clueInstance.setTileItem(tileItem);
-					return clueInstance;
-				}))
+				.orElseGet(() -> new ClueInstance(List.of(), tileItem.getId(), tileWp, tileItem, client.getTickCount())))
 			.forEach(foundClues::add);
 
 		return foundClues;
@@ -427,17 +331,6 @@ public class ClueGroundManager
 		}
 	}
 
-	private Tile getTileAtWorldPoint(WorldPoint tileWp)
-	{
-		WorldView worldView = client.getTopLevelWorldView();
-		LocalPoint tileLp = LocalPoint.fromWorld(worldView, tileWp);
-		if (tileLp == null)
-		{
-			return null;
-		}
-		return worldView.getScene().getTiles()[tileWp.getPlane()][tileLp.getSceneX()][tileLp.getSceneY()];
-	}
-
 	private List<TileItem> getTrackedItemsAtTile(Tile tile)
 	{
 		List<TileItem> items = tile.getGroundItems();
@@ -446,7 +339,7 @@ public class ClueGroundManager
 			return Collections.emptyList();
 		}
 		return items.stream()
-			.filter(item -> Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
+			.filter(item -> Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 			.collect(Collectors.toList());
 	}
 
@@ -455,26 +348,17 @@ public class ClueGroundManager
 		@Override
 		public int compare(ClueInstance o1, ClueInstance o2)
 		{
-			// Primary comparison: Compare by despawn time
-			int despawnComparison = Integer.compare(o1.getTicksToDespawnConsideringTileItem(client.getTickCount()),
-				o2.getTicksToDespawnConsideringTileItem(client.getTickCount()));
-			if (despawnComparison != 0)
-			{
-				return despawnComparison;
-			}
-			else
-			{
-				// Secondary comparison: If despawn times are the same, compare by itemId
-				return Integer.compare(o1.getItemId(), o2.getItemId());
-			}
+			return Comparator
+				.comparingInt((ClueInstance oc) -> oc.getDespawnTick(client.getTickCount()))
+				.thenComparingLong(ClueInstance::getSequenceNumber).compare(o1, o2);
 		}
 	}
 
 	public TreeMap<ClueInstance, Integer> getClueInstancesWithQuantityAtWp(ClueDetailsConfig config, WorldPoint wp, int currentTick)
 	{
-		if (getAllGroundClues().get(wp).isEmpty()) return null;
+		if (!trackedClues.getAllTrackedWorldPoints().contains(wp)) return null;
 
-		List<ClueInstance> groundItemList = getAllGroundClues().get(wp);
+		SortedSet<ClueInstance> groundItemList = trackedClues.getAllCluesAtWorldPoint(wp);
 		Map<ClueInstance, Integer> groundItemMap = new HashMap<>();
 
 		if (config.collapseGroundCluesByTier())
@@ -501,7 +385,7 @@ public class ClueGroundManager
 	}
 
 	// Remove duplicate step clues, maintaining a count of the original amount of each
-	public static Map<ClueInstance, Integer> keepOldestUniqueClues(List<ClueInstance> items, int currentTick)
+	public static Map<ClueInstance, Integer> keepOldestUniqueClues(SortedSet<ClueInstance> items, int currentTick)
 	{
 		Map<List<Integer>, ClueInstance> lowestValueItems = new HashMap<>();
 		Map<List<Integer>, Integer> uniqueCount = new HashMap<>();
@@ -527,7 +411,7 @@ public class ClueGroundManager
 	}
 
 	// Remove duplicate tier clues, maintaining a count of the original amount of each
-	public static Map<ClueInstance, Integer> keepOldestTierClues(List<ClueInstance> items, int currentTick)
+	public static Map<ClueInstance, Integer> keepOldestTierClues(SortedSet<ClueInstance> items, int currentTick)
 	{
 		Map<ClueTier, ClueInstance> lowestValueItems = new HashMap<>();
 		Map<ClueTier, Integer> uniqueCount = new HashMap<>();
@@ -552,14 +436,36 @@ public class ClueGroundManager
 			.collect(Collectors.toMap(item -> item, item ->	uniqueCount.get(item.getTier())));
 	}
 
+	public void clearEasyToEliteCluesAtWorldPoint(WorldPoint wp)
+	{
+		trackedClues.clearEasyToEliteCluesAtWorldPoint(wp);
+	}
+
+	public void setLoggedInOccuredThisTick(boolean loggedIn)
+	{
+		loggedInStateOccuredThisTick = loggedIn;
+	}
+
 	public void saveStateToConfig()
 	{
-		clueGroundSaveDataManager.saveStateToConfig(client, groundCluesBeginnerAndMaster);
+		clueGroundSaveDataManager.saveStateToConfig(client, trackedClues.getAllClues());
 	}
 
 	public void loadStateFromConfig()
 	{
-		groundCluesBeginnerAndMaster.clear();
-		groundCluesBeginnerAndMaster.putAll(clueGroundSaveDataManager.loadStateFromConfig(client));
+		trackedClues.clearAllClues();
+		overwriteGroundClues(clueGroundSaveDataManager.loadStateFromConfig(client));
+	}
+
+	private void overwriteGroundClues(Map<WorldPoint, List<ClueInstance>> newGroundClues)
+	{
+		// Iterate over each list of ClueInstances in the map.
+		for (List<ClueInstance> clueInstances : newGroundClues.values())
+		{
+			for (ClueInstance clueInstance : clueInstances)
+			{
+					trackedClues.addClue(clueInstance);
+			}
+		}
 	}
 }
