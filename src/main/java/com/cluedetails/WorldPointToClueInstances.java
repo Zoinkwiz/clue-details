@@ -59,14 +59,28 @@ public class WorldPointToClueInstances
 			.thenComparingInt((ClueInstance oc) -> oc.getDespawnTick(client.getTickCount()));
 	}
 
-	private SortedSet<ClueInstance> getOrCreateSet(Map<WorldPoint, SortedSet<ClueInstance>> clueStore, WorldPoint wp)
+	private void createGroupedSet(WorldPoint wp)
 	{
-		return clueStore.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator));
+		cluesByWorldPoint.clear();
+		groundCluesBeginnerAndMaster.forEach(((worldPoint, clueInstances) -> {
+			for (ClueInstance clueInstance : clueInstances)
+			{
+				cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
+			}
+		}));
+
+		groundCluesEasyToElite.forEach(((worldPoint, clueInstances) -> {
+			for (ClueInstance clueInstance : clueInstances)
+			{
+				cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
+			}
+		}));
 	}
 
 	public List<ClueInstance> getAllClues()
 	{
 		SortedSet<ClueInstance> allClues = new TreeSet<>(clueComparator);
+
 		cluesByWorldPoint.values().forEach(allClues::addAll);
 		return new ArrayList<>(allClues);
 	}
@@ -83,7 +97,6 @@ public class WorldPointToClueInstances
 
 	public void addClue(ClueInstance clueInstance)
 	{
-		getOrCreateSet(cluesByWorldPoint, clueInstance.getLocation()).add(clueInstance);
 		if (Clues.isBeginnerOrMasterClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
 		{
 			addBeginnerMasterClue(clueInstance);
@@ -92,30 +105,22 @@ public class WorldPointToClueInstances
 		{
 			addEasyToEliteClue(clueInstance);
 		}
+
+		createGroupedSet(clueInstance.getLocation());
 	}
 
 	public void removeClue(ClueInstance clueInstance)
 	{
-		ClueInstance instanceRemoved = null;
 		if (Clues.isBeginnerOrMasterClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
 		{
-			instanceRemoved = removeBeginnerMasterClue(clueInstance);
+			removeBeginnerMasterClue(clueInstance);
 		}
 		else if (Clues.isClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
 		{
-			instanceRemoved = removeEasyToEliteClue(clueInstance);
+			removeEasyToEliteClue(clueInstance);
 		}
 
-		if (instanceRemoved == null) return;
-		SortedSet<ClueInstance> set = cluesByWorldPoint.get(instanceRemoved.getLocation());
-		if (set != null)
-		{
-			set.remove(instanceRemoved);
-			if (set.isEmpty())
-			{
-				cluesByWorldPoint.remove(instanceRemoved.getLocation());
-			}
-		}
+		createGroupedSet(clueInstance.getLocation());
 	}
 
 	private void addBeginnerMasterClue(ClueInstance clue)
@@ -128,42 +133,31 @@ public class WorldPointToClueInstances
 		groundCluesEasyToElite.computeIfAbsent(clueInstance.getLocation(), k -> new ArrayList<>()).add(clueInstance);
 	}
 
-	private ClueInstance removeBeginnerMasterClue(ClueInstance clueInstance)
+	private void removeBeginnerMasterClue(ClueInstance clueInstance)
 	{
 		List<ClueInstance> list = groundCluesBeginnerAndMaster.get(clueInstance.getLocation());
 		if (list != null)
 		{
-			int index = list.indexOf(clueInstance);
-			ClueInstance instanceRemoved = index != -1 ? list.remove(index) : null;
-
+			list.remove(clueInstance);
 			if (list.isEmpty())
 			{
 				groundCluesBeginnerAndMaster.remove(clueInstance.getLocation());
 			}
-
-			return instanceRemoved;
 		}
-
-		return null;
 	}
 
-	private ClueInstance removeEasyToEliteClue(ClueInstance clueInstance)
+	private void removeEasyToEliteClue(ClueInstance clueInstance)
 	{
 		List<ClueInstance> list = groundCluesEasyToElite.get(clueInstance.getLocation());
 		if (list != null)
 		{
-			int index = list.indexOf(clueInstance);
-			ClueInstance instanceRemoved = index != -1 ? list.remove(index) : null;
+			list.remove(clueInstance);
 
 			if (groundCluesEasyToElite.get(clueInstance.getLocation()) != null && groundCluesEasyToElite.get(clueInstance.getLocation()).isEmpty())
 			{
 				groundCluesEasyToElite.remove(clueInstance.getLocation());
 			}
-
-			return instanceRemoved;
 		}
-
-		return null;
 	}
 
 	public void clearEasyToEliteCluesAtWorldPoint(WorldPoint wp)
