@@ -178,6 +178,7 @@ public class ClueGroundManager
 	public void onGameTick()
 	{
 		loggedInStateOccuredThisTick = false;
+		tileClearedThisTick.clear();
 		currentZone = new Zone(client.getLocalPlayer().getWorldLocation());
 		trackedClues.clearEmptyTiles(currentZone);
 
@@ -351,7 +352,8 @@ public class ClueGroundManager
 		{
 			return Comparator
 				.comparingInt((ClueInstance oc) -> oc.getDespawnTick(client.getTickCount()))
-				.thenComparingLong(ClueInstance::getSequenceNumber).compare(o1, o2);
+				.thenComparingLong(ClueInstance::getSequenceNumber)
+				.compare(o1, o2);
 		}
 	}
 
