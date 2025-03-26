@@ -91,7 +91,7 @@ public class ClueGroundManager
 			return;
 		}
 
-		ClueInstance inventoryClue = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueItemId(item.getId());
+		ClueInstance inventoryClue = clueDetailsPlugin.getClueInventoryManager().getClueByClueItemId(item.getId());
 		// If clue in inventory AND new clue appeared with fresh despawn timer, it must be the inventory item being dropped
 		if (isNewGroundClue(item.getId(), item.getDespawnTime()) && inventoryClue != null)
 		{

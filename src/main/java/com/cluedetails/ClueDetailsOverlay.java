@@ -456,7 +456,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		if (isReadClue(menuEntry))
 		{
 			int scrollID = getScrollID(menuEntry);
-			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(scrollID);
+			ClueInstance clueInstance = clueInventoryManager.getClueByClueItemId(scrollID);
 			if (clueInstance != null && !clueInstance.getClueIds().isEmpty())
 			{
 				return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor, isFloorText);

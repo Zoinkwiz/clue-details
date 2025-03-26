@@ -24,7 +24,6 @@
  */
 package com.cluedetails;
 
-import com.cluedetails.filters.ClueTier;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.awt.Color;
@@ -99,29 +98,10 @@ public class ClueDetailsItemsOverlay extends WidgetItemOverlay
 		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
 		if (inventory == null || clueInventoryManager == null ) return;
 
-		// Highlight for easy-elite clues
-		for (Clues clue : clueInventoryManager.getCluesInInventory())
-		{
-			if (clue == null) continue;
-
-			if (clue.isEnabled(config))
-			{
-				if (config.highlightInventoryClueScrolls())
-				{
-					cacheClueScrolls(clue);
-				}
-				if (config.highlightInventoryClueItems())
-				{
-					cacheClueItems(clue);
-				}
-			}
-		}
-
-		// Highlight for beginner and master clues
-		for (Integer itemID : clueInventoryManager.getTrackedCluesInInventory())
+		for (Integer itemID : clueInventoryManager.getCluesInInventory())
 		{
 			if (itemID == null) continue;
-			ClueInstance instance = clueInventoryManager.getTrackedClueByClueItemId(itemID);
+			ClueInstance instance = clueInventoryManager.getClueByClueItemId(itemID);
 			if (instance == null) continue;
 
 			instance.getClueIds().forEach((clueId) ->
