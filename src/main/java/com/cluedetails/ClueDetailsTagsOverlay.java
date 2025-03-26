@@ -67,7 +67,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		}
 
 		// Check if it's a beginner/master clue
-		ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getTrackedClueByClueItemId(itemId);
+		ClueInstance readClues = clueDetailsPlugin.getClueInventoryManager().getClueByClueItemId(itemId);
 		if (readClues == null || !readClues.isEnabled(config)) return;
 
 		List<Integer> ids = readClues.getClueIds();
@@ -105,7 +105,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 		final ThreeStepCrypticClue threeStepCrypticClue = ThreeStepCrypticClue.forText(text.toString());
 		if (threeStepCrypticClue != null)
 		{
-			threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getTrackedCluesInInventory());
+			threeStepCrypticClue.update(clueDetailsPlugin.getClueInventoryManager().getCluesInInventory());
 			clueDetail = threeStepCrypticClue.getDetail(configManager, config);
 			clueDetailColor = Color.WHITE;
 		}

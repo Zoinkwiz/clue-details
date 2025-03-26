@@ -27,10 +27,8 @@ package com.cluedetails;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.util.Arrays;
 import javax.inject.Inject;
 
-import com.cluedetails.filters.ClueTier;
 import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
@@ -78,7 +76,7 @@ public class ClueDetailsInventoryOverlay extends OverlayPanel
 
 		for (Item item : inventory.getItems())
 		{
-			ClueInstance clueInstance = clueInventoryManager.getTrackedClueByClueItemId(item.getId());
+			ClueInstance clueInstance = clueInventoryManager.getClueByClueItemId(item.getId());
 			if (clueInstance == null || clueInstance.getClueIds().isEmpty()) continue;
 
 			for (Integer clueId : clueInstance.getClueIds())

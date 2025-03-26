@@ -30,7 +30,6 @@ import java.util.*;
 import javax.inject.Singleton;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import lombok.Getter;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
@@ -58,10 +57,8 @@ public class ClueInventoryManager
 	private final ClueGroundManager clueGroundManager;
 	private final ClueBankManager clueBankManager;
 	private final ChatboxPanelManager chatboxPanelManager;
-	private final Map<Integer, ClueInstance> trackedCluesInInventory = new HashMap<>();
-	private final Map<Integer, ClueInstance> previousTrackedCluesInInventory = new HashMap<>();
-	@Getter
-	private Clues[] cluesInInventory = new Clues[6];
+	private final Map<Integer, ClueInstance> cluesInInventory = new HashMap<>();
+	private final Map<Integer, ClueInstance> previousCluesInInventory = new HashMap<>();
 
 	// To be initialized to avoid passing around
 	@Setter
@@ -80,15 +77,12 @@ public class ClueInventoryManager
 
 	public void updateInventory(ItemContainer inventoryContainer)
 	{
-		// Copy current tracked clues to previous
-		previousTrackedCluesInInventory.clear();
-		previousTrackedCluesInInventory.putAll(trackedCluesInInventory);
+		// Copy current clues to previous
+		previousCluesInInventory.clear();
+		previousCluesInInventory.putAll(cluesInInventory);
 
-		// Clear current tracked clues
-		trackedCluesInInventory.clear();
-
-		// Clear current clues in inventory
-		cluesInInventory = new Clues[6];
+		// Clear current clues
+		cluesInInventory.clear();
 
 		Item[] inventoryItems = inventoryContainer.getItems();
 
@@ -96,27 +90,18 @@ public class ClueInventoryManager
 		{
 			if (item == null) continue;
 
-			int itemId = item.getId();
-
-			if (Clues.isTrackedClueOrTornClue(itemId, clueDetailsPlugin.isDeveloperMode()))
-			{
-				checkItemAsBeginnerOrMasterClue(itemId);
-			}
-			else
-			{
-				checkItemAsEasyToMediumClue(itemId);
-			}
+			checkItemAsClueInstance(item.getId());
 		}
 
 		clueGroundManager.getDespawnedClueQueueForInventoryCheck().clear();
 
 		// Compare previous and current to find removed clues
-		for (Integer itemId : previousTrackedCluesInInventory.keySet())
+		for (Integer itemId : previousCluesInInventory.keySet())
 		{
-			if (!trackedCluesInInventory.containsKey(itemId) || trackedCluesInInventory.get(itemId) != previousTrackedCluesInInventory.get(itemId))
+			if (!cluesInInventory.containsKey(itemId) || cluesInInventory.get(itemId) != previousCluesInInventory.get(itemId))
 			{
 				// Clue was removed from inventory (possibly dropped)
-				ClueInstance removedClue = previousTrackedCluesInInventory.get(itemId);
+				ClueInstance removedClue = previousCluesInInventory.get(itemId);
 				if (removedClue != null)
 				{
 					clueBankManager.addToRemovedClues(removedClue);
@@ -125,16 +110,7 @@ public class ClueInventoryManager
 		}
 	}
 
-	private void checkItemAsEasyToMediumClue(int id)
-	{
-		Clues clue = Clues.forItemId(id);
-		if (clue != null)
-		{
-			cluesInInventory[clue.getClueTier().getValue()] = clue;
-		}
-	}
-
-	private void checkItemAsBeginnerOrMasterClue(int itemId)
+	private void checkItemAsClueInstance(int itemId)
 	{
 		ClueInstance clueInstance;
 
@@ -144,21 +120,21 @@ public class ClueInventoryManager
 			.findFirst();
 		if (clueFromFloorInInv.isPresent())
 		{
-			trackedCluesInInventory.put(itemId, new ClueInstance(clueFromFloorInInv.get().getClueIds(), itemId));
+			cluesInInventory.put(itemId, new ClueInstance(clueFromFloorInInv.get().getClueIds(), itemId));
 			return;
 		}
 
 		// If clue is already in previous, keep the same ClueInstance
 		// This check is after the floor check as you could drop and pick up a clue in the same tick
-		clueInstance = previousTrackedCluesInInventory.get(itemId);
+		clueInstance = previousCluesInInventory.get(itemId);
 		if (clueInstance != null && Clues.isClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
 		{
-			trackedCluesInInventory.put(itemId, clueInstance);
+			cluesInInventory.put(itemId, clueInstance);
 		}
 		else
 		{
 			clueInstance = new ClueInstance(new ArrayList<>(), itemId);
-			trackedCluesInInventory.put(itemId, clueInstance);
+			cluesInInventory.put(itemId, clueInstance);
 		}
 	}
 
@@ -172,7 +148,7 @@ public class ClueInventoryManager
 			for (Integer devModeId : Clues.DEV_MODE_IDS)
 			{
 				int randomTestId = (int) (Math.random() * 20);
-				trackedCluesInInventory.put(devModeId, new ClueInstance(List.of(randomTestId), devModeId));
+				cluesInInventory.put(devModeId, new ClueInstance(List.of(randomTestId), devModeId));
 			}
 		}
 
@@ -191,10 +167,10 @@ public class ClueInventoryManager
 
 		if (clueIds.get(0) == null) return;
 
-		Set<Integer> itemIDs = trackedCluesInInventory.keySet();
+		Set<Integer> itemIDs = cluesInInventory.keySet();
 		for (Integer itemID : itemIDs)
 		{
-			ClueInstance clueInstance = trackedCluesInInventory.get(itemID);
+			ClueInstance clueInstance = cluesInInventory.get(itemID);
 			// Check that at least one part of the clue text matches the clue tier we're looking at
 			if (clueInstance == null) continue;
 			Clues clueInfo = Clues.forClueIdFiltered(clueIds.get(0));
@@ -214,24 +190,19 @@ public class ClueInventoryManager
 		clueIds.add(Clues.forInterfaceIdGetId(interfaceId));
 
 		// Assume can only be beginner for now
-		ClueInstance beginnerClueInInv = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
+		ClueInstance beginnerClueInInv = cluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
 		if (beginnerClueInInv == null) return;
 		beginnerClueInInv.setClueIds(clueIds);
 	}
 
-	public Set<Integer> getTrackedCluesInInventory()
+	public Set<Integer> getCluesInInventory()
 	{
-		return trackedCluesInInventory.keySet();
+		return cluesInInventory.keySet();
 	}
 
-	public ClueInstance getTrackedClueByClueItemId(Integer clueItemID)
+	public ClueInstance getClueByClueItemId(Integer clueItemID)
 	{
-		return trackedCluesInInventory.get(clueItemID);
-	}
-
-	public boolean hasTrackedClues()
-	{
-		return !trackedCluesInInventory.isEmpty();
+		return cluesInInventory.get(clueItemID);
 	}
 
 	public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
@@ -288,15 +259,14 @@ public class ClueInventoryManager
 		// Add item highlight menu
 		if (!hasClueName(menuEntry.getTarget()))
 		{
-			if (Arrays.stream(cluesInInventory).allMatch(Objects::isNull) && trackedCluesInInventory.isEmpty()) return;
+			if (cluesInInventory.isEmpty()) return;
 
 			MenuEntry clueDetailsEntry = client.getMenu().createMenuEntry(-1)
 				.setOption("Clue details")
 				.setTarget(menuEntry.getTarget())
 				.setType(MenuAction.RUNELITE);
 			Menu submenu = clueDetailsEntry.createSubMenu();
-			Arrays.stream(cluesInInventory).forEach((clue) -> addHighlightItemMenu(cluePreferenceManager, submenu, clue, itemId, event));
-			trackedCluesInInventory.forEach((id, instance) -> instance.getClueIds().forEach((clueId) -> addHighlightItemMenu(cluePreferenceManager, submenu, Clues.forClueIdFiltered(clueId), itemId, event)));
+			cluesInInventory.forEach((id, instance) -> instance.getClueIds().forEach((clueId) -> addHighlightItemMenu(cluePreferenceManager, submenu, Clues.forClueIdFiltered(clueId), itemId, event)));
 			return;
 		}
 
@@ -324,7 +294,7 @@ public class ClueInventoryManager
 
 		if (Clues.isBeginnerOrMasterClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 		{
-			ClueInstance clueSelected = trackedCluesInInventory.get(itemId);
+			ClueInstance clueSelected = cluesInInventory.get(itemId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;
 
 			clueIds.addAll(clueSelected.getClueIds());
@@ -466,14 +436,14 @@ public class ClueInventoryManager
 		if (isNewBeginnerClue(chatDialogClueItemWidget)
 			|| (isUriBeginnerClue(headModelWidget) && isUriStandardDialogue(npcChatWidget)))
 		{
-			ClueInstance clue = trackedCluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
+			ClueInstance clue = cluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
 			if (clue == null) return;
 			clue.setClueIds(List.of());
 		}
 		else if (isNewMasterClue(chatDialogClueItemWidget)
 			|| (isUriMasterClue(headModelWidget) && isUriStandardDialogue(npcChatWidget)))
 		{
-			ClueInstance clue =  trackedCluesInInventory.get(ItemID.CLUE_SCROLL_MASTER);
+			ClueInstance clue =  cluesInInventory.get(ItemID.CLUE_SCROLL_MASTER);
 			if (clue == null) return;
 			clue.setClueIds(List.of());
 		}
