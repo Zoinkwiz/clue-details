@@ -65,14 +65,21 @@ public class WorldPointToClueInstances
 		{
 			cluesByWorldPoint.get(wp).clear();
 		}
-		for (ClueInstance clueInstance : groundCluesBeginnerAndMaster.get(wp))
+
+		if (groundCluesBeginnerAndMaster.get(wp) != null)
 		{
-			cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
+			for (ClueInstance clueInstance : groundCluesBeginnerAndMaster.get(wp))
+			{
+				cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
+			}
 		}
 
-		for (ClueInstance clueInstance : groundCluesEasyToElite.get(wp))
+		if (groundCluesEasyToElite.get(wp) != null)
 		{
-			cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
+			for (ClueInstance clueInstance : groundCluesEasyToElite.get(wp))
+			{
+				cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
+			}
 		}
 	}
 
