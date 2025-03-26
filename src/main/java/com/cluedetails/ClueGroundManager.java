@@ -51,6 +51,7 @@ public class ClueGroundManager
 	private WorldPointToClueInstances trackedClues;
 	private boolean loggedInStateOccuredThisTick;
 	private Set<WorldPoint> tileClearedThisTick = new HashSet<>();
+	private Set<Tile> easyToEliteClueSpawnedThisTick = new HashSet<>();
 
 	public ClueGroundManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin)
 	{
@@ -86,6 +87,7 @@ public class ClueGroundManager
 			}
 			ClueInstance clueInstance = new ClueInstance(List.of(), item.getId(), tile.getWorldLocation(), item, client.getTickCount());
 			trackedClues.addClue(clueInstance);
+			easyToEliteClueSpawnedThisTick.add(tile);
 			return;
 		}
 
@@ -188,8 +190,35 @@ public class ClueGroundManager
 		}
 		itemHasSpawnedOnTileThisTick.clear();
 		trackedClues.removeDespawnedClues();
+		sortClues();
 
 		lastZone = currentZone;
+	}
+
+	private void sortClues()
+	{
+		for (Tile tile : easyToEliteClueSpawnedThisTick)
+		{
+			List<TileItem> tileItems = getClueItemsAtTile(tile);
+			SortedSet<ClueInstance> cluesAtWp = trackedClues.getAllCluesAtWorldPoint(tile.getWorldLocation());
+			for (int i=0; i<tileItems.size(); i++)
+			{
+				TileItem tileItem = tileItems.get(i);
+				int finalI = i + 1;
+				cluesAtWp.stream()
+					.filter((clueInstance -> clueInstance.getTileItem() == tileItem))
+					.findFirst()
+					.ifPresent((clueInstance -> clueInstance.setSequenceNumber(finalI)));
+			}
+			List<ClueInstance> clues = new ArrayList<>(cluesAtWp);
+			for (ClueInstance clueInstance : clues)
+			{
+				// Re-sorts the order of clues
+				trackedClues.removeClue(clueInstance);
+				trackedClues.addClue(clueInstance);
+			}
+		}
+		easyToEliteClueSpawnedThisTick.clear();
 	}
 
 	private void checkClueThroughRelativeDespawnTimers(Tile tile)
@@ -333,6 +362,18 @@ public class ClueGroundManager
 		}
 	}
 
+	private List<TileItem> getClueItemsAtTile(Tile tile)
+	{
+		List<TileItem> items = tile.getGroundItems();
+		if (items == null)
+		{
+			return Collections.emptyList();
+		}
+		return items.stream()
+			.filter(item -> Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
+			.collect(Collectors.toList());
+	}
+
 	private List<TileItem> getTrackedItemsAtTile(Tile tile)
 	{
 		List<TileItem> items = tile.getGroundItems();
@@ -351,8 +392,8 @@ public class ClueGroundManager
 		public int compare(ClueInstance o1, ClueInstance o2)
 		{
 			return Comparator
-				.comparingInt((ClueInstance oc) -> oc.getDespawnTick(client.getTickCount()))
-				.thenComparingLong(ClueInstance::getSequenceNumber)
+				.comparingLong(ClueInstance::getSequenceNumber)
+				.thenComparingInt((ClueInstance oc) -> oc.getDespawnTick(client.getTickCount()))
 				.compare(o1, o2);
 		}
 	}

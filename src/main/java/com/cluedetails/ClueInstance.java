@@ -51,7 +51,8 @@ public class ClueInstance
 	private final WorldPoint location; // Null if in inventory
 
 	@Getter
-	private final long sequenceNumber;
+	@Setter
+	private long sequenceNumber;
 
 	@Getter
 	private final Integer timeToDespawnFromDataInTicks;
@@ -321,6 +322,6 @@ public class ClueInstance
 	public String toString()
 	{
 		int despawnTime = getDespawnTick(ClueDetailsPlugin.getCurrentTick());
-		return "ClueInstance{" + "itemId=" + itemId + ", despawnTick=" + despawnTime  + ", worldPoint=" + location + "}";
+		return "ClueInstance{" + "itemId=" + itemId + ", despawnTick=" + despawnTime + ", worldPoint=" + location + ", orderId=" + sequenceNumber + "}";
 	}
 }

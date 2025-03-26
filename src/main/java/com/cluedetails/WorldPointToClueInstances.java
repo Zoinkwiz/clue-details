@@ -55,8 +55,8 @@ public class WorldPointToClueInstances
 		this.clueDetailsPlugin = clueDetailsPlugin;
 
 		clueComparator = Comparator
-			.comparingInt((ClueInstance oc) -> oc.getDespawnTick(client.getTickCount()))
-			.thenComparingLong(ClueInstance::getSequenceNumber);
+			.comparingLong(ClueInstance::getSequenceNumber)
+			.thenComparingInt((ClueInstance oc) -> oc.getDespawnTick(client.getTickCount()));
 	}
 
 	private SortedSet<ClueInstance> getOrCreateSet(Map<WorldPoint, SortedSet<ClueInstance>> clueStore, WorldPoint wp)
