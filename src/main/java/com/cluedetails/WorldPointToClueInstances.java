@@ -61,20 +61,16 @@ public class WorldPointToClueInstances
 
 	private void createGroupedSet(WorldPoint wp)
 	{
-		cluesByWorldPoint.clear();
-		groundCluesBeginnerAndMaster.forEach(((worldPoint, clueInstances) -> {
-			for (ClueInstance clueInstance : clueInstances)
-			{
-				cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
-			}
-		}));
+		cluesByWorldPoint.get(wp).clear();
+		for (ClueInstance clueInstance : groundCluesBeginnerAndMaster.get(wp))
+		{
+			cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
+		}
 
-		groundCluesEasyToElite.forEach(((worldPoint, clueInstances) -> {
-			for (ClueInstance clueInstance : clueInstances)
-			{
-				cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
-			}
-		}));
+		for (ClueInstance clueInstance : groundCluesEasyToElite.get(wp))
+		{
+			cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
+		}
 	}
 
 	public List<ClueInstance> getAllClues()
