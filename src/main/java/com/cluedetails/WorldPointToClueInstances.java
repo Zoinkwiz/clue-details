@@ -81,6 +81,11 @@ public class WorldPointToClueInstances
 				cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
 			}
 		}
+
+		if (cluesByWorldPoint.get(wp).isEmpty())
+		{
+			cluesByWorldPoint.remove(wp);
+		}
 	}
 
 	public List<ClueInstance> getAllClues()
