@@ -61,7 +61,10 @@ public class WorldPointToClueInstances
 
 	private void createGroupedSet(WorldPoint wp)
 	{
-		cluesByWorldPoint.get(wp).clear();
+		if (cluesByWorldPoint.get(wp) != null)
+		{
+			cluesByWorldPoint.get(wp).clear();
+		}
 		for (ClueInstance clueInstance : groundCluesBeginnerAndMaster.get(wp))
 		{
 			cluesByWorldPoint.computeIfAbsent(wp, k -> new TreeSet<>(clueComparator)).add(clueInstance);
