@@ -481,7 +481,7 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			TreeMap<ClueInstance, Integer> clueInstancesWithQuantityAtWp = clueGroundManager.getClueInstancesWithQuantityAtWp(config, worldPoint, client.getTickCount());
 
-			if (clueInstancesWithQuantityAtWp != null)
+			if (clueInstancesWithQuantityAtWp != null && clueInstancesWithQuantityAtWp.firstEntry() != null)
 			{
 				// Find oldest enabled clue instance at the world point
 				ClueInstance oldestEnabledClueInstance = clueInstancesWithQuantityAtWp.firstEntry().getKey();
