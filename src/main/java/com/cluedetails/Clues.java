@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -1083,6 +1082,7 @@ public class Clues
 
 	private static Map<Integer, List<Clues>> itemIdClueCache = new HashMap<>();
 	private static Map<Integer, Clues> clueIdClueCache = new HashMap<>();
+	private static Map<Integer, Clues> unfilteredClueCache = new HashMap<>();
 
 	public static void rebuildFilteredCluesCache()
 	{
@@ -1097,6 +1097,10 @@ public class Clues
 				.collect(Collectors.groupingBy(Clues::getItemID));
 
 		clueIdClueCache = enabledClues
+				.stream()
+				.collect(Collectors.toMap(Clues::getClueID, clue -> clue));
+
+		unfilteredClueCache = Clues.CLUES
 				.stream()
 				.collect(Collectors.toMap(Clues::getClueID, clue -> clue));
 	}
@@ -1144,7 +1148,7 @@ public class Clues
 
 	public static Clues forClueId(int clueId)
 	{
-		return clueIdClueCache.get(clueId);
+		return unfilteredClueCache.get(clueId);
 	}
 
 	public static Clues forClueIdFiltered(int clueId)
