@@ -1183,12 +1183,9 @@ public class Clues
 	public static Integer forInterfaceIdGetId(int interfaceId)
 	{
 		List<Clues> clues = itemIdClueCache.get(interfaceId);
-		for (Clues clue : clues)
+		if (!clues.isEmpty())
 		{
-			// Only check beginner map clues
-			if (clue != null && clue.clueID >= 21 && clue.clueID < 26) {
-				return clue.clueID;
-			}
+			return clues.get(0).clueID;
 		}
 		return null;
 	}
