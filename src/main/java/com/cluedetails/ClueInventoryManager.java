@@ -441,6 +441,7 @@ public class ClueInventoryManager
 			ClueInstance clue = cluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
 			if (clue == null) return;
 			clue.setClueIds(List.of());
+			clueDetailsPlugin.getItemsOverlay().invalidateCache();
 		}
 		else if (isNewMasterClue(chatDialogClueItemWidget)
 			|| (isUriMasterClue(headModelWidget) && isUriStandardDialogue(npcChatWidget)))
@@ -448,6 +449,7 @@ public class ClueInventoryManager
 			ClueInstance clue =  cluesInInventory.get(ItemID.CLUE_SCROLL_MASTER);
 			if (clue == null) return;
 			clue.setClueIds(List.of());
+			clueDetailsPlugin.getItemsOverlay().invalidateCache();
 		}
 	}
 
