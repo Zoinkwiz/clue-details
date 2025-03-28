@@ -442,11 +442,6 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (event.getGroup().equals("clue-details-highlights"))
-		{
-			infoOverlay.refreshHighlights();
-		}
-
 		if (event.getKey().equals("beginnerDetails")
 			|| event.getKey().equals("easyDetails")
 			|| event.getKey().equals("mediumDetails")
