@@ -108,6 +108,7 @@ public class ClueDetailsPlugin extends Plugin
 	@Inject
 	private ClueDetailsInventoryOverlay inventoryOverlay;
 
+	@Getter
 	@Inject
 	private ClueDetailsItemsOverlay itemsOverlay;
 
