@@ -114,6 +114,8 @@ public class ClueInventoryManager
 	{
 		ClueInstance clueInstance;
 
+		if (!Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode())) return;
+
 		// If we have a clue we've picked up this tick, we've probably dropped and picked up a clue same tick
 		Optional<ClueInstance> clueFromFloorInInv = clueGroundManager.getDespawnedClueQueueForInventoryCheck().stream()
 			.filter(clueFromFloor ->  clueFromFloor.getItemId() == itemId)
