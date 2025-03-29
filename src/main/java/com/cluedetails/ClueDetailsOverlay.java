@@ -459,7 +459,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			ClueInstance clueInstance = clueInventoryManager.getClueByClueItemId(scrollID);
 			if (clueInstance != null && !clueInstance.getClueIds().isEmpty())
 			{
-				return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor, isFloorText);
+				return clueInstance.getCombinedClueText(configManager, showColor, isFloorText);
 			}
 		}
 
@@ -515,7 +515,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		ClueInstance clueInstance = getTrackedClueInstance(entry);
 		if (clueInstance == null) return null;
 
-		return clueInstance.getCombinedClueText(clueDetailsPlugin, configManager, showColor, isFloorText);
+		return clueInstance.getCombinedClueText(configManager, showColor, isFloorText);
 	}
 
 	private Color getTrackedClueColor(MenuEntryAndPos entry)

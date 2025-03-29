@@ -215,7 +215,7 @@ public class ClueInstance
 		return timeToDespawnFromDataInTicks == null ? -1 : timeToDespawnFromDataInTicks;
 	}
 
-	public String getCombinedClueText(ClueDetailsPlugin plugin, ConfigManager configManager, boolean showColor, boolean isFloorText)
+	public String getCombinedClueText(ConfigManager configManager, boolean showColor, boolean isFloorText)
 	{
 		StringBuilder returnText = new StringBuilder();
 		boolean isFirst = true;
@@ -246,7 +246,7 @@ public class ClueInstance
 
 			returnText.append(cluePart.getDetail(configManager));
 		}
-		if (returnText.length() == 0) return getItemName(plugin);
+		if (returnText.length() == 0) return null;
 		return returnText.toString();
 	}
 
