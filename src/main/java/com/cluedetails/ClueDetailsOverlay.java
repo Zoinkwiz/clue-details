@@ -204,7 +204,11 @@ public class ClueDetailsOverlay extends OverlayPanel
 			return;
 		}
 
-		changeGroundItemMenu(getEntriesByTile(menuEntries));
+		// Don't run when client.isMenuOpen due to conflict with Ground Items "Collapse ground item menu"
+		if (!client.isMenuOpen())
+		{
+			changeGroundItemMenu(getEntriesByTile(menuEntries));
+		}
 	}
 
 	@Subscribe
