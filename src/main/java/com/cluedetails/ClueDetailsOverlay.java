@@ -192,7 +192,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		addTooltip(getEntriesByTile(currentMenuEntries));
 	}
 
-	// Using onClientTick for compatability with Ground Items "Collapse ground item menu"
+	// Using onClientTick for compatibility with Ground Items "Collapse ground item menu"
 	@Subscribe
 	public void onClientTick(ClientTick event)
 	{
@@ -223,6 +223,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 
 	private void changeGroundItemMenu(List<MenuEntryAndPos> entriesByTile)
 	{
+		int threeStepCount = 0;
 		// Change ground item menu text
 		for (MenuEntryAndPos entryAndPos : entriesByTile)
 		{
@@ -256,7 +257,9 @@ public class ClueDetailsOverlay extends OverlayPanel
 			// Handle master three-step cryptic
 			if (newText.split("<br>").length > 1)
 			{
-				newText = "Three-step (master)";
+				// Add unique col tag for compatibility with Ground Items "Collapse ground item menu"
+				newText = "Three-step (master)<col=" + String.format("%0" + 8 + "d", threeStepCount) + ">";
+				threeStepCount++;
 			}
 			// Replace the matched text with the new text
 			String newTarget = matcher.replaceAll(newText);
