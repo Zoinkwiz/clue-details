@@ -39,6 +39,7 @@ import net.runelite.client.config.*;
 @ConfigGroup("clue-details")
 public interface ClueDetailsConfig extends Config
 {
+	String GROUP = "clue-details";
 	String CLUE_ITEMS_CONFIG = "clue-details-items";
 
 	enum ClueOrdering implements Comparator<Clues>
@@ -287,7 +288,7 @@ public interface ClueDetailsConfig extends Config
 		keyName = "highlightFeather",
 		name = "Highlighted feathering",
 		description = "Configure the feathering of highlighted clues",
-	section = markedCluesSection,
+		section = markedCluesSection,
 		position = 3
 	)
 	default int highlightFeather()
@@ -697,5 +698,66 @@ public interface ClueDetailsConfig extends Config
 	default boolean masterDetails()
 	{
 		return true;
+	}
+
+	@ConfigSection(name = "Helpers", description = "Options to configure particular helper features", position = 8)
+	String helperSection = "helperSection";
+
+	@ConfigItem(
+		keyName = "threeStepperSaver",
+		name = "Three-stepper saver",
+		description = "Allows you to set a three-step master clue you wish to save, removing the ability combine torn scrolls when the set clue is in your inventory",
+		section = helperSection,
+		position = 0
+	)
+	default boolean threeStepperSaver()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "highlightSavedThreeStepper",
+		name = "Highlight saved three-stepper",
+		description = "Configures where to highlight your saved three-stepper",
+		section = helperSection,
+		position = 1
+	)
+	default SavedThreeStepperEnum highlightSavedThreeStepper()
+	{
+		return SavedThreeStepperEnum.OFF;
+	}
+
+	enum SavedThreeStepperEnum
+	{
+		OFF,
+		GROUND,
+		INVENTORY,
+		BOTH
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "groundThreeStepperHighlightColor",
+		name = "Ground saved three-stepper highlight color",
+		description = "Configures the color for highlighted saved three-stepper on the ground",
+		section = helperSection,
+		position = 2
+	)
+	default Color groundThreeStepperHighlightColor()
+	{
+		return Color.GREEN.darker();
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "threeStepperHighlightColor",
+		name = "Inventory saved three-stepper highlight color",
+		description = "Configures the color for highlighted saved three-stepper in inventory",
+		section = helperSection,
+		position = 3
+	)
+	default Color invThreeStepperHighlightColor()
+	{
+		return Color.GREEN.darker();
 	}
 }

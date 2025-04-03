@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +44,11 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.OverlayUtil;
 import net.runelite.client.ui.overlay.components.TextComponent;
+
+import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.BOTH;
+import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.GROUND;
 
 // Heavily lifted from net.runelite.client.plugins.grounditems.GroundItemsOverlay
 public class ClueGroundOverlay extends Overlay
@@ -64,9 +69,10 @@ public class ClueGroundOverlay extends Overlay
 	private final ConfigManager configManager;
 	private final ClueDetailsPlugin plugin;
 	private ClueGroundManager clueGroundManager;
+	private ClueThreeStepSaver clueThreeStepSaver;
 
 	@Inject
-	private ClueGroundOverlay(ClueDetailsPlugin plugin, Client client, ClueDetailsConfig config, ConfigManager configManager)
+	private ClueGroundOverlay(ClueDetailsPlugin plugin, Client client, ClueDetailsConfig config, ConfigManager configManager, ClueThreeStepSaver clueThreeStepSaver)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.UNDER_WIDGETS);
@@ -74,11 +80,13 @@ public class ClueGroundOverlay extends Overlay
 		this.client = client;
 		this.config = config;
 		this.configManager = configManager;
+		this.clueThreeStepSaver = clueThreeStepSaver;
 	}
 
-	public void startUp(ClueGroundManager clueGroundManager)
+	public void startUp(ClueGroundManager clueGroundManager, ClueThreeStepSaver clueThreeStepSaver)
 	{
 		this.clueGroundManager = clueGroundManager;
+		this.clueThreeStepSaver = clueThreeStepSaver;
 	}
 
 	@Override
@@ -86,7 +94,7 @@ public class ClueGroundOverlay extends Overlay
 	{
 		if(clueGroundManager == null) return null;
 
-		if (!config.showGroundClues())
+		if (!config.showGroundClues() && !shouldRenderSavedThreeStepper())
 		{
 			return null;
 		}
@@ -130,15 +138,40 @@ public class ClueGroundOverlay extends Overlay
 			{
 				ClueInstance item = entry.getKey();
 
-				if(item.isEnabled(config))
+				if(item.isEnabled(config) && config.showGroundClues())
 				{
 					int quantity = entry.getValue();
 					renderClueInstanceGroundOverlay(graphics, item, quantity, groundPoint, fm);
+				}
+
+				if (shouldRenderSavedThreeStepper())
+				{
+					renderSavedThreeStepper(graphics,item,groundPoint);
 				}
 			}
 		}
 
 		return null;
+	}
+
+	private void renderSavedThreeStepper(Graphics2D graphics,ClueInstance clueInstance,LocalPoint lp)
+	{
+		if (isSavedThreeStepper(clueInstance))
+		{
+			Polygon savedThreeStepperPoly = Perspective.getCanvasTilePoly(client,lp);
+			OverlayUtil.renderPolygon(graphics,savedThreeStepperPoly,config.groundThreeStepperHighlightColor());
+		}
+	}
+
+	private boolean shouldRenderSavedThreeStepper()
+	{
+		return config.threeStepperSaver() && (config.highlightSavedThreeStepper() == BOTH || config.highlightSavedThreeStepper() == GROUND);
+	}
+
+	private boolean isSavedThreeStepper(ClueInstance clueInstance)
+	{
+		if (clueThreeStepSaver.getSavedThreeStepper() == null || !config.threeStepperSaver()) return false;
+		return clueInstance.getClueIds().equals(clueThreeStepSaver.getSavedThreeStepper().getClueIds());
 	}
 
 	private int getSecondsLeft(ClueInstance item)
