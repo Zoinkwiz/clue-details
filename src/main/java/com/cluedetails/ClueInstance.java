@@ -104,6 +104,16 @@ public class ClueInstance
 		return clueIds;
 	}
 
+	public List<Integer> getUniqueIds()
+	{
+		if (clueIds.isEmpty())
+		{
+			return Collections.singletonList(itemId);
+		}
+
+		return clueIds;
+	}
+
 	public ClueTier getTier()
 	{
 		Clues clue;
@@ -119,6 +129,8 @@ public class ClueInstance
 
 		if (clue == null)
 		{
+			if (itemId == ItemID.CLUE_SCROLL_BEGINNER) return ClueTier.BEGINNER;
+			if (itemId == ItemID.CLUE_SCROLL_MASTER) return ClueTier.MASTER;
 			return null;
 		}
 		return clue.getClueTier();
@@ -257,7 +269,11 @@ public class ClueInstance
 
 	public boolean isEnabled(ClueDetailsConfig config)
 	{
-		if (itemId == ItemID.CLUE_SCROLL_BEGINNER || Clues.DEV_MODE_IDS.contains(itemId))
+		if (Clues.DEV_MODE_IDS.contains(itemId))
+		{
+			return config.beginnerDetails();
+		}
+		else if (getTier() == ClueTier.BEGINNER)
 		{
 			return config.beginnerDetails();
 		}
@@ -277,7 +293,7 @@ public class ClueInstance
 		{
 			return config.eliteDetails();
 		}
-		else if (itemId == ItemID.CLUE_SCROLL_MASTER)
+		else if (getTier() == ClueTier.MASTER)
 		{
 			return config.masterDetails();
 		}

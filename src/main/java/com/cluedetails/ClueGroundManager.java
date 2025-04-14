@@ -436,7 +436,7 @@ public class ClueGroundManager
 
 		for (ClueInstance item : items)
 		{
-			List<Integer> clueIds = item.getClueIds();
+			List<Integer> clueIds = item.getUniqueIds();
 
 			if (!lowestValueItems.containsKey(clueIds)
 				|| item.getDespawnTick(currentTick) < lowestValueItems.get(clueIds).getDespawnTick(currentTick))
@@ -451,7 +451,7 @@ public class ClueGroundManager
 		}
 
 		return lowestValueItems.values().stream()
-			.collect(Collectors.toMap(item -> item, item -> uniqueCount.get(item.getClueIds())));
+			.collect(Collectors.toMap(item -> item, item -> uniqueCount.get(item.getUniqueIds())));
 	}
 
 	// Remove duplicate tier clues, maintaining a count of the original amount of each
