@@ -511,7 +511,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 		int sceneY = menuEntry.getParam1();
 		int wv = menuEntry.getWorldViewId();
 		LocalPoint itemLp = new LocalPoint(sceneX * SCENE_TO_LOCAL, sceneY * SCENE_TO_LOCAL, wv);
-		WorldPoint itemWp = WorldPoint.fromLocalInstance(client, itemLp);
+		WorldPoint itemWp = WorldPoint.fromLocal(client, itemLp);
 		List<ClueInstance> trackedClues = new ArrayList<>(clueGroundManager.getAllGroundCluesOnWp(itemWp));
 		if (trackedClues.size() <= entry.getPosOnTile()) return null;
 		return trackedClues.get(entry.getPosOnTile());
