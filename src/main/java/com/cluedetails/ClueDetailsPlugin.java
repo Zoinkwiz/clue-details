@@ -28,11 +28,9 @@ import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.TimerTask;
 import java.util.TreeMap;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -42,6 +40,7 @@ import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
@@ -50,6 +49,7 @@ import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuEntryAdded;
+import net.runelite.api.events.MenuOpened;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
@@ -148,6 +148,7 @@ public class ClueDetailsPlugin extends Plugin
 
 	private ClueBankManager clueBankManager;
 
+	@Getter
 	private CluePreferenceManager cluePreferenceManager;
 
 	@Getter
@@ -392,6 +393,13 @@ public class ClueDetailsPlugin extends Plugin
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		clueInventoryManager.onMenuEntryAdded(event, cluePreferenceManager, panel);
+	}
+
+	@Subscribe
+	public void onMenuOpened(MenuOpened event)
+	{
+		MenuEntry[] entries = event.getMenuEntries();
+		clueInventoryManager.addHighlightWidgetSubmenus(entries, cluePreferenceManager);
 	}
 
 	@Subscribe

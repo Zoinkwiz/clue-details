@@ -59,6 +59,7 @@ public class ClueInventoryManager
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Map<Integer, ClueInstance> cluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousCluesInInventory = new HashMap<>();
+	private final Set<Integer> inventoryCluesWidgetIds = new HashSet<>();
 
 	// To be initialized to avoid passing around
 	@Setter
@@ -108,6 +109,35 @@ public class ClueInventoryManager
 				}
 			}
 		}
+
+		updateInventoryCluesWidgetIds();
+	}
+
+	private void updateInventoryCluesWidgetIds()
+	{
+		Set<Integer> clueWidgetIds = new HashSet<>();
+		for (ClueInstance instance : cluesInInventory.values())
+		{
+			if (instance == null)
+			{
+				continue;
+			}
+			for (int clueId : instance.getClueIds())
+			{
+				List<Integer> widgetsPreference = clueDetailsPlugin.getCluePreferenceManager().getWidgetsPreference(clueId);
+				if (widgetsPreference != null)
+				{
+					clueWidgetIds.addAll(widgetsPreference);
+				}
+			}
+		}
+		inventoryCluesWidgetIds.clear();
+		inventoryCluesWidgetIds.addAll(clueWidgetIds);
+	}
+
+	public Set<Integer> getClueWidgetIds()
+	{
+		return inventoryCluesWidgetIds;
 	}
 
 	private void checkItemAsClueInstance(int itemId)
@@ -205,6 +235,46 @@ public class ClueInventoryManager
 	public ClueInstance getClueByClueItemId(Integer clueItemID)
 	{
 		return cluesInInventory.get(clueItemID);
+	}
+
+	public void addHighlightWidgetSubmenus(MenuEntry[] entries, CluePreferenceManager cluePreferenceManager)
+	{
+		if (!client.isKeyPressed(KeyCode.KC_SHIFT))
+		{
+			return;
+		}
+
+		if (cluesInInventory.isEmpty())
+		{
+			return;
+		}
+
+		for (int idx = entries.length - 1; idx >= 0; --idx)
+		{
+			MenuEntry entry = entries[idx];
+
+			Widget widget = entry.getWidget();
+			if (widget == null || widget.getActions() == null)
+			{
+				return;
+			}
+
+			// Disable item marking, separate feature
+			if (widget.getItemId() != -1)
+			{
+				continue;
+			}
+
+			int componentId = widget.getId();
+
+			MenuEntry clueDetailsEntry = client.getMenu().createMenuEntry(1) // place above Cancel
+					.setOption("Clue details")
+					.setType(MenuAction.RUNELITE);
+			Menu submenu = clueDetailsEntry.createSubMenu();
+
+			cluesInInventory.forEach((id, instance) -> instance.getClueIds().forEach((clueId) -> addHighlightWidgetMenu(cluePreferenceManager, submenu, Clues.forClueIdFiltered(clueId), componentId)));
+			break;
+		}
 	}
 
 	public void onMenuEntryAdded(MenuEntryAdded event, CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel)
@@ -377,6 +447,23 @@ public class ClueInventoryManager
 				updateClueItems(clue, itemId, cluePreferenceManager));
 	}
 
+	private void addHighlightWidgetMenu(CluePreferenceManager cluePreferenceManager, Menu menu, Clues clue, int widgetId)
+	{
+		if (clue == null) return;
+
+		boolean widgetInCluePreference = cluePreferenceManager.widgetsPreferenceContainsWidget(clue.getClueID(), widgetId);
+
+		String action = widgetInCluePreference ? "Remove from " : "Add to ";
+		String clueDetail = clue.getDetail(configManager);
+		final String text = action + "'" + clueDetail + "'";
+
+		// Add menu to widget for clue
+		menu.createMenuEntry(-1)
+				.setOption(text)
+				.setType(MenuAction.RUNELITE)
+				.onClick(e -> updateClueWidgets(clue, widgetId, cluePreferenceManager));
+	}
+
 	private void toggleMarkClue(CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, int clueId, boolean isMarked, String target)
 	{
 		// We don't want to have marking on masters I think
@@ -417,6 +504,35 @@ public class ClueInventoryManager
 
 		// Save Clue itemIds
 		cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
+	}
+
+	private void updateClueWidgets(Clues clue, int widgetId, CluePreferenceManager cluePreferenceManager)
+	{
+		// Get existing Clue widgetIds
+		int clueId = clue.getClueID();
+		List<Integer> clueWidgetIds = cluePreferenceManager.getWidgetsPreference(clueId);
+
+		if (clueWidgetIds == null)
+		{
+			clueWidgetIds = new ArrayList<>();
+		}
+
+		// Remove if already present
+		if (clueWidgetIds.contains(widgetId))
+		{
+			clueWidgetIds.remove(Integer.valueOf(widgetId));
+		}
+		// Add if not present
+		else
+		{
+			clueWidgetIds.add(widgetId);
+		}
+
+		// Save Clue widgetIds
+		cluePreferenceManager.saveWidgetsPreference(clueId, clueWidgetIds);
+
+		// Reload highlighted widget ids for clues in inventory
+		updateInventoryCluesWidgetIds();
 	}
 
 	private boolean hasClueName(String name)
