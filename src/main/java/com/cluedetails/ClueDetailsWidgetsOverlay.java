@@ -25,9 +25,12 @@
  */
 package com.cluedetails;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import net.runelite.api.Client;
 import net.runelite.api.Point;
 import net.runelite.api.widgets.Widget;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -44,11 +47,15 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 {
 	private final Client client;
 	private final ClueDetailsConfig config;
+	private final ConfigManager configManager;
 
 	private ClueInventoryManager clueInventoryManager;
+	private CluePreferenceManager cluePreferenceManager;
+
+	private final Cache<Integer, Color> clueColorCache;
 
 	@Inject
-	public ClueDetailsWidgetsOverlay(Client client, ClueDetailsConfig config)
+	public ClueDetailsWidgetsOverlay(Client client, ClueDetailsConfig config, ConfigManager configManager)
 	{
 		setPriority(PRIORITY_HIGHEST);
 		setLayer(OverlayLayer.ABOVE_WIDGETS);
@@ -57,70 +64,108 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 
 		this.client = client;
 		this.config = config;
+		this.configManager = configManager;
+
+		this.clueColorCache = CacheBuilder.newBuilder()
+			.concurrencyLevel(1)
+			.maximumSize(100)
+			.build();
 	}
 
-	public void startUp(ClueInventoryManager clueInventoryManager)
+	public void startUp(ClueInventoryManager clueInventoryManager, CluePreferenceManager cluePreferenceManager)
 	{
 		this.clueInventoryManager = clueInventoryManager;
+		this.cluePreferenceManager = cluePreferenceManager;
 	}
 
-	public void refreshWidgets()
+	public void populateInventoryCluesWidgetColors()
 	{
-		this.clueInventoryManager.updateInventoryCluesWidgetIds();
+		Color defaultHighlightColor = config.widgetHighlightColor();
+		Map<Integer, Color> clueWidgetColors = new HashMap<>();
+		if (config.highlightInventoryClueWidgets())
+		{
+			for (Integer itemID : clueInventoryManager.getCluesInInventory())
+			{
+				if (itemID == null) continue;
+				ClueInstance instance = clueInventoryManager.getClueByClueItemId(itemID);
+				if (instance == null)
+				{
+					continue;
+				}
+				for (int clueId : instance.getClueIds())
+				{
+					Clues clue = Clues.forClueIdFiltered(clueId);
+					if (clue == null || !clue.isEnabled(config))
+					{
+						continue;
+					}
+					Color clueColor = clue.getDetailColor(configManager);
+					Color widgetColor = config.colorInventoryClueWidgets()
+						? new Color(clueColor.getRed(), clueColor.getGreen(), clueColor.getBlue(), defaultHighlightColor.getAlpha())
+						: defaultHighlightColor;
+					List<Integer> widgetsPreference = cluePreferenceManager.getWidgetsPreference(clueId);
+					if (widgetsPreference != null)
+					{
+						for (int widgetId : widgetsPreference) {
+							clueWidgetColors.put(widgetId, widgetColor);
+						}
+					}
+				}
+			}
+		}
+		clueColorCache.invalidateAll();
+		clueColorCache.putAll(clueWidgetColors);
 	}
 
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (config.colorInventoryClueWidgets())
+		if (config.highlightInventoryClueWidgets() && clueColorCache.size() > 0)
 		{
-			Set<Integer> clueWidgetIds = clueInventoryManager.getClueWidgetIds();
-			if (!clueWidgetIds.isEmpty())
+			for (Map.Entry<Integer, Color> entry : clueColorCache.asMap().entrySet())
 			{
-				Color originalColor = graphics.getColor();
-				graphics.setColor(config.widgetHighlightColor());
-				for (int widgetId : clueWidgetIds)
+				int widgetId = entry.getKey();
+				Color widgetColor = entry.getValue();
+
+				Widget widget = client.getWidget(widgetId);
+				if (widget == null || widget.isHidden())
 				{
-					Widget widget = client.getWidget(widgetId);
-					if (widget == null || widget.isHidden())
+					continue;
+				}
+
+				graphics.setColor(widgetColor);
+
+				// Highlight as much of the widget as is visible of it inside its parent
+				Widget parent = widget.getParent();
+				if (parent != null)
+				{
+					Point widgetLocation = widget.getCanvasLocation();
+					if (widgetLocation == null)
 					{
 						continue;
 					}
 
-					// Highlight as much of the widget as is visible of it inside its parent
-					Widget parent = widget.getParent();
-					if (parent != null)
-					{
-						Point widgetLocation = widget.getCanvasLocation();
-						if (widgetLocation == null)
-						{
-							continue;
-						}
-
-						Point parentLocation = parent.getCanvasLocation();
-						if (parentLocation.getY() > widgetLocation.getY() + widget.getHeight()
+					Point parentLocation = parent.getCanvasLocation();
+					if (parentLocation.getY() > widgetLocation.getY() + widget.getHeight()
 							|| parentLocation.getY() + parent.getHeight() < widgetLocation.getY())
-						{
-							continue;
-						}
-
-						int x = widgetLocation.getX(); // no horizontal scrolling affecting location
-						int y = Math.max(widgetLocation.getY(), parentLocation.getY());
-						int width = widget.getWidth(); // no horizontal scrolling affecting width
-						int height = Math.min(widget.getHeight(), parent.getHeight());
-
-						Area widgetArea = new Area(new Rectangle(x, y, width, height));
-						graphics.fill(widgetArea);
-					}
-					else
 					{
-						graphics.fill(widget.getBounds());
+						continue;
 					}
+
+					int x = widgetLocation.getX(); // no horizontal scrolling affecting location
+					int y = Math.max(widgetLocation.getY(), parentLocation.getY());
+					int width = widget.getWidth(); // no horizontal scrolling affecting width
+					int height = Math.min(widget.getHeight(), parent.getHeight());
+
+					Area widgetArea = new Area(new Rectangle(x, y, width, height));
+					graphics.fill(widgetArea);
 				}
-				graphics.setColor(originalColor);
+				else
+				{
+					graphics.fill(widget.getBounds());
+				}
 			}
 		}
-
 		return super.render(graphics);
 	}
 }

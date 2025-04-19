@@ -26,6 +26,7 @@ package com.cluedetails;
 
 import com.cluedetails.panels.ClueDetailsParentPanel;
 
+import java.awt.Color;
 import java.util.*;
 import javax.inject.Singleton;
 import lombok.Setter;
@@ -59,7 +60,6 @@ public class ClueInventoryManager
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Map<Integer, ClueInstance> cluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousCluesInInventory = new HashMap<>();
-	private final Set<Integer> inventoryCluesWidgetIds = new HashSet<>();
 
 	// To be initialized to avoid passing around
 	@Setter
@@ -110,34 +110,7 @@ public class ClueInventoryManager
 			}
 		}
 
-		updateInventoryCluesWidgetIds();
-	}
-
-	public void updateInventoryCluesWidgetIds()
-	{
-		Set<Integer> clueWidgetIds = new HashSet<>();
-		for (ClueInstance instance : cluesInInventory.values())
-		{
-			if (instance == null)
-			{
-				continue;
-			}
-			for (int clueId : instance.getClueIds())
-			{
-				List<Integer> widgetsPreference = clueDetailsPlugin.getCluePreferenceManager().getWidgetsPreference(clueId);
-				if (widgetsPreference != null)
-				{
-					clueWidgetIds.addAll(widgetsPreference);
-				}
-			}
-		}
-		inventoryCluesWidgetIds.clear();
-		inventoryCluesWidgetIds.addAll(clueWidgetIds);
-	}
-
-	public Set<Integer> getClueWidgetIds()
-	{
-		return inventoryCluesWidgetIds;
+		clueDetailsPlugin.getWidgetsOverlay().populateInventoryCluesWidgetColors();
 	}
 
 	private void checkItemAsClueInstance(int itemId)
@@ -530,9 +503,6 @@ public class ClueInventoryManager
 
 		// Save Clue widgetIds
 		cluePreferenceManager.saveWidgetsPreference(clueId, clueWidgetIds);
-
-		// Reload highlighted widget ids for clues in inventory
-		updateInventoryCluesWidgetIds();
 	}
 
 	private boolean hasClueName(String name)

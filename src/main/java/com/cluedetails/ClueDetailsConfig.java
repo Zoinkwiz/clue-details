@@ -409,6 +409,20 @@ public interface ClueDetailsConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "highlightInventoryClueWidgets",
+		name = "Inventory tag clue widgets",
+		description = "Toggle whether to apply inventory tags to configured widgets for each clue in your inventory" +
+			"<br>Display mode is managed by Inventory Tags configuration" +
+			"<br>Alpha will always be used from 'Clue widgets color'",
+		section = overlaysSection,
+		position = 7
+	)
+	default boolean highlightInventoryClueWidgets()
+	{
+		return true;
+	}
+
 	@ConfigSection(name = "Overlay Colors", description = "Options that effect overlay colors", position = 5)
 	String overlayColorsSection = "Overlay Colors";
 

@@ -112,6 +112,7 @@ public class ClueDetailsPlugin extends Plugin
 	@Inject
 	private ClueDetailsItemsOverlay itemsOverlay;
 
+	@Getter
 	@Inject
 	private ClueDetailsWidgetsOverlay widgetsOverlay;
 
@@ -218,7 +219,7 @@ public class ClueDetailsPlugin extends Plugin
 		groundOverlay.startUp(clueGroundManager);
 		inventoryOverlay.setClueInventoryManager(clueInventoryManager);
 		itemsOverlay.setClueInventoryManager(clueInventoryManager);
-		widgetsOverlay.startUp(clueInventoryManager);
+		widgetsOverlay.startUp(clueInventoryManager, cluePreferenceManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -415,11 +416,6 @@ public class ClueDetailsPlugin extends Plugin
 			infoOverlay.refreshHighlights();
 		}
 
-		if (event.getGroup().equals(config.CLUE_WIDGETS_CONFIG))
-		{
-			widgetsOverlay.refreshWidgets();
-		}
-
 		if (event.getKey().equals("beginnerDetails")
 			|| event.getKey().equals("easyDetails")
 			|| event.getKey().equals("mediumDetails")
@@ -428,6 +424,7 @@ public class ClueDetailsPlugin extends Plugin
 			|| event.getKey().equals("masterDetails"))
 		{
 			Clues.rebuildFilteredCluesCache();
+			widgetsOverlay.populateInventoryCluesWidgetColors();
 		}
 
 		if (event.getGroup().equals("clue-details-color")
@@ -437,6 +434,15 @@ public class ClueDetailsPlugin extends Plugin
 			|| event.getKey().equals("colorInventoryClueItems"))
 		{
 			itemsOverlay.invalidateCache();
+		}
+
+		if (event.getGroup().equals(config.CLUE_WIDGETS_CONFIG)
+			|| event.getKey().equals("highlightInventoryClueWidgets")
+			|| event.getKey().equals("widgetHighlightColor")
+			|| event.getKey().equals("colorInventoryClueWidgets")
+			|| event.getGroup().equals("clue-details-color"))
+		{
+			widgetsOverlay.populateInventoryCluesWidgetColors();
 		}
 
 		if (!event.getGroup().equals(ClueDetailsConfig.class.getAnnotation(ConfigGroup.class).value()))
