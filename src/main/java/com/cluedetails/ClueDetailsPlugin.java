@@ -113,6 +113,9 @@ public class ClueDetailsPlugin extends Plugin
 	private ClueDetailsItemsOverlay itemsOverlay;
 
 	@Inject
+	private ClueDetailsWidgetsOverlay widgetsOverlay;
+
+	@Inject
 	private EventBus eventBus;
 
 	@Inject
@@ -193,6 +196,7 @@ public class ClueDetailsPlugin extends Plugin
 		eventBus.register(groundOverlay);
 
 		overlayManager.add(tagsOverlay);
+		overlayManager.add(widgetsOverlay);
 
 		overlayManager.add(inventoryOverlay);
 		eventBus.register(inventoryOverlay);
@@ -214,6 +218,7 @@ public class ClueDetailsPlugin extends Plugin
 		groundOverlay.startUp(clueGroundManager);
 		inventoryOverlay.setClueInventoryManager(clueInventoryManager);
 		itemsOverlay.setClueInventoryManager(clueInventoryManager);
+		widgetsOverlay.startUp(clueInventoryManager);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
