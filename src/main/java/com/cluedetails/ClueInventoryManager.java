@@ -113,7 +113,7 @@ public class ClueInventoryManager
 		updateInventoryCluesWidgetIds();
 	}
 
-	private void updateInventoryCluesWidgetIds()
+	public void updateInventoryCluesWidgetIds()
 	{
 		Set<Integer> clueWidgetIds = new HashSet<>();
 		for (ClueInstance instance : cluesInInventory.values())

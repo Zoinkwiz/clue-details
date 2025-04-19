@@ -64,6 +64,11 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 		this.clueInventoryManager = clueInventoryManager;
 	}
 
+	public void refreshWidgets()
+	{
+		this.clueInventoryManager.updateInventoryCluesWidgetIds();
+	}
+
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{

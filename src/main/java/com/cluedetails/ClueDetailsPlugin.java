@@ -415,6 +415,11 @@ public class ClueDetailsPlugin extends Plugin
 			infoOverlay.refreshHighlights();
 		}
 
+		if (event.getGroup().equals(config.CLUE_WIDGETS_CONFIG))
+		{
+			widgetsOverlay.refreshWidgets();
+		}
+
 		if (event.getKey().equals("beginnerDetails")
 			|| event.getKey().equals("easyDetails")
 			|| event.getKey().equals("mediumDetails")
