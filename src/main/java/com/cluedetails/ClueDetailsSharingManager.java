@@ -25,6 +25,8 @@
 package com.cluedetails;
 
 import static com.cluedetails.ClueDetailsConfig.CLUE_ITEMS_CONFIG;
+import static com.cluedetails.ClueDetailsConfig.CLUE_WIDGETS_CONFIG;
+
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
@@ -82,10 +84,13 @@ public class ClueDetailsSharingManager
 		{
 			int id = clue.getClueID();
 			configManager.unsetConfiguration("clue-details-text", String.valueOf(id));
+			configManager.unsetConfiguration("clue-details-color", String.valueOf(id));
+			configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
+			configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id));
 		}
 	}
 
-	public void exportClueDetails(boolean exportText, boolean exportColors, boolean exportItems)
+	public void exportClueDetails(boolean exportText, boolean exportColors, boolean exportItems, boolean exportWidgets)
 	{
 		List<ClueIdToDetails> clueIdToDetailsList = new ArrayList<>();
 
@@ -97,77 +102,26 @@ public class ClueDetailsSharingManager
 		for (Clues clue : filteredClues)
 		{
 			int id = clue.getClueID();
-			String clueText = configManager.getConfiguration("clue-details-text", String.valueOf(id));
-			String clueColor = configManager.getConfiguration("clue-details-color", String.valueOf(id));
-			String clueItems = configManager.getConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
+			String clueText = exportText ? configManager.getConfiguration("clue-details-text", String.valueOf(id)) : null;
+			String clueColor = exportColors ? configManager.getConfiguration("clue-details-color", String.valueOf(id)) : null;
+			String clueItems = exportItems ? configManager.getConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id)) : null;
+			String clueWidgets = exportWidgets ? configManager.getConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id)) : null;
 
 			// Try to export text, color, and items. Export where valid configurations are returned
-			if (exportText && exportColors && exportItems)
-			{
-				if (clueItems != null)
-				{
-					List<Integer> loadedClueItemsData = gson.fromJson(clueItems, new TypeToken<List<Integer>>()
-					{
-					}.getType());
+			List<Integer> loadedClueItemsData = clueItems != null
+					? gson.fromJson(clueItems, new TypeToken<List<Integer>>(){}.getType())
+					: null;
 
-					// Export text, colors, and items
-					if (clueColor != null && clueText != null)
-					{
-						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor), loadedClueItemsData));
-					}
-					// Export text and items
-					else if (clueText != null)
-					{
-						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, loadedClueItemsData));
-					}
-					// Export color and items
-					else if (clueColor != null)
-					{
-						clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor), loadedClueItemsData));
-					}
-					// Export items
-					else
-					{
-						clueIdToDetailsList.add(new ClueIdToDetails(id, loadedClueItemsData));
-					}
-				}
-				else
-				{
-					// Export text and colors
-					if (clueText != null && clueColor != null)
-					{
-						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText, Color.decode(clueColor)));
-					}
-					// Export text
-					else if (clueText != null)
-					{
-						clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
-					}
-					// Export colors
-					else if (clueColor != null)
-					{
-						clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
-					}
-				}
-			}
-			// Export text
-			else if (exportText && clueText != null)
-			{
-				clueIdToDetailsList.add(new ClueIdToDetails(id, clueText));
-			}
-			// Export colors
-			else if (exportColors && clueColor != null)
-			{
-				clueIdToDetailsList.add(new ClueIdToDetails(id, Color.decode(clueColor)));
-			}
-			// Export items
-			else if (exportItems && clueItems != null)
-			{
-				List<Integer> loadedClueItemsData = gson.fromJson(clueItems, new TypeToken<List<Integer>>()
-				{
-				}.getType());
+			List<Integer> loadedClueWidgetsData = clueWidgets != null
+					? gson.fromJson(clueWidgets, new TypeToken<List<Integer>>(){}.getType())
+					: null;
 
-				clueIdToDetailsList.add(new ClueIdToDetails(id, loadedClueItemsData));
+			Color exportedColor = clueColor != null ? Color.decode(clueColor) : null;
+
+			ClueIdToDetails clueDetails = new ClueIdToDetails(id, clueText, exportedColor, loadedClueItemsData, loadedClueWidgetsData);
+			if (clueText != null || exportedColor != null || loadedClueItemsData != null || loadedClueWidgetsData != null)
+			{
+				clueIdToDetailsList.add(clueDetails);
 			}
 		}
 
@@ -299,11 +253,22 @@ public class ClueDetailsSharingManager
 			{
 				if (importPoint.itemIds.isEmpty())
 				{
-					configManager.unsetConfiguration("clue-details-items", String.valueOf(importPoint.id));
+					configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(importPoint.id));
 				}
 				else
 				{
-					configManager.setConfiguration("clue-details-items", String.valueOf(importPoint.id), importPoint.itemIds);
+					configManager.setConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(importPoint.id), importPoint.itemIds);
+				}
+			}
+			if (importPoint.widgetIds != null)
+			{
+				if (importPoint.widgetIds.isEmpty())
+				{
+					configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(importPoint.id));
+				}
+				else
+				{
+					configManager.setConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(importPoint.id), importPoint.widgetIds);
 				}
 			}
 		}

@@ -463,7 +463,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			{
 				if (SwingUtilities.isLeftMouseButton(e))
 				{
-					clueDetailsSharingManager.exportClueDetails(true, true, true);
+					clueDetailsSharingManager.exportClueDetails(true, true, true, true);
 				}
 			}
 
@@ -538,21 +538,27 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 		JMenuItem inputItemExportText = new JMenuItem("Export clue text");
 		inputItemExportText.addActionListener(event
-			-> clueDetailsSharingManager.exportClueDetails(true, false, false)
+			-> clueDetailsSharingManager.exportClueDetails(true, false, false, false)
 		);
 		popupMenu.add(inputItemExportText);
 
 		JMenuItem inputItemExportColors = new JMenuItem("Export clue colors");
 		inputItemExportColors.addActionListener(event
-			-> clueDetailsSharingManager.exportClueDetails(false, true, false)
+			-> clueDetailsSharingManager.exportClueDetails(false, true, false, false)
 		);
 		popupMenu.add(inputItemExportColors);
 
 		JMenuItem inputItemExportItems = new JMenuItem("Export clue items");
 		inputItemExportItems.addActionListener(event
-			-> clueDetailsSharingManager.exportClueDetails(false, false, true)
+			-> clueDetailsSharingManager.exportClueDetails(false, false, true, false)
 		);
 		popupMenu.add(inputItemExportItems);
+
+		JMenuItem inputItemExportWidgets = new JMenuItem("Export clue widgets");
+		inputItemExportWidgets.addActionListener(event
+			-> clueDetailsSharingManager.exportClueDetails(false, false, false, true)
+		);
+		popupMenu.add(inputItemExportWidgets);
 
 		return popupMenu;
 	}

@@ -35,52 +35,15 @@ public class ClueIdToDetails
 	String text;
 	Color color;
 	List<Integer> itemIds;
+	List<Integer> widgetIds;
 
-	public ClueIdToDetails(int id, String text)
-	{
-		this.id = id;
-		this.text = text;
-	}
-
-	public ClueIdToDetails(int id, Color color)
-	{
-		this.id = id;
-		this.color = color;
-	}
-
-	public ClueIdToDetails(int id, List<Integer> itemIds)
-	{
-		this.id = id;
-		this.itemIds = itemIds;
-	}
-
-	public ClueIdToDetails(int id, String text, Color color)
-	{
-		this.id = id;
-		this.text = text;
-		this.color = color;
-	}
-
-	public ClueIdToDetails(int id, String text, List<Integer> itemIds)
-	{
-		this.id = id;
-		this.text = text;
-		this.itemIds = itemIds;
-	}
-
-	public ClueIdToDetails(int id, Color color, List<Integer> itemIds)
-	{
-		this.id = id;
-		this.color = color;
-		this.itemIds = itemIds;
-	}
-
-	public ClueIdToDetails(int id, String text, Color color, List<Integer> itemIds)
+	public ClueIdToDetails(int id, String text, Color color, List<Integer> itemIds, List<Integer> widgetIds)
 	{
 		this.id = id;
 		this.text = text;
 		this.color = color;
 		this.itemIds = itemIds;
+		this.widgetIds = widgetIds;
 	}
 
 	public static boolean equalRGB(Color color1, Color color2)
