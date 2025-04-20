@@ -84,9 +84,9 @@ public class CluePreferenceManager
 		}
 	}
 
-	public boolean widgetsPreferenceContainsWidget(int clueID, int widgetId)
+	public boolean widgetsPreferenceContainsWidget(int clueID, WidgetId widgetId)
 	{
-		List<Integer> clueWidgetIds = getWidgetsPreference(clueID);
+		List<WidgetId> clueWidgetIds = getWidgetsPreference(clueID);
 
 		if (clueWidgetIds != null)
 		{
@@ -95,14 +95,14 @@ public class CluePreferenceManager
 		return false;
 	}
 
-	public List<Integer> getWidgetsPreference(int clueID)
+	public List<WidgetId> getWidgetsPreference(int clueID)
 	{
 		String clueWidgets = configManager.getConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(clueID));
 
-		return clueDetailsPlugin.gson.fromJson(clueWidgets, new TypeToken<List<Integer>>(){}.getType());
+		return clueDetailsPlugin.gson.fromJson(clueWidgets, new TypeToken<List<WidgetId>>(){}.getType());
 	}
 
-	public void saveWidgetsPreference(int clueID, List<Integer> newWidgets)
+	public void saveWidgetsPreference(int clueID, List<WidgetId> newWidgets)
 	{
 		if (newWidgets.isEmpty())
 		{

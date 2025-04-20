@@ -52,7 +52,7 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 	private ClueInventoryManager clueInventoryManager;
 	private CluePreferenceManager cluePreferenceManager;
 
-	private final Cache<Integer, Color> clueColorCache;
+	private final Cache<WidgetId, Color> clueColorCache;
 
 	@Inject
 	public ClueDetailsWidgetsOverlay(Client client, ClueDetailsConfig config, ConfigManager configManager)
@@ -81,7 +81,7 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 	public void populateInventoryCluesWidgetColors()
 	{
 		Color defaultHighlightColor = config.widgetHighlightColor();
-		Map<Integer, Color> clueWidgetColors = new HashMap<>();
+		Map<WidgetId, Color> clueWidgetColors = new HashMap<>();
 		if (config.highlightInventoryClueWidgets())
 		{
 			for (Integer itemID : clueInventoryManager.getCluesInInventory())
@@ -103,10 +103,10 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 					Color widgetColor = config.colorInventoryClueWidgets()
 						? new Color(clueColor.getRed(), clueColor.getGreen(), clueColor.getBlue(), defaultHighlightColor.getAlpha())
 						: defaultHighlightColor;
-					List<Integer> widgetsPreference = cluePreferenceManager.getWidgetsPreference(clueId);
+					List<WidgetId> widgetsPreference = cluePreferenceManager.getWidgetsPreference(clueId);
 					if (widgetsPreference != null)
 					{
-						for (int widgetId : widgetsPreference) {
+						for (WidgetId widgetId : widgetsPreference) {
 							clueWidgetColors.put(widgetId, widgetColor);
 						}
 					}
@@ -122,12 +122,24 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 	{
 		if (config.highlightInventoryClueWidgets() && clueColorCache.size() > 0)
 		{
-			for (Map.Entry<Integer, Color> entry : clueColorCache.asMap().entrySet())
+			for (Map.Entry<WidgetId, Color> entry : clueColorCache.asMap().entrySet())
 			{
-				int widgetId = entry.getKey();
+				WidgetId widgetId = entry.getKey();
+				int componentId = widgetId.getComponentId();
+				int childIndex = widgetId.getChildIndex();
 				Color widgetColor = entry.getValue();
 
-				Widget widget = client.getWidget(widgetId);
+				Widget widget = client.getWidget(componentId);
+
+				if (widget != null && childIndex != -1)
+				{
+					Widget[] children = widget.getChildren();
+					if (children != null && childIndex < children.length)
+					{
+						widget = children[childIndex];
+					}
+				}
+
 				if (widget == null || widget.isHidden())
 				{
 					continue;

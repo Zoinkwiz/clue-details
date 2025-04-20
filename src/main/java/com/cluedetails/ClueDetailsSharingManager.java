@@ -112,8 +112,8 @@ public class ClueDetailsSharingManager
 					? gson.fromJson(clueItems, new TypeToken<List<Integer>>(){}.getType())
 					: null;
 
-			List<Integer> loadedClueWidgetsData = clueWidgets != null
-					? gson.fromJson(clueWidgets, new TypeToken<List<Integer>>(){}.getType())
+			List<WidgetId> loadedClueWidgetsData = clueWidgets != null
+					? gson.fromJson(clueWidgets, new TypeToken<List<WidgetId>>(){}.getType())
 					: null;
 
 			Color exportedColor = clueColor != null ? Color.decode(clueColor) : null;

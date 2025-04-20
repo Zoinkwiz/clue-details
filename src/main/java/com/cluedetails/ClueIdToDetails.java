@@ -35,9 +35,9 @@ public class ClueIdToDetails
 	String text;
 	Color color;
 	List<Integer> itemIds;
-	List<Integer> widgetIds;
+	List<WidgetId> widgetIds;
 
-	public ClueIdToDetails(int id, String text, Color color, List<Integer> itemIds, List<Integer> widgetIds)
+	public ClueIdToDetails(int id, String text, Color color, List<Integer> itemIds, List<WidgetId> widgetIds)
 	{
 		this.id = id;
 		this.text = text;

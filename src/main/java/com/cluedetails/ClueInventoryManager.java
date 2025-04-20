@@ -26,9 +26,9 @@ package com.cluedetails;
 
 import com.cluedetails.panels.ClueDetailsParentPanel;
 
-import java.awt.Color;
 import java.util.*;
 import javax.inject.Singleton;
+
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -239,13 +239,15 @@ public class ClueInventoryManager
 			}
 
 			int componentId = widget.getId();
+			int childIndex = widget.getIndex();
+			WidgetId widgetId = new WidgetId(componentId, childIndex);
 
 			MenuEntry clueDetailsEntry = client.getMenu().createMenuEntry(1) // place above Cancel
 					.setOption("Clue details")
 					.setType(MenuAction.RUNELITE);
 			Menu submenu = clueDetailsEntry.createSubMenu();
 
-			cluesInInventory.forEach((id, instance) -> instance.getClueIds().forEach((clueId) -> addHighlightWidgetMenu(cluePreferenceManager, submenu, Clues.forClueIdFiltered(clueId), componentId)));
+			cluesInInventory.forEach((id, instance) -> instance.getClueIds().forEach((clueId) -> addHighlightWidgetMenu(cluePreferenceManager, submenu, Clues.forClueIdFiltered(clueId), widgetId)));
 			break;
 		}
 	}
@@ -420,7 +422,7 @@ public class ClueInventoryManager
 				updateClueItems(clue, itemId, cluePreferenceManager));
 	}
 
-	private void addHighlightWidgetMenu(CluePreferenceManager cluePreferenceManager, Menu menu, Clues clue, int widgetId)
+	private void addHighlightWidgetMenu(CluePreferenceManager cluePreferenceManager, Menu menu, Clues clue, WidgetId widgetId)
 	{
 		if (clue == null) return;
 
@@ -479,11 +481,11 @@ public class ClueInventoryManager
 		cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
 	}
 
-	private void updateClueWidgets(Clues clue, int widgetId, CluePreferenceManager cluePreferenceManager)
+	private void updateClueWidgets(Clues clue, WidgetId widgetId, CluePreferenceManager cluePreferenceManager)
 	{
 		// Get existing Clue widgetIds
 		int clueId = clue.getClueID();
-		List<Integer> clueWidgetIds = cluePreferenceManager.getWidgetsPreference(clueId);
+		List<WidgetId> clueWidgetIds = cluePreferenceManager.getWidgetsPreference(clueId);
 
 		if (clueWidgetIds == null)
 		{
@@ -493,7 +495,7 @@ public class ClueInventoryManager
 		// Remove if already present
 		if (clueWidgetIds.contains(widgetId))
 		{
-			clueWidgetIds.remove(Integer.valueOf(widgetId));
+			clueWidgetIds.remove(widgetId);
 		}
 		// Add if not present
 		else
