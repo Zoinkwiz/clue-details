@@ -268,7 +268,7 @@ public class ClueDetailsSharingManager
 				}
 				else
 				{
-					configManager.setConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(importPoint.id), importPoint.widgetIds);
+					configManager.setConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(importPoint.id), gson.toJson(importPoint.widgetIds));
 				}
 			}
 		}
