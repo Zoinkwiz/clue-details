@@ -27,7 +27,6 @@ package com.cluedetails;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import net.runelite.api.Client;
-import net.runelite.api.Point;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -38,8 +37,6 @@ import javax.inject.Inject;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.geom.Area;
 import java.util.*;
 
 public class ClueDetailsWidgetsOverlay extends OverlayPanel
@@ -130,12 +127,14 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 				Color widgetColor = entry.getValue();
 
 				Widget widget = client.getWidget(componentId);
+				Widget parentWidget = null;
 
 				if (widget != null && childIndex != null && childIndex != -1)
 				{
 					Widget[] children = widget.getChildren();
 					if (children != null && childIndex < children.length)
 					{
+						parentWidget = widget.getParent();
 						widget = children[childIndex];
 					}
 				}
@@ -145,37 +144,19 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 					continue;
 				}
 
+				// parent is set earlier for child widgets but if not, use the normal widget's parent
+				if (parentWidget == null) {
+                    parentWidget = widget.getParent();
+				}
+
 				graphics.setColor(widgetColor);
 
 				// Highlight as much of the widget as is visible of it inside its parent
-				Widget parent = widget.getParent();
-				if (parent != null)
+				if (parentWidget != null)
 				{
-					Point widgetLocation = widget.getCanvasLocation();
-					if (widgetLocation == null)
-					{
-						continue;
-					}
-
-					Point parentLocation = parent.getCanvasLocation();
-					if (parentLocation.getY() > widgetLocation.getY() + widget.getHeight()
-							|| parentLocation.getY() + parent.getHeight() < widgetLocation.getY())
-					{
-						continue;
-					}
-
-					int x = widgetLocation.getX(); // no horizontal scrolling affecting location
-					int y = Math.max(widgetLocation.getY(), parentLocation.getY());
-					int width = widget.getWidth(); // no horizontal scrolling affecting width
-					int height = Math.min(widget.getHeight(), parent.getHeight());
-
-					Area widgetArea = new Area(new Rectangle(x, y, width, height));
-					graphics.fill(widgetArea);
+					graphics.setClip(parentWidget.getBounds());
 				}
-				else
-				{
-					graphics.fill(widget.getBounds());
-				}
+				graphics.fill(widget.getBounds());
 			}
 		}
 		return super.render(graphics);
