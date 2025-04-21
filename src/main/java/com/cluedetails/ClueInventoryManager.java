@@ -240,7 +240,7 @@ public class ClueInventoryManager
 
 			int componentId = widget.getId();
 			int childIndex = widget.getIndex();
-			WidgetId widgetId = new WidgetId(componentId, childIndex);
+			WidgetId widgetId = new WidgetId(componentId, childIndex == -1 ? null : childIndex);
 
 			MenuEntry clueDetailsEntry = client.getMenu().createMenuEntry(1) // place above Cancel
 					.setOption("Clue details")

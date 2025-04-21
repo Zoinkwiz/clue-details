@@ -29,6 +29,8 @@ import static com.cluedetails.ClueDetailsConfig.CLUE_WIDGETS_CONFIG;
 
 import com.google.gson.reflect.TypeToken;
 import java.util.List;
+import java.util.stream.*;
+
 import net.runelite.client.config.ConfigManager;
 
 public class CluePreferenceManager
@@ -110,7 +112,11 @@ public class CluePreferenceManager
 		}
 		else
 		{
-			String clueWidgetIdsJson = clueDetailsPlugin.gson.toJson(newWidgets);
+			List<WidgetId> mappedWidgetIds = newWidgets
+				.stream()
+				.map(w -> new WidgetId(w.getComponentId(), w.getChildIndex() == null || w.getChildIndex() == -1 ? null : w.getChildIndex()))
+				.collect(Collectors.toList());
+			String clueWidgetIdsJson = clueDetailsPlugin.gson.toJson(mappedWidgetIds);
 			configManager.setConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(clueID), clueWidgetIdsJson);
 		}
 	}

@@ -106,7 +106,8 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 					List<WidgetId> widgetsPreference = cluePreferenceManager.getWidgetsPreference(clueId);
 					if (widgetsPreference != null)
 					{
-						for (WidgetId widgetId : widgetsPreference) {
+						for (WidgetId widgetId : widgetsPreference)
+						{
 							clueWidgetColors.put(widgetId, widgetColor);
 						}
 					}
@@ -126,12 +127,12 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 			{
 				WidgetId widgetId = entry.getKey();
 				int componentId = widgetId.getComponentId();
-				int childIndex = widgetId.getChildIndex();
+				Integer childIndex = widgetId.getChildIndex();
 				Color widgetColor = entry.getValue();
 
 				Widget widget = client.getWidget(componentId);
 
-				if (widget != null && childIndex != -1)
+				if (widget != null && childIndex != null && childIndex != -1)
 				{
 					Widget[] children = widget.getChildren();
 					if (children != null && childIndex < children.length)

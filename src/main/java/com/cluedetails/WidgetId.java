@@ -5,12 +5,14 @@ import lombok.Getter;
 
 @Getter
 @Data
-public class WidgetId {
+public class WidgetId
+{
 
-    private int componentId;
-    private int childIndex;
+    private final int componentId;
+    private final Integer childIndex;
 
-    public WidgetId(int componentId, int childIndex) {
+    public WidgetId(int componentId, Integer childIndex)
+    {
         this.componentId = componentId;
         this.childIndex = childIndex;
     }
