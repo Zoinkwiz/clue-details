@@ -148,6 +148,9 @@ public class ClueDetailsPlugin extends Plugin
 	private ClueInventoryManager clueInventoryManager;
 
 	@Getter
+	private ClueWidgetManager clueWidgetManager;
+
+	@Getter
 	private ClueGroundManager clueGroundManager;
 
 	private ClueBankManager clueBankManager;
@@ -208,11 +211,13 @@ public class ClueDetailsPlugin extends Plugin
 		Clues.setConfig(config);
 		Clues.rebuildFilteredCluesCache();
 		ClueInventoryManager.setConfig(config);
+		ClueWidgetManager.setConfig(config);
 
 		cluePreferenceManager = new CluePreferenceManager(this, configManager);
 		clueGroundManager = new ClueGroundManager(client, configManager, this);
 		clueBankManager = new ClueBankManager(client, configManager, gson);
 		clueInventoryManager = new ClueInventoryManager(client, configManager, this, clueGroundManager, clueBankManager, chatboxPanelManager);
+		clueWidgetManager = new ClueWidgetManager(client, configManager, clueInventoryManager, cluePreferenceManager);
 		clueBankManager.startUp(clueInventoryManager);
 
 		infoOverlay.startUp(this, clueGroundManager, clueInventoryManager);
@@ -405,7 +410,7 @@ public class ClueDetailsPlugin extends Plugin
 	public void onMenuOpened(MenuOpened event)
 	{
 		MenuEntry[] entries = event.getMenuEntries();
-		clueInventoryManager.addHighlightWidgetSubmenus(entries, cluePreferenceManager);
+		clueWidgetManager.addHighlightWidgetSubmenus(entries);
 	}
 
 	@Subscribe
