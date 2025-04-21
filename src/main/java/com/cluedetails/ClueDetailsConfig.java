@@ -411,12 +411,11 @@ public interface ClueDetailsConfig extends Config
 
 	@ConfigItem(
 		keyName = "highlightInventoryClueWidgets",
-		name = "Inventory tag clue widgets",
-		description = "Toggle whether to apply inventory tags to configured widgets for each clue in your inventory" +
-			"<br>Display mode is managed by Inventory Tags configuration" +
-			"<br>Alpha will always be used from 'Clue widgets color'",
+		name = "Highlight clue widgets",
+		description = "Toggle whether to highlight widgets configured for each clue in your inventory." +
+			"<br>Opacity will always be used from 'Clue widgets color'",
 		section = overlaysSection,
-		position = 7
+		position = 8
 	)
 	default boolean highlightInventoryClueWidgets()
 	{
