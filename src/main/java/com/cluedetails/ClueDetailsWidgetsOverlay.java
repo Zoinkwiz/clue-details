@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2024, Zoinkwiz <https://www.github.com/Zoinkwiz>
- * Copyright (c) 2017, Aria <aria@ar1as.space>
+ * Copyright (c) 2025, cubeee <https://www.github.com/cubeee>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
