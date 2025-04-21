@@ -72,7 +72,8 @@ public class ClueWidgetManager
             clueInventoryManager.getCluesInInventory()
                     .forEach(itemId -> {
                         ClueInstance instance = clueInventoryManager.getClueByClueItemId(itemId);
-                        if (instance != null) {
+                        if (instance != null)
+                        {
                             instance
                                 .getClueIds()
                                 .forEach((clueId) -> addHighlightWidgetMenu(cluePreferenceManager, submenu, Clues.forClueIdFiltered(clueId), widgetId));

@@ -145,7 +145,8 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 				}
 
 				// parent is set earlier for child widgets but if not, use the normal widget's parent
-				if (parentWidget == null) {
+				if (parentWidget == null)
+				{
                     parentWidget = widget.getParent();
 				}
 
