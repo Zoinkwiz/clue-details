@@ -49,6 +49,10 @@ The "Inventory tag clue items" toggle applies inventory tags to configured items
 
 ![image](https://github.com/user-attachments/assets/3dc33f5b-f300-4614-b6bf-db7359f23ae5)
 
+The "Highlight clue widgets" toggle highlights configured widgets on the user interface for each clue in your inventory using configured clue colors
+
+![image](https://github.com/user-attachments/assets/9a3a66bb-0476-4fdd-ae0e-76c63fd28078)
+
 The "Show ground clues" toggle shows text overlay for ground clues, similar to the Ground Items plugin.
 
 ![ground_clues](https://github.com/user-attachments/assets/bb067da3-faaf-4d5f-a521-d1c3b030ab9b)
