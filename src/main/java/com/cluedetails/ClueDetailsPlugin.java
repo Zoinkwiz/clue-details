@@ -429,7 +429,7 @@ public class ClueDetailsPlugin extends Plugin
 			|| event.getKey().equals("masterDetails"))
 		{
 			Clues.rebuildFilteredCluesCache();
-			widgetsOverlay.populateInventoryCluesWidgetColors();
+			clueInventoryManager.updateLastInventoryRefreshTime();
 		}
 
 		if (event.getGroup().equals("clue-details-color")
@@ -447,7 +447,7 @@ public class ClueDetailsPlugin extends Plugin
 			|| event.getKey().equals("colorInventoryClueWidgets")
 			|| event.getGroup().equals("clue-details-color"))
 		{
-			widgetsOverlay.populateInventoryCluesWidgetColors();
+			clueInventoryManager.updateLastInventoryRefreshTime();
 		}
 
 		if (!event.getGroup().equals(ClueDetailsConfig.class.getAnnotation(ConfigGroup.class).value()))

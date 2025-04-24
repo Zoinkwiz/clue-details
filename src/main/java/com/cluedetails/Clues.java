@@ -1218,18 +1218,6 @@ public class Clues
 		return null;
 	}
 
-	public List<Integer> getWidgets(ClueDetailsPlugin plugin, ConfigManager configManager)
-	{
-		String widgets = configManager.getConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(getClueID()));
-		if (widgets != null)
-		{
-			return plugin.gson.fromJson(widgets, new TypeToken<List<Integer>>()
-			{
-			}.getType());
-		}
-		return null;
-	}
-
 	public static boolean isClue(int itemId, boolean isDeveloperMode)
 	{
 		return itemIdClueCache.containsKey(itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));

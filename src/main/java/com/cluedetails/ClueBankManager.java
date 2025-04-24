@@ -104,6 +104,7 @@ public class ClueBankManager
 		clue.setClueIds(clueFromBank.getClueIds());
 
 		cluesInBank.remove(trackedClueId);
+		clueInventoryManager.updateLastInventoryRefreshTime();
 	}
 
 	public void addToRemovedClues(ClueInstance clueInstance)

@@ -50,6 +50,8 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 
 	private final Cache<WidgetId, Color> clueColorCache;
 
+	private long lastUpdate = Integer.MAX_VALUE;
+
 	@Inject
 	public ClueDetailsWidgetsOverlay(Client client, ClueDetailsConfig config, ConfigManager configManager)
 	{
@@ -74,7 +76,7 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 		this.cluePreferenceManager = cluePreferenceManager;
 	}
 
-	public void populateInventoryCluesWidgetColors()
+	public void cacheInventoryCluesWidgetColors()
 	{
 		Color defaultHighlightColor = config.widgetHighlightColor();
 		Map<WidgetId, Color> clueWidgetColors = new HashMap<>();
@@ -117,6 +119,13 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+		long lastInventoryUpdate = clueInventoryManager.getLastInventoryUpdate();
+		if (lastUpdate != lastInventoryUpdate)
+		{
+			lastUpdate = lastInventoryUpdate;
+			cacheInventoryCluesWidgetColors();
+		}
+
 		if (config.highlightInventoryClueWidgets() && clueColorCache.size() > 0)
 		{
 			for (Map.Entry<WidgetId, Color> entry : clueColorCache.asMap().entrySet())
