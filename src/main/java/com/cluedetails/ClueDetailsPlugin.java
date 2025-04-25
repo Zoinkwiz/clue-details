@@ -259,6 +259,8 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.remove(itemsOverlay);
 		eventBus.unregister(itemsOverlay);
 
+		overlayManager.remove(widgetsOverlay);
+
 		clientToolbar.removeNavigation(navButton);
 
 		clueGroundManager.saveStateToConfig();
