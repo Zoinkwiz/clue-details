@@ -308,6 +308,7 @@ public class ClueInstance
 			return false;
 		}
 		// Should this really be considering it equal without consideration for the clueIds?
+		if (location == null) return false;
 		return itemId == clueInstance.itemId && diff1 == diff2 && location.equals(clueInstance.location);
 	}
 

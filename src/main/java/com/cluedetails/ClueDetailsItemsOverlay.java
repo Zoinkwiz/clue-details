@@ -166,6 +166,11 @@ public class ClueDetailsItemsOverlay extends WidgetItemOverlay
 			color = config.itemHighlightColor();
 		}
 
+		inventoryTagsOverlay(graphics, itemId, widgetItem, color);
+	}
+
+	public void inventoryTagsOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem, Color color)
+	{
 		Rectangle bounds = widgetItem.getCanvasBounds();
 		if (Boolean.TRUE.equals(configManager.getConfiguration(InventoryTagsConfig.GROUP,
 			"showTagOutline", Boolean.class)))
