@@ -30,6 +30,9 @@ import static com.cluedetails.ClueDetailsConfig.CLUE_WIDGETS_CONFIG;
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import java.awt.Color;
@@ -40,6 +43,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -133,12 +137,50 @@ public class ClueDetailsSharingManager
 
 		final String exportDump = gson.toJson(clueIdToDetailsList);
 
-		log.debug("Exported clue details: {}", exportDump);
+		final String sortedExportDump = sortJsonArrayById(exportDump);
+
+		log.debug("Exported clue details: {}", sortedExportDump);
 
 		Toolkit.getDefaultToolkit()
 			.getSystemClipboard()
-			.setContents(new StringSelection(exportDump), null);
+			.setContents(new StringSelection(sortedExportDump), null);
 		sendChatMessage(clueIdToDetailsList.size() + " clue details were copied to your clipboard.");
+	}
+
+	public static String sortJsonArrayById(String jsonString)
+	{
+		Gson gson = new Gson();
+		try
+		{
+			JsonArray jsonArray = gson.fromJson(jsonString, JsonArray.class);
+			List<JsonObject> jsonList = new ArrayList<>();
+
+			// Convert JsonArray to a List of JsonObjects
+			for (JsonElement element : jsonArray)
+			{
+				if (element.isJsonObject())
+				{
+					jsonList.add(element.getAsJsonObject());
+				}
+			}
+
+			// Sort the list based on the "id" key
+			jsonList.sort(Comparator.comparingInt(obj -> obj.get("id").getAsInt()));
+
+			// Convert the sorted list back to a JsonArray
+			JsonArray sortedJsonArray = new JsonArray();
+			for (JsonObject jsonObject : jsonList)
+			{
+				sortedJsonArray.add(jsonObject);
+			}
+
+			return gson.toJson(sortedJsonArray);
+		}
+		catch (Exception e)
+		{
+			log.error("Error processing JSON export.", e);
+			return null;
+		}
 	}
 
 	public void promptForImport()
