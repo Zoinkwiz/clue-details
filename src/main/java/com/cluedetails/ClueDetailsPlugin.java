@@ -207,6 +207,8 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		startUpOverlays();
 
+		clueThreeStepSaver.startUp();
+
 		Clues.rebuildFilteredCluesCache();
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
@@ -249,6 +251,7 @@ public class ClueDetailsPlugin extends Plugin
 		overlayManager.add(groundOverlay);
 		eventBus.register(groundOverlay);
 
+		overlayManager.add(clueThreeStepSaverWidgetOverlay);
 		overlayManager.add(tagsOverlay);
 		overlayManager.add(widgetsOverlay);
 
