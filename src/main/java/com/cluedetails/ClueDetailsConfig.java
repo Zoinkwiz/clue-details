@@ -706,7 +706,7 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "threeStepperSaver",
 		name = "Three-stepper saver",
-		description = "Allows you to set a three-step master clue you wish to save, removing the ability combine torn scrolls when the set clue is in your inventory",
+		description = "Allows you to set a three-step master clue you wish to save, removing the ability to combine torn scrolls when the set clue is in your inventory",
 		section = helperSection,
 		position = 0
 	)

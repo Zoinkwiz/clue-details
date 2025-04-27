@@ -146,7 +146,7 @@ public class ClueGroundOverlay extends Overlay
 
 				if (shouldRenderSavedThreeStepper())
 				{
-					renderSavedThreeStepper(graphics,item,groundPoint);
+					renderSavedThreeStepper(graphics, item, groundPoint);
 				}
 			}
 		}
@@ -154,12 +154,12 @@ public class ClueGroundOverlay extends Overlay
 		return null;
 	}
 
-	private void renderSavedThreeStepper(Graphics2D graphics,ClueInstance clueInstance,LocalPoint lp)
+	private void renderSavedThreeStepper(Graphics2D graphics, ClueInstance clueInstance, LocalPoint lp)
 	{
 		if (isSavedThreeStepper(clueInstance))
 		{
-			Polygon savedThreeStepperPoly = Perspective.getCanvasTilePoly(client,lp);
-			OverlayUtil.renderPolygon(graphics,savedThreeStepperPoly,config.groundThreeStepperHighlightColor());
+			Polygon savedThreeStepperPoly = Perspective.getCanvasTilePoly(client, lp);
+			OverlayUtil.renderPolygon(graphics, savedThreeStepperPoly, config.groundThreeStepperHighlightColor());
 		}
 	}
 

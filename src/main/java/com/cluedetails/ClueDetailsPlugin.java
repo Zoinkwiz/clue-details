@@ -220,7 +220,7 @@ public class ClueDetailsPlugin extends Plugin
 		clueThreeStepSaver.startUp(clueInventoryManager);
 
 		infoOverlay.startUp(this, clueGroundManager, clueInventoryManager);
-		groundOverlay.startUp(clueGroundManager,clueThreeStepSaver);
+		groundOverlay.startUp(clueGroundManager, clueThreeStepSaver);
 		inventoryOverlay.setClueInventoryManager(clueInventoryManager);
 		itemsOverlay.setClueInventoryManager(clueInventoryManager);
 		clueThreeStepSaverWidgetOverlay.setClueThreeStepSaver(clueThreeStepSaver);

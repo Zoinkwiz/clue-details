@@ -131,7 +131,7 @@ public class ClueThreeStepSaver
 	{
 		String threeStepMasterJson = configManager.getConfiguration(ClueDetailsConfig.GROUP, THREE_STEP_MASTER_KEY);
 		if (threeStepMasterJson == null) return;
-		savedThreeStepper = gson.fromJson(threeStepMasterJson,ClueInstance.class);
+		savedThreeStepper = gson.fromJson(threeStepMasterJson, ClueInstance.class);
 	}
 
 	public void startUp(ClueInventoryManager clueInventoryManager)
