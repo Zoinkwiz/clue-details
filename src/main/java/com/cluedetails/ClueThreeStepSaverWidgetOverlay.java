@@ -1,6 +1,6 @@
 package com.cluedetails;
 
-import lombok.Setter;
+import javax.inject.Singleton;
 import net.runelite.api.ItemID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.ui.overlay.WidgetItemOverlay;
@@ -10,13 +10,13 @@ import java.awt.Graphics2D;
 import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.BOTH;
 import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.INVENTORY;
 
+@Singleton
 public class ClueThreeStepSaverWidgetOverlay extends WidgetItemOverlay
 {
 	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueDetailsConfig config;
 
-	@Setter
-	private ClueThreeStepSaver clueThreeStepSaver;
+	private final ClueThreeStepSaver clueThreeStepSaver;
 
 	@Inject
 	private ClueThreeStepSaverWidgetOverlay(ClueDetailsPlugin clueDetailsPlugin, ClueThreeStepSaver clueThreeStepSaver, ClueDetailsConfig config)

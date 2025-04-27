@@ -148,17 +148,23 @@ public class ClueDetailsPlugin extends Plugin
 	Gson gson;
 
 	@Getter
+	@Inject
 	private ClueInventoryManager clueInventoryManager;
 
 	@Getter
+	@Inject
 	private ClueWidgetManager clueWidgetManager;
 
 	@Getter
+	@Inject
 	private ClueGroundManager clueGroundManager;
 
+	@Getter
+	@Inject
 	private ClueBankManager clueBankManager;
 
 	@Getter
+	@Inject
 	private CluePreferenceManager cluePreferenceManager;
 
 	@Inject
@@ -199,42 +205,9 @@ public class ClueDetailsPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		overlayManager.add(infoOverlay);
-		eventBus.register(infoOverlay);
+		startUpOverlays();
 
-		overlayManager.add(groundOverlay);
-		eventBus.register(groundOverlay);
-
-		overlayManager.add(tagsOverlay);
-		overlayManager.add(widgetsOverlay);
-
-		overlayManager.add(inventoryOverlay);
-		eventBus.register(inventoryOverlay);
-
-		overlayManager.add(itemsOverlay);
-		eventBus.register(itemsOverlay);
-
-		overlayManager.add(clueThreeStepSaverWidgetOverlay);
-
-		Clues.setConfig(config);
 		Clues.rebuildFilteredCluesCache();
-		ClueInventoryManager.setConfig(config);
-		ClueWidgetManager.setConfig(config);
-
-		cluePreferenceManager = new CluePreferenceManager(this, configManager);
-		clueGroundManager = new ClueGroundManager(client, configManager, this);
-		clueBankManager = new ClueBankManager(client, configManager, gson);
-		clueInventoryManager = new ClueInventoryManager(client, configManager, this, clueGroundManager, clueBankManager, chatboxPanelManager);
-		clueWidgetManager = new ClueWidgetManager(client, configManager, clueInventoryManager, cluePreferenceManager);
-		clueBankManager.startUp(clueInventoryManager);
-		clueThreeStepSaver.startUp(clueInventoryManager);
-
-		infoOverlay.startUp(this, clueGroundManager, clueInventoryManager);
-		groundOverlay.startUp(clueGroundManager, clueThreeStepSaver);
-		inventoryOverlay.setClueInventoryManager(clueInventoryManager);
-		itemsOverlay.setClueInventoryManager(clueInventoryManager);
-		widgetsOverlay.startUp(clueInventoryManager, cluePreferenceManager);
-		clueThreeStepSaverWidgetOverlay.setClueThreeStepSaver(clueThreeStepSaver);
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -254,6 +227,39 @@ public class ClueDetailsPlugin extends Plugin
 
 	@Override
 	protected void shutDown() throws Exception
+	{
+		shutDownOverlays();
+
+		clientToolbar.removeNavigation(navButton);
+
+		clueGroundManager.saveStateToConfig();
+		clueBankManager.saveStateToConfig();
+
+		for (ClueGroundTimer timer : clueGroundTimers)
+		{
+			infoBoxManager.removeInfoBox(timer);
+		}
+	}
+
+	private void startUpOverlays()
+	{
+		overlayManager.add(infoOverlay);
+		eventBus.register(infoOverlay);
+
+		overlayManager.add(groundOverlay);
+		eventBus.register(groundOverlay);
+
+		overlayManager.add(tagsOverlay);
+		overlayManager.add(widgetsOverlay);
+
+		overlayManager.add(inventoryOverlay);
+		eventBus.register(inventoryOverlay);
+
+		overlayManager.add(itemsOverlay);
+		eventBus.register(itemsOverlay);
+	}
+
+	private void shutDownOverlays()
 	{
 		overlayManager.remove(infoOverlay);
 		eventBus.unregister(infoOverlay);
@@ -423,13 +429,8 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onMenuOpened(MenuOpened event)
 	{
-		clueThreeStepSaver.onMenuOpened(event);
-	}
-
-	@Subscribe
-	public void onMenuOpened(MenuOpened event)
-	{
 		MenuEntry[] entries = event.getMenuEntries();
+		clueThreeStepSaver.onMenuOpened(event);
 		clueWidgetManager.addHighlightWidgetSubmenus(entries);
 	}
 

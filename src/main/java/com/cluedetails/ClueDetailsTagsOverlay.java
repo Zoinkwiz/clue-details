@@ -81,7 +81,7 @@ public class ClueDetailsTagsOverlay extends WidgetItemOverlay
 
 	private Pair<String, Color> getClueTextFromClueIds(List<Integer> ids)
 	{
-		String clueDetail = null;
+		String clueDetail;
 		Color clueDetailColor = Color.WHITE;
 
 		boolean isFirst = true;

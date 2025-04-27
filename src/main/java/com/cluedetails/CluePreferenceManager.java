@@ -31,13 +31,17 @@ import com.google.gson.reflect.TypeToken;
 import java.util.List;
 import java.util.stream.*;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import net.runelite.client.config.ConfigManager;
 
+@Singleton
 public class CluePreferenceManager
 {
 	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ConfigManager configManager;
 
+	@Inject
 	public CluePreferenceManager(ClueDetailsPlugin clueDetailsPlugin, ConfigManager configManager)
 	{
 		this.clueDetailsPlugin = clueDetailsPlugin;

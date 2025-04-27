@@ -31,10 +31,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.config.ConfigManager;
 
+@Singleton
 public class ClueGroundSaveDataManager
 {
 	private final ConfigManager configManager;
@@ -43,6 +46,7 @@ public class ClueGroundSaveDataManager
 	private static final String GROUND_CLUES_KEY = "ground-clues";
 	private final List<ClueInstanceData> clueInstanceData = new ArrayList<>();
 
+	@Inject
 	public ClueGroundSaveDataManager(ConfigManager configManager, Gson gson)
 	{
 		this.configManager = configManager;

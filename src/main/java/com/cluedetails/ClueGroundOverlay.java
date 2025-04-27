@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Player;
@@ -51,6 +52,7 @@ import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.BOTH;
 import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.GROUND;
 
 // Heavily lifted from net.runelite.client.plugins.grounditems.GroundItemsOverlay
+@Singleton
 public class ClueGroundOverlay extends Overlay
 {
 	private static final int MAX_DISTANCE = 2500;
@@ -68,11 +70,12 @@ public class ClueGroundOverlay extends Overlay
 	private final Map<WorldPoint, Integer> offsetMap = new HashMap<>();
 	private final ConfigManager configManager;
 	private final ClueDetailsPlugin plugin;
-	private ClueGroundManager clueGroundManager;
-	private ClueThreeStepSaver clueThreeStepSaver;
+	private final ClueGroundManager clueGroundManager;
+	private final ClueThreeStepSaver clueThreeStepSaver;
 
 	@Inject
-	private ClueGroundOverlay(ClueDetailsPlugin plugin, Client client, ClueDetailsConfig config, ConfigManager configManager, ClueThreeStepSaver clueThreeStepSaver)
+	private ClueGroundOverlay(ClueDetailsPlugin plugin, Client client, ClueDetailsConfig config, ConfigManager configManager,
+	                          ClueThreeStepSaver clueThreeStepSaver, ClueGroundManager clueGroundManager)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.UNDER_WIDGETS);
@@ -81,12 +84,7 @@ public class ClueGroundOverlay extends Overlay
 		this.config = config;
 		this.configManager = configManager;
 		this.clueThreeStepSaver = clueThreeStepSaver;
-	}
-
-	public void startUp(ClueGroundManager clueGroundManager, ClueThreeStepSaver clueThreeStepSaver)
-	{
 		this.clueGroundManager = clueGroundManager;
-		this.clueThreeStepSaver = clueThreeStepSaver;
 	}
 
 	@Override

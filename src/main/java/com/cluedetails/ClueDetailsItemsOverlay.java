@@ -34,7 +34,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import javax.inject.Inject;
-import lombok.Setter;
+import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemContainer;
@@ -48,26 +48,28 @@ import net.runelite.client.ui.overlay.WidgetItemOverlay;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 
+@Singleton
 public class ClueDetailsItemsOverlay extends WidgetItemOverlay
 {
 	private final Client client;
 	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
-	@Setter
-	private ClueInventoryManager clueInventoryManager;
+	private final ClueInventoryManager clueInventoryManager;
 	private final ItemManager itemManager;
 	private final Cache<Long, Image> fillCache;
 	private final Cache<Integer, Clues> clueCache;
 
 	@Inject
-	public ClueDetailsItemsOverlay(Client client, ClueDetailsPlugin clueDetailsPlugin, ClueDetailsConfig config, ConfigManager configManager, ItemManager itemManager)
+	public ClueDetailsItemsOverlay(Client client, ClueDetailsPlugin clueDetailsPlugin, ClueDetailsConfig config,
+	                               ConfigManager configManager, ItemManager itemManager, ClueInventoryManager clueInventoryManager)
 	{
 		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.itemManager = itemManager;
 		this.client = client;
 		this.config = config;
 		this.configManager = configManager;
+		this.clueInventoryManager = clueInventoryManager;
 		showOnBank();
 		showOnEquipment();
 		showOnInventory();

@@ -27,10 +27,10 @@ package com.cluedetails;
 import com.cluedetails.panels.ClueDetailsParentPanel;
 
 import java.util.*;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
@@ -57,26 +57,23 @@ public class ClueInventoryManager
 	private final ConfigManager configManager;
 	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueGroundManager clueGroundManager;
-	private final ClueBankManager clueBankManager;
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final Map<Integer, ClueInstance> cluesInInventory = new HashMap<>();
 	private final Map<Integer, ClueInstance> previousCluesInInventory = new HashMap<>();
 
 	@Getter
 	private long lastInventoryUpdate = 0;
+	private final ClueDetailsConfig config;
 
-	// To be initialized to avoid passing around
-	@Setter
-	public static ClueDetailsConfig config;
-
-	public ClueInventoryManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin, ClueGroundManager clueGroundManager,
-								ClueBankManager clueBankManager, ChatboxPanelManager chatboxPanelManager)
+	@Inject
+	public ClueInventoryManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin, ClueDetailsConfig config, ClueGroundManager clueGroundManager,
+								ChatboxPanelManager chatboxPanelManager)
 	{
 		this.client = client;
+		this.config = config;
 		this.configManager = configManager;
 		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.clueGroundManager = clueGroundManager;
-		this.clueBankManager = clueBankManager;
 		this.chatboxPanelManager = chatboxPanelManager;
 	}
 
@@ -114,7 +111,7 @@ public class ClueInventoryManager
 				ClueInstance removedClue = previousCluesInInventory.get(itemId);
 				if (removedClue != null)
 				{
-					clueBankManager.addToRemovedClues(removedClue);
+					clueDetailsPlugin.getClueBankManager().addToRemovedClues(removedClue);
 				}
 			}
 		}

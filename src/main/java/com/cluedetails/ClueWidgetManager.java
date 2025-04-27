@@ -24,7 +24,7 @@
  */
 package com.cluedetails;
 
-import lombok.Setter;
+import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.KeyCode;
 import net.runelite.api.Menu;
@@ -44,6 +44,7 @@ public class ClueWidgetManager
     private final ClueInventoryManager clueInventoryManager;
     private final CluePreferenceManager cluePreferenceManager;
 
+	@Inject
     public ClueWidgetManager(Client client, ConfigManager configManager, ClueInventoryManager clueInventoryManager, CluePreferenceManager cluePreferenceManager)
     {
         this.client = client;
@@ -51,10 +52,6 @@ public class ClueWidgetManager
         this.clueInventoryManager = clueInventoryManager;
         this.cluePreferenceManager = cluePreferenceManager;
     }
-
-    // To be initialized to avoid passing around
-    @Setter
-    public static ClueDetailsConfig config;
 
     public void addHighlightWidgetSubmenus(MenuEntry[] entries)
     {

@@ -26,6 +26,7 @@ package com.cluedetails;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.config.ConfigManager;
@@ -39,21 +40,23 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.util.*;
 
+@Singleton
 public class ClueDetailsWidgetsOverlay extends OverlayPanel
 {
 	private final Client client;
 	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
 
-	private ClueInventoryManager clueInventoryManager;
-	private CluePreferenceManager cluePreferenceManager;
+	private final ClueInventoryManager clueInventoryManager;
+	private final CluePreferenceManager cluePreferenceManager;
 
 	private final Cache<WidgetId, Color> clueColorCache;
 
 	private long lastUpdate = Integer.MAX_VALUE;
 
 	@Inject
-	public ClueDetailsWidgetsOverlay(Client client, ClueDetailsConfig config, ConfigManager configManager)
+	public ClueDetailsWidgetsOverlay(Client client, ClueDetailsConfig config, ConfigManager configManager,
+	                                 ClueInventoryManager clueInventoryManager, CluePreferenceManager cluePreferenceManager)
 	{
 		setPriority(PRIORITY_HIGHEST);
 		setLayer(OverlayLayer.ABOVE_WIDGETS);
@@ -63,17 +66,13 @@ public class ClueDetailsWidgetsOverlay extends OverlayPanel
 		this.client = client;
 		this.config = config;
 		this.configManager = configManager;
+		this.clueInventoryManager = clueInventoryManager;
+		this.cluePreferenceManager = cluePreferenceManager;
 
 		this.clueColorCache = CacheBuilder.newBuilder()
 			.concurrencyLevel(1)
 			.maximumSize(100)
 			.build();
-	}
-
-	public void startUp(ClueInventoryManager clueInventoryManager, CluePreferenceManager cluePreferenceManager)
-	{
-		this.clueInventoryManager = clueInventoryManager;
-		this.cluePreferenceManager = cluePreferenceManager;
 	}
 
 	public void cacheInventoryCluesWidgetColors()

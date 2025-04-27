@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 
+import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Menu;
@@ -68,6 +69,7 @@ import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 import net.runelite.client.util.Text;
 
+@Singleton
 public class ClueDetailsOverlay extends OverlayPanel
 {
 	private final Client client;
@@ -78,9 +80,9 @@ public class ClueDetailsOverlay extends OverlayPanel
 	private final ConfigManager configManager;
 
 	private final Notifier notifier;
-	private ClueDetailsPlugin clueDetailsPlugin;
-	private ClueGroundManager clueGroundManager;
-	private ClueInventoryManager clueInventoryManager;
+	private final ClueDetailsPlugin clueDetailsPlugin;
+	private final ClueGroundManager clueGroundManager;
+	private final ClueInventoryManager clueInventoryManager;
 
 	protected Multimap<Tile, Integer> tileHighlights = ArrayListMultimap.create();
 
@@ -88,7 +90,9 @@ public class ClueDetailsOverlay extends OverlayPanel
 	protected static final int SCENE_TO_LOCAL = 128;
 
 	@Inject
-	public ClueDetailsOverlay(Client client, ClueDetailsConfig config, TooltipManager tooltipManager, ModelOutlineRenderer modelOutlineRenderer, ConfigManager configManager, Notifier notifier)
+	public ClueDetailsOverlay(Client client, ClueDetailsPlugin clueDetailsPlugin, ClueDetailsConfig config, ClueGroundManager clueGroundManager,
+	                          ClueInventoryManager clueInventoryManager, TooltipManager tooltipManager, ModelOutlineRenderer modelOutlineRenderer,
+	                          ConfigManager configManager, Notifier notifier)
 	{
 		setPriority(PRIORITY_HIGHEST);
 		setLayer(OverlayLayer.ABOVE_WIDGETS);
@@ -96,6 +100,9 @@ public class ClueDetailsOverlay extends OverlayPanel
 		setPosition(OverlayPosition.TOOLTIP);
 
 		this.client = client;
+		this.clueDetailsPlugin = clueDetailsPlugin;
+		this.clueGroundManager = clueGroundManager;
+		this.clueInventoryManager = clueInventoryManager;
 		this.config = config;
 		this.tooltipManager = tooltipManager;
 		this.modelOutlineRenderer = modelOutlineRenderer;
@@ -107,13 +114,6 @@ public class ClueDetailsOverlay extends OverlayPanel
 		{
 			refreshHighlights();
 		}
-	}
-
-	public void startUp(ClueDetailsPlugin clueDetailsPlugin, ClueGroundManager clueGroundManager, ClueInventoryManager clueInventoryManager)
-	{
-		this.clueDetailsPlugin = clueDetailsPlugin;
-		this.clueGroundManager = clueGroundManager;
-		this.clueInventoryManager = clueInventoryManager;
 	}
 
 	@Override

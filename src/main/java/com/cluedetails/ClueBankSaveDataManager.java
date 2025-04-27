@@ -31,9 +31,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.client.config.ConfigManager;
 
+@Singleton
 public class ClueBankSaveDataManager
 {
 	private final ConfigManager configManager;
@@ -44,6 +47,7 @@ public class ClueBankSaveDataManager
 	private final Gson gson;
 	private final List<ClueInstanceData> clueInstanceData = new ArrayList<>();
 
+	@Inject
 	public ClueBankSaveDataManager(ConfigManager configManager, Gson gson)
 	{
 		this.configManager = configManager;

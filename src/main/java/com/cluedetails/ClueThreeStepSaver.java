@@ -30,6 +30,7 @@ public class ClueThreeStepSaver
 	@Inject
 	private Gson gson;
 
+	@Inject
 	private ClueInventoryManager cim;
 
 	private ClueInstance activeMaster;

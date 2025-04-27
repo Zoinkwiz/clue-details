@@ -26,6 +26,8 @@ package com.cluedetails;
 
 import com.cluedetails.filters.ClueTier;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import lombok.Getter;
 import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
@@ -33,8 +35,8 @@ import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 
 import java.util.*;
-import net.runelite.client.config.ConfigManager;
 
+@Singleton
 public class ClueGroundManager
 {
 	private final Client client;
@@ -48,16 +50,17 @@ public class ClueGroundManager
 	private final int MAX_DESPAWN_TIMER = 6100;
 	private Zone lastZone;
 	private Zone currentZone;
-	private WorldPointToClueInstances trackedClues;
+	private final WorldPointToClueInstances trackedClues;
 	private boolean loggedInStateOccuredThisTick;
-	private Set<WorldPoint> tileClearedThisTick = new HashSet<>();
-	private Set<Tile> easyToEliteClueSpawnedThisTick = new HashSet<>();
+	private final Set<WorldPoint> tileClearedThisTick = new HashSet<>();
+	private final Set<Tile> easyToEliteClueSpawnedThisTick = new HashSet<>();
 
-	public ClueGroundManager(Client client, ConfigManager configManager, ClueDetailsPlugin clueDetailsPlugin)
+	@Inject
+	public ClueGroundManager(Client client, ClueGroundSaveDataManager clueGroundSaveDataManager, ClueDetailsPlugin clueDetailsPlugin)
 	{
 		this.client = client;
 		this.clueDetailsPlugin = clueDetailsPlugin;
-		this.clueGroundSaveDataManager = new ClueGroundSaveDataManager(configManager, clueDetailsPlugin.gson);
+		this.clueGroundSaveDataManager = clueGroundSaveDataManager;
 		clueGroundSaveDataManager.loadStateFromConfig(client);
 
 		trackedClues = new WorldPointToClueInstances(client, clueDetailsPlugin);
@@ -139,7 +142,7 @@ public class ClueGroundManager
 			Optional<ClueInstance> optionalClue = cluesAtLocation.stream()
 				.filter((clue) -> clue.getTileItem() == item)
 				.findFirst();
-			optionalClue.ifPresent((clueInstance -> trackedClues.removeClue(clueInstance)));
+			optionalClue.ifPresent((trackedClues::removeClue));
 			return;
 		}
 
@@ -169,7 +172,7 @@ public class ClueGroundManager
 			.filter((clue) -> clue.getTileItem() == item)
 			.findFirst();
 		optionalClue.ifPresent(despawnedClueQueueForInventoryCheck::add);
-		optionalClue.ifPresent((clueInstance -> trackedClues.removeClue(clueInstance)));
+		optionalClue.ifPresent((trackedClues::removeClue));
 	}
 
 	public Set<WorldPoint> getTrackedWorldPoints()

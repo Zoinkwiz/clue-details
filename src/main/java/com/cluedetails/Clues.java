@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.ItemID;
@@ -1032,6 +1033,7 @@ public class Clues
 
 	// To be initialized to avoid passing around
 	@Setter
+	@Inject
 	public static ClueDetailsConfig config;
 
 	Clues(String clueDetail, int itemID, ClueTier clueTier, String clueText, List<WorldPoint> wps)

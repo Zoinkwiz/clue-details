@@ -24,20 +24,21 @@
  */
 package com.cluedetails;
 
-import com.google.gson.Gson;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
-import net.runelite.client.config.ConfigManager;
 
+@Singleton
 public class ClueBankManager
 {
 	private final Client client;
+	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueBankSaveDataManager clueBankSaveDataManager;
-	private ClueInventoryManager clueInventoryManager;
 
 	Item[] lastBankItems;
 
@@ -45,15 +46,12 @@ public class ClueBankManager
 
 	private final Map<Integer, ClueInstance> cluesGoneFromInventory = new HashMap<>();
 
-	public ClueBankManager(Client client, ConfigManager configManager, Gson gson)
+	@Inject
+	public ClueBankManager(Client client, ClueDetailsPlugin clueDetailsPlugin, ClueBankSaveDataManager clueBankSaveDataManager)
 	{
 		this.client = client;
-		this.clueBankSaveDataManager = new ClueBankSaveDataManager(configManager, gson);
-	}
-
-	public void startUp(ClueInventoryManager clueInventoryManager)
-	{
-		this.clueInventoryManager = clueInventoryManager;
+		this.clueDetailsPlugin = clueDetailsPlugin;
+		this.clueBankSaveDataManager = clueBankSaveDataManager;
 	}
 
 	public void handleBankChange(ItemContainer bankContainer)
@@ -100,11 +98,11 @@ public class ClueBankManager
 		ClueInstance clueFromBank = cluesInBank.get(trackedClueId);
 		if (clueFromBank == null) return;
 
-		ClueInstance clue = clueInventoryManager.getClueByClueItemId(trackedClueId);
+		ClueInstance clue = clueDetailsPlugin.getClueInventoryManager().getClueByClueItemId(trackedClueId);
 		clue.setClueIds(clueFromBank.getClueIds());
 
 		cluesInBank.remove(trackedClueId);
-		clueInventoryManager.updateLastInventoryRefreshTime();
+		clueDetailsPlugin.getClueInventoryManager().updateLastInventoryRefreshTime();
 	}
 
 	public void addToRemovedClues(ClueInstance clueInstance)

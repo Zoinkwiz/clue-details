@@ -29,7 +29,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import javax.inject.Inject;
 
-import lombok.Setter;
+import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
@@ -38,12 +38,13 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.LineComponent;
 
+@Singleton
 public class ClueDetailsInventoryOverlay extends OverlayPanel
 {
 	private final Client client;
 	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
-	@Setter
+	@Inject
 	private ClueInventoryManager clueInventoryManager;
 
 	private static final Color TITLED_CONTENT_COLOR = new Color(190, 190, 190);
