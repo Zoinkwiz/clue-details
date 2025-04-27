@@ -73,7 +73,7 @@ public class ClueDetailsSharingManager
 		this.configManager = configManager;
 	}
 
-	public void resetClueDetails()
+	public void resetClueDetails(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
 		List<Clues> filteredClues = Clues.CLUES.stream()
 			.filter(config.filterListByTier())
@@ -83,10 +83,10 @@ public class ClueDetailsSharingManager
 		for (Clues clue : filteredClues)
 		{
 			int id = clue.getClueID();
-			configManager.unsetConfiguration("clue-details-text", String.valueOf(id));
-			configManager.unsetConfiguration("clue-details-color", String.valueOf(id));
-			configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
-			configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id));
+			if (resetText) configManager.unsetConfiguration("clue-details-text", String.valueOf(id));
+			if (resetColors) configManager.unsetConfiguration("clue-details-color", String.valueOf(id));
+			if (resetItems) configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
+			if (resetWidgets) configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id));
 		}
 	}
 
