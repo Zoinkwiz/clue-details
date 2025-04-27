@@ -24,6 +24,10 @@
  */
 package com.cluedetails;
 
+import java.util.HashMap;
+import java.util.Map;
+import net.runelite.client.util.Text;
+
 public class BeginnerMasterClueText
 {
 	private static final String ANAGRAM_TEXT = "This anagram reveals who to speak to next: ";
@@ -203,7 +207,72 @@ public class BeginnerMasterClueText
 	public static final String MASTER_SHERLOCK_24 = "Steal a gem from the Ardougne market.";
 	public static final String MASTER_SHERLOCK_25 = "Teleport to a spirit tree you planted yourself.";
 
+	public static final String[] FALO_LYRICS =
+	{
+		MASTER_FALO_0,
+		MASTER_FALO_1,
+		MASTER_FALO_2,
+		MASTER_FALO_3,
+		MASTER_FALO_4,
+		MASTER_FALO_5,
+		MASTER_FALO_6,
+		MASTER_FALO_7,
+		MASTER_FALO_8,
+		MASTER_FALO_9,
+		MASTER_FALO_10,
+		MASTER_FALO_11,
+		MASTER_FALO_12,
+		MASTER_FALO_13,
+		MASTER_FALO_14,
+		MASTER_FALO_15,
+		MASTER_FALO_16,
+		MASTER_FALO_17,
+		MASTER_FALO_18
+	};
+
+	private static final Map<String, String> charlieTaskToClueText = new HashMap<>()
+	{{
+		put("I really need a cooked trout.", BeginnerMasterClueText.BEGINNER_CHARLIE_0);
+		put("I really need a cooked pike.", BeginnerMasterClueText.BEGINNER_CHARLIE_1);
+		put("I really need a raw herring.", BeginnerMasterClueText.BEGINNER_CHARLIE_2);
+		put("I really need a raw trout.", BeginnerMasterClueText.BEGINNER_CHARLIE_3);
+		put("I really need a piece of iron ore.", BeginnerMasterClueText.BEGINNER_CHARLIE_4);
+		put("I really need one iron dagger.", BeginnerMasterClueText.BEGINNER_CHARLIE_5);
+		put("I really need a leather body.", BeginnerMasterClueText.BEGINNER_CHARLIE_6);
+		put("I really need some leather chaps.", BeginnerMasterClueText.BEGINNER_CHARLIE_7);
+	}};
+
 	public BeginnerMasterClueText()
 	{
+	}
+
+	public static String forTaskGetClueText(String rawText)
+	{
+		final String text = Text.sanitizeMultilineText(rawText).toLowerCase();
+
+		for (Map.Entry<String, String> entry : charlieTaskToClueText.entrySet())
+		{
+			if (text.contains(entry.getKey().toLowerCase()))
+			{
+				return entry.getValue();
+			}
+		}
+
+		return null;
+	}
+
+	public static String forLyricsGetClueText(String rawText)
+	{
+		final String text = Text.sanitizeMultilineText(rawText).toLowerCase();
+
+		for (String lyric : FALO_LYRICS)
+		{
+			if (text.contains(lyric.toLowerCase()))
+			{
+				return lyric;
+			}
+		}
+
+		return null;
 	}
 }

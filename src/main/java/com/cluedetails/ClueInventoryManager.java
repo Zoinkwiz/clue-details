@@ -48,6 +48,7 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
+import net.runelite.client.util.Text;
 
 @Slf4j
 @Singleton
@@ -453,21 +454,34 @@ public class ClueInventoryManager
 		if (isNewBeginnerClue(chatDialogClueItemWidget)
 			|| (isUriBeginnerClue(headModelWidget) && isUriStandardDialogue(npcChatWidget)))
 		{
-			ClueInstance clue = cluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
-			if (clue == null) return;
-			clue.setClueIds(List.of());
-			clueDetailsPlugin.getItemsOverlay().invalidateCache();
-			clueDetailsPlugin.getClueInventoryManager().updateLastInventoryRefreshTime();
+			resetClue(ItemID.CLUE_SCROLL_BEGINNER, List.of());
 		}
 		else if (isNewMasterClue(chatDialogClueItemWidget)
 			|| (isUriMasterClue(headModelWidget) && isUriStandardDialogue(npcChatWidget)))
 		{
-			ClueInstance clue =  cluesInInventory.get(ItemID.CLUE_SCROLL_MASTER);
-			if (clue == null) return;
-			clue.setClueIds(List.of());
-			clueDetailsPlugin.getItemsOverlay().invalidateCache();
-			clueDetailsPlugin.getClueInventoryManager().updateLastInventoryRefreshTime();
+			resetClue(ItemID.CLUE_SCROLL_MASTER, List.of());
 		}
+		else if (isCharlieBeginnerClue(headModelWidget) && isCharlieTaskDialogue(npcChatWidget))
+		{
+			Integer clueID = getClueIdFromCharlie(npcChatWidget);
+			if (clueID == null) return;
+			resetClue(ItemID.CLUE_SCROLL_BEGINNER, List.of(clueID));
+		}
+		else if (isFaloMasterClue(headModelWidget) && isFaloLyricDialogue(npcChatWidget))
+		{
+			Integer clueID = getClueIdFromFalo(npcChatWidget);
+			if (clueID == null) return;
+			resetClue(ItemID.CLUE_SCROLL_MASTER, List.of(clueID));
+		}
+	}
+
+	private void resetClue(int itemID, List<Integer> clueIds)
+	{
+		ClueInstance clue = cluesInInventory.get(itemID);
+		if (clue == null) return;
+		clue.setClueIds(clueIds);
+		clueDetailsPlugin.getItemsOverlay().invalidateCache();
+		clueDetailsPlugin.getClueInventoryManager().updateLastInventoryRefreshTime();
 	}
 
 	private boolean isUriMasterClue(Widget headModel)
@@ -499,6 +513,46 @@ public class ClueInventoryManager
 	{
 		if (chatDialogClueItem == null) return false;
 		return chatDialogClueItem.getItemId() == ItemID.CLUE_SCROLL_MASTER;
+	}
+
+	private boolean isCharlieBeginnerClue(Widget headModel)
+	{
+		if (headModel == null) return false;
+		return headModel.getModelId() == NpcID.CHARLIE_THE_TRAMP;
+	}
+
+	private boolean isCharlieTaskDialogue(Widget npcChat)
+	{
+		if (npcChat == null) return false;
+		return npcChat.getText().toLowerCase().contains("i really need");
+	}
+
+	private static Integer getClueIdFromCharlie(Widget npcChatWidget)
+	{
+		if (npcChatWidget.getText() == null) return null;
+		String clueText = BeginnerMasterClueText.forTaskGetClueText(npcChatWidget.getText());
+		if (clueText == null) return null;
+		return Clues.forTextGetId(clueText);
+	}
+
+	private boolean isFaloMasterClue(Widget headModel)
+	{
+		if (headModel == null) return false;
+		return headModel.getModelId() == NpcID.FALO_THE_BARD;
+	}
+
+	private boolean isFaloLyricDialogue(Widget npcChat)
+	{
+		if (npcChat == null) return false;
+		return npcChat.getText().toLowerCase().contains("here goes...");
+	}
+
+	private static Integer getClueIdFromFalo(Widget npcChatWidget)
+	{
+		if (npcChatWidget.getText() == null) return null;
+		String clueText = BeginnerMasterClueText.forLyricsGetClueText(npcChatWidget.getText());
+		if (clueText == null) return null;
+		return Clues.forTextGetId(clueText);
 	}
 
 	private boolean isEnabled(Integer itemId)
