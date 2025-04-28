@@ -61,9 +61,14 @@ public class ClueGroundManager
 		this.client = client;
 		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.clueGroundSaveDataManager = clueGroundSaveDataManager;
-		clueGroundSaveDataManager.loadStateFromConfig(client);
 
 		trackedClues = new WorldPointToClueInstances(client, clueDetailsPlugin);
+	}
+
+	public void startUp()
+	{
+		clueGroundSaveDataManager.loadStateFromConfig(client);
+		trackedClues.clearAllClues();
 	}
 
 	public SortedSet<ClueInstance> getAllGroundCluesOnWp(WorldPoint worldPoint)
