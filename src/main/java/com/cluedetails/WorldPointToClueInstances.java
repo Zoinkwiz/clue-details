@@ -82,7 +82,7 @@ public class WorldPointToClueInstances
 			}
 		}
 
-		if (cluesByWorldPoint.get(wp).isEmpty())
+		if (cluesByWorldPoint.get(wp) != null && cluesByWorldPoint.get(wp).isEmpty())
 		{
 			cluesByWorldPoint.remove(wp);
 		}
