@@ -124,6 +124,14 @@ public class ClueGroundManager
 		if (!Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
 		WorldPoint location = event.getTile().getWorldLocation();
 
+		// Only process events where the actual item has just despawned
+		// This helps to retain identified clues
+		if (event.getItem().getId() == ItemID.CLUE_SCROLL_BEGINNER
+			|| event.getItem().getId() == ItemID.CLUE_SCROLL_MASTER)
+		{
+			if (ClueDetailsPlugin.getCurrentPlane() != location.getPlane()) return;
+		}
+
 		if (!Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 		{
 			ClueInstance clueInstance = new ClueInstance(List.of(), item.getId(), location, item, client.getTickCount());

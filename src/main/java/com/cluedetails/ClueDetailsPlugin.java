@@ -202,6 +202,9 @@ public class ClueDetailsPlugin extends Plugin
 	@Getter
 	public static int currentTick;
 
+	@Getter
+	public static int currentPlane;
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -373,6 +376,8 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		clueGroundManager.onGameTick();
 		clueInventoryManager.onGameTick();
+
+		currentPlane = client.getTopLevelWorldView().getPlane();
 
 		renderGroundClueTimers(); // TODO: Call more efficiently
 		infoBoxManager.cull(); // Explict call to clean up timers faster
