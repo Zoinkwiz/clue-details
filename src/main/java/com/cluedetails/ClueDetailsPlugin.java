@@ -208,7 +208,7 @@ public class ClueDetailsPlugin extends Plugin
 		startUpOverlays();
 
 		clueThreeStepSaver.startUp();
-		clueGroundManager.loadStateFromConfig();
+		clueGroundManager.startUp();
 
 		Clues.rebuildFilteredCluesCache();
 
@@ -232,6 +232,8 @@ public class ClueDetailsPlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		shutDownOverlays();
+
+		clueGroundManager.shutDown();
 
 		clientToolbar.removeNavigation(navButton);
 
