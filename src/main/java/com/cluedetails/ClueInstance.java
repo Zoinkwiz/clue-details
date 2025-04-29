@@ -140,10 +140,11 @@ public class ClueInstance
 	{
 		StringBuilder itemStringBuilder = new StringBuilder();
 		List<Integer> clueIds = this.getClueIds();
+		String clueText;
 
 		if (clueIds.isEmpty())
 		{
-			itemStringBuilder.append(this.getItemName(plugin));
+			clueText = WordUtils.capitalizeFully(this.getTier().toString().replace("_", " "));
 		}
 		else
 		{
@@ -155,7 +156,6 @@ public class ClueInstance
 				return null;
 			}
 
-			String clueText;
 			if (config.changeGroundClueText() && !config.collapseGroundCluesByTier())
 			{
 				if (clueIds.size() > 1)
@@ -171,9 +171,8 @@ public class ClueInstance
 			{
 				clueText = WordUtils.capitalizeFully(clueDetails.getClueTier().toString().replace("_", " "));
 			}
-
-			itemStringBuilder.append(clueText);
 		}
+		itemStringBuilder.append(clueText);
 
 		if ((config.collapseGroundClues() || config.collapseGroundCluesByTier()) && quantity > 1)
 		{
@@ -260,11 +259,6 @@ public class ClueInstance
 		}
 		if (returnText.length() == 0) return null;
 		return returnText.toString();
-	}
-
-	public String getItemName(ClueDetailsPlugin plugin)
-	{
-		return plugin.getItemManager().getItemComposition(itemId).getName();
 	}
 
 	public boolean isEnabled(ClueDetailsConfig config)
