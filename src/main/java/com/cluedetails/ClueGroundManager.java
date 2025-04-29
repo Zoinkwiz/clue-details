@@ -65,12 +65,6 @@ public class ClueGroundManager
 		trackedClues = new WorldPointToClueInstances(client, clueDetailsPlugin);
 	}
 
-	public void startUp()
-	{
-		clueGroundSaveDataManager.loadStateFromConfig(client);
-		trackedClues.clearAllClues();
-	}
-
 	public SortedSet<ClueInstance> getAllGroundCluesOnWp(WorldPoint worldPoint)
 	{
 		return trackedClues.getAllCluesAtWorldPoint(worldPoint);

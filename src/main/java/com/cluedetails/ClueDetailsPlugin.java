@@ -208,7 +208,7 @@ public class ClueDetailsPlugin extends Plugin
 		startUpOverlays();
 
 		clueThreeStepSaver.startUp();
-		clueGroundManager.startUp();
+		clueGroundManager.loadStateFromConfig();
 
 		Clues.rebuildFilteredCluesCache();
 
