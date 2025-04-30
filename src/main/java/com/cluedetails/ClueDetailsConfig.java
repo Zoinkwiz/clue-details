@@ -528,8 +528,8 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "colorGroundItems",
 		name = "Overwrite Ground Items colors",
-		description = "When updating clue details colors, apply the color to the Ground Items plugin" +
-			"<br>Does apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
+		description = "When updating clue details colors, apply the color to the clue scroll via the Ground Items plugin" +
+			"<br>Does not apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
 		section = overlayColorsSection,
 		position = 9
 	)
@@ -541,8 +541,8 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "colorInventoryTags",
 		name = "Overwrite Inventory Tags colors",
-		description = "When updating clue details colors, apply the color to the Inventory Tags plugin" +
-			"<br>Does apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
+		description = "When updating clue details colors, apply the color to the clue scroll via the Inventory Tags plugin" +
+			"<br>Does not  apply to Beginner and Master clues. Set color to #FFFFFF to reset.",
 		section = overlayColorsSection,
 		position = 8
 	)
