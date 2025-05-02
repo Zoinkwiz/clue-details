@@ -206,18 +206,20 @@ public class ClueGroundOverlay extends Overlay
 	{
 		final String itemString = item.getGroundText(plugin, config, configManager, quantity);
 
+		final int zDirection = config.reverseGroundCluesOverlay() ? -1 : 1;
+
 		final Point textPoint = Perspective.getCanvasTextLocation(client,
 			graphics,
 			groundPoint,
 			itemString,
-			CLUE_ITEM_HEIGHT + OFFSET_Z);
+			CLUE_ITEM_HEIGHT + (OFFSET_Z * zDirection));
 
 		if (textPoint == null)
 		{
 			return;
 		}
 
-		final int offset = offsetMap.compute(item.getLocation(), (k, v) -> v != null ? v + 1 : 0);
+		final int offset = offsetMap.compute(item.getLocation(), (k, v) -> v != null ? v + zDirection : 0);
 
 		final int textX = textPoint.getX();
 		final int textY = textPoint.getY() - (STRING_GAP * offset);

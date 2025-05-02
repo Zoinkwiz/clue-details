@@ -616,11 +616,23 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "reverseGroundCluesOverlay",
+		name = "Reverse ground clues overlay",
+		description = "Reverses the ground clues overlay to render under item(s) rather than on top",
+		section = groundCluesSection,
+		position = 5
+	)
+	default boolean reverseGroundCluesOverlay()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "colorGroundClues",
 		name = "Color ground clues",
 		description = "Toggle whether to apply clue details color to ground clue text",
 		section = groundCluesSection,
-		position = 5
+		position = 6
 	)
 	default boolean colorGroundClues()
 	{
@@ -633,7 +645,7 @@ public interface ClueDetailsConfig extends Config
 		description = "Toggle whether to show timer infoboxes for ground clues",
 		warning = "Experimental feature! Timers may not behave as expected. Please use caution",
 		section = groundCluesSection,
-		position = 6
+		position = 7
 	)
 	default boolean showGroundClueTimers()
 	{
@@ -645,7 +657,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Timer notifications",
 		description = "Seconds remaining until despawn per tile to send notification. Set to 0 to disable the notification.",
 		section = groundCluesSection,
-		position = 7
+		position = 8
 	)
 	default int groundClueTimersNotificationTime()
 	{
@@ -658,7 +670,7 @@ public interface ClueDetailsConfig extends Config
 		description = "Seconds after initial notificiaton to periodically renotify. Set to 0 to disable the notification." +
 			"<br> This also acts as a cooldown between notifications for clues in the same tile",
 		section = groundCluesSection,
-		position = 8
+		position = 9
 	)
 	default int groundClueTimersRenotificationTime()
 	{
