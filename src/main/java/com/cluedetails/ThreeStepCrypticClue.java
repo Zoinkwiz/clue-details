@@ -99,9 +99,12 @@ public class ThreeStepCrypticClue
 	{
 		StringBuilder text = new StringBuilder();
 
+		boolean allPartsObtained = allPartsObtained();
+
 		for (final Map.Entry<Clues, Boolean> e : clueSteps)
 		{
-			if (!e.getValue())
+			// Show tags for steps not yet completed, or when all steps have been completed
+			if (!e.getValue() || allPartsObtained)
 			{
 				Clues clue = e.getKey();
 				String detail = clue.getDetail(configManager);
@@ -114,5 +117,12 @@ public class ThreeStepCrypticClue
 			}
 		}
 		return text.toString();
+	}
+
+	private boolean allPartsObtained()
+	{
+		if (clueSteps == null || clueSteps.size() <= 1) return false;
+		Boolean compare = clueSteps.get(0).getValue();
+		return clueSteps.stream().allMatch(entry -> entry.getValue().equals(compare));
 	}
 }
