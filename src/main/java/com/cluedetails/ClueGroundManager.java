@@ -93,11 +93,12 @@ public class ClueGroundManager
 		if (!Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
 
 		// If easy-elite task, we just override
-		// TODO: Maybe also means torn clues and such?
 		if (!Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 		{
+			// If not max despawn time, must be an old clue. Wipe tile as we must be loading in tile.
+			boolean isMaxDespawnTime = item.getDespawnTime() == MAX_DESPAWN_TIMER;
 			// We don't get items removed when a loading->logged in state occurs. This clears the tile
-			if (loggedInStateOccuredThisTick && !tileClearedThisTick.contains(tile.getWorldLocation()))
+			if ((!isMaxDespawnTime || loggedInStateOccuredThisTick) && !tileClearedThisTick.contains(tile.getWorldLocation()))
 			{
 				tileClearedThisTick.add(tile.getWorldLocation());
 				clearEasyToEliteCluesAtWorldPoint(tile.getWorldLocation());
