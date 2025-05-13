@@ -191,8 +191,6 @@ public class ClueGroundManager
 
 	public void onGameTick()
 	{
-		resetEasyToEliteThisTick.forEach(this::createEasyToEliteForTile);
-		resetEasyToEliteThisTick.clear();
 		currentZone = new Zone(client.getLocalPlayer().getWorldLocation());
 		trackedClues.clearEmptyTiles(currentZone);
 
@@ -202,6 +200,8 @@ public class ClueGroundManager
 		}
 		itemHasSpawnedOnTileThisTick.clear();
 		trackedClues.removeDespawnedClues();
+		resetEasyToEliteThisTick.forEach(this::createEasyToEliteForTile);
+		resetEasyToEliteThisTick.clear();
 
 		lastZone = currentZone;
 	}
