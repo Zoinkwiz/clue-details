@@ -345,14 +345,8 @@ public class ClueDetailsPlugin extends Plugin
 			profileChanged = true;
 		}
 
-		if (event.getGameState() == GameState.LOADING)
-		{
-			clueGroundManager.setLoggedInOccuredThisTick(true);
-		}
-
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
-			clueGroundManager.setLoggedInOccuredThisTick(true);
 			if (profileChanged)
 			{
 				profileChanged = false;
