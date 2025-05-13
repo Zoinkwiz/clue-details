@@ -369,7 +369,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		return popupMenu;
 	}
 
-	private void openResetPopup()
+	private void openResetPopup(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
 		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
 			"Are you sure you want to reset your customised details?",
@@ -377,7 +377,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 		if (confirm == 0)
 		{
-			clueDetailsSharingManager.resetClueDetails();
+			clueDetailsSharingManager.resetClueDetails(resetText, resetColors, resetItems, resetWidgets);
 		}
 	}
 
@@ -432,12 +432,17 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JPanel markerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 7, 3));
 
 		resetMarkers.setToolTipText("Reset currently filtered customised details");
+		JPopupMenu resetPopupMenu = getResetPopupMenu();
+		resetMarkers.setComponentPopupMenu(resetPopupMenu);
 		resetMarkers.addMouseListener(new MouseAdapter()
 		{
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
-				openResetPopup();
+				if (SwingUtilities.isLeftMouseButton(e))
+				{
+					openResetPopup(true, true, true, true);
+				}
 			}
 
 			@Override
@@ -530,6 +535,37 @@ public class ClueDetailsParentPanel extends PluginPanel
 		allDropdownSections.add(orderPanel);
 
 		searchCluesPanel.add(allDropdownSections, BorderLayout.NORTH);
+	}
+
+	private JPopupMenu getResetPopupMenu()
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+
+		JMenuItem inputItemResetText = new JMenuItem("Reset clue text");
+		inputItemResetText.addActionListener(event
+			-> openResetPopup(true, false, false, false)
+		);
+		popupMenu.add(inputItemResetText);
+
+		JMenuItem inputItemResetColors = new JMenuItem("Reset clue colors");
+		inputItemResetColors.addActionListener(event
+			-> openResetPopup(false, true, false, false)
+		);
+		popupMenu.add(inputItemResetColors);
+
+		JMenuItem inputItemResetItems = new JMenuItem("Reset clue items");
+		inputItemResetItems.addActionListener(event
+			-> openResetPopup(false, false, true, false)
+		);
+		popupMenu.add(inputItemResetItems);
+
+		JMenuItem inputItemResetWidgets = new JMenuItem("Reset clue widgets");
+		inputItemResetWidgets.addActionListener(event
+			-> openResetPopup(false, false, false, true)
+		);
+		popupMenu.add(inputItemResetWidgets);
+
+		return popupMenu;
 	}
 
 	private JPopupMenu getCopyPopupMenu()
