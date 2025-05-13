@@ -26,6 +26,7 @@
 package com.cluedetails;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -292,7 +293,7 @@ public class ClueDetailsOverlay extends OverlayPanel
 			{
 				Menu submenu = menuEntry.createSubMenu();
 
-				for (String text : newTexts)
+				for (String text : ImmutableList.copyOf(newTexts).reverse())
 				{
 					submenu.createMenuEntry(-1)
 						.setOption(text)
