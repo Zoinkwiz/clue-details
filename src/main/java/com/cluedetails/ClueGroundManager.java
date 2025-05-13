@@ -55,7 +55,7 @@ public class ClueGroundManager
 
 	@Setter
 	private boolean loggedInStateOccuredThisTick;
-	private final Set<WorldPoint> tileClearedThisTick = new HashSet<>();
+	private final Set<Tile> resetEasyToEliteThisTick = new HashSet<>();
 	private final Set<Tile> easyToEliteClueSpawnedThisTick = new HashSet<>();
 
 	@Inject
@@ -77,7 +77,7 @@ public class ClueGroundManager
 	public void shutDown()
 	{
 		// Need to clear incase the player toggles the plugin on/off on the same tick
-		tileClearedThisTick.clear();
+		resetEasyToEliteThisTick.clear();
 	}
 
 	public SortedSet<ClueInstance> getAllGroundCluesOnWp(WorldPoint worldPoint)
@@ -95,17 +95,7 @@ public class ClueGroundManager
 		// If easy-elite task, we just override
 		if (!Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 		{
-			// If not max despawn time, must be an old clue. Wipe tile as we must be loading in tile.
-			boolean isMaxDespawnTime = item.getDespawnTime() == MAX_DESPAWN_TIMER;
-			// We don't get items removed when a loading->logged in state occurs. This clears the tile
-			if ((!isMaxDespawnTime || loggedInStateOccuredThisTick) && !tileClearedThisTick.contains(tile.getWorldLocation()))
-			{
-				tileClearedThisTick.add(tile.getWorldLocation());
-				clearEasyToEliteCluesAtWorldPoint(tile.getWorldLocation());
-			}
-			ClueInstance clueInstance = new ClueInstance(List.of(), item.getId(), tile.getWorldLocation(), item, client.getTickCount());
-			trackedClues.addClue(clueInstance);
-			easyToEliteClueSpawnedThisTick.add(tile);
+			resetEasyToEliteThisTick.add(tile);
 			return;
 		}
 
@@ -206,7 +196,8 @@ public class ClueGroundManager
 	public void onGameTick()
 	{
 		loggedInStateOccuredThisTick = false;
-		tileClearedThisTick.clear();
+		resetEasyToEliteThisTick.forEach(this::createEasyToEliteForTile);
+		resetEasyToEliteThisTick.clear();
 		currentZone = new Zone(client.getLocalPlayer().getWorldLocation());
 		trackedClues.clearEmptyTiles(currentZone);
 
@@ -219,6 +210,25 @@ public class ClueGroundManager
 		sortClues();
 
 		lastZone = currentZone;
+	}
+
+	private void createEasyToEliteForTile(Tile tile)
+	{
+
+		List<TileItem> items = tile.getGroundItems();
+		if (items == null) return;
+
+		clearEasyToEliteCluesAtWorldPoint(tile.getWorldLocation());
+
+		for (TileItem item : items)
+		{
+			if (Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode()) && !Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
+			{
+				ClueInstance clueInstance = new ClueInstance(List.of(), item.getId(), tile.getWorldLocation(), item, client.getTickCount());
+				trackedClues.addClue(clueInstance);
+				easyToEliteClueSpawnedThisTick.add(tile);
+			}
+		}
 	}
 
 	private void sortClues()
