@@ -149,7 +149,6 @@ public class ClueDetailsSharingManager
 
 	public static String sortJsonArrayById(String jsonString)
 	{
-		Gson gson = new Gson();
 		try
 		{
 			JsonArray jsonArray = gson.fromJson(jsonString, JsonArray.class);
