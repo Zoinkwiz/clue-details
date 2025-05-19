@@ -137,7 +137,7 @@ public class ClueDetailsSharingManager
 
 		final String exportDump = gson.toJson(clueIdToDetailsList);
 
-		final String sortedExportDump = sortJsonArrayById(exportDump);
+		final String sortedExportDump = sortJsonArrayById(gson, exportDump);
 
 		log.debug("Exported clue details: {}", sortedExportDump);
 
@@ -147,7 +147,7 @@ public class ClueDetailsSharingManager
 		sendChatMessage(clueIdToDetailsList.size() + " clue details were copied to your clipboard.");
 	}
 
-	public static String sortJsonArrayById(String jsonString)
+	public static String sortJsonArrayById(Gson gson, String jsonString)
 	{
 		try
 		{
