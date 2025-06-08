@@ -70,7 +70,7 @@ public class ClueWidgetManager
             MenuEntry entry = entries[idx];
 
             Widget widget = entry.getWidget();
-            if (widget == null || widget.getActions() == null)
+            if (widget == null || (widget.getActions() == null && entry.getType() != MenuAction.WIDGET_CONTINUE))
             {
                 return;
             }
