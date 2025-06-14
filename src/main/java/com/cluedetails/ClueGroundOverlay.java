@@ -33,20 +33,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.Player;
 import net.runelite.api.Point;
+import net.runelite.api.Tile;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.ui.JagexColors;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayUtil;
 import net.runelite.client.ui.overlay.components.TextComponent;
+import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
 
 import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.BOTH;
 import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.GROUND;
@@ -72,10 +76,11 @@ public class ClueGroundOverlay extends Overlay
 	private final ClueDetailsPlugin plugin;
 	private final ClueGroundManager clueGroundManager;
 	private final ClueThreeStepSaver clueThreeStepSaver;
+	protected final ModelOutlineRenderer modelOutlineRenderer;
 
 	@Inject
 	private ClueGroundOverlay(ClueDetailsPlugin plugin, Client client, ClueDetailsConfig config, ConfigManager configManager,
-	                          ClueThreeStepSaver clueThreeStepSaver, ClueGroundManager clueGroundManager)
+	                          ClueThreeStepSaver clueThreeStepSaver, ClueGroundManager clueGroundManager, ModelOutlineRenderer modelOutlineRenderer)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.UNDER_WIDGETS);
@@ -85,6 +90,7 @@ public class ClueGroundOverlay extends Overlay
 		this.configManager = configManager;
 		this.clueThreeStepSaver = clueThreeStepSaver;
 		this.clueGroundManager = clueGroundManager;
+		this.modelOutlineRenderer = modelOutlineRenderer;
 	}
 
 	@Override
@@ -121,6 +127,11 @@ public class ClueGroundOverlay extends Overlay
 			if (groundPoint == null || localLocation.distanceTo(groundPoint) > MAX_DISTANCE)
 			{
 				continue;
+			}
+
+			if (config.highlightMarkedClues())
+			{
+				checkWorldPointForHighlighting(wp);
 			}
 
 			// Get list of ClueInstances at wp with optionally collapsed quantities
@@ -243,5 +254,28 @@ public class ClueGroundOverlay extends Overlay
 		textComponent.setColor(item.getGroundColor(config, configManager));
 		textComponent.setPosition(new java.awt.Point(textX, textY));
 		textComponent.render(graphics);
+	}
+
+	private void checkWorldPointForHighlighting(WorldPoint worldPoint)
+	{
+		SortedSet<ClueInstance> clueInstances = clueGroundManager.getAllGroundCluesOnWp(worldPoint);
+		if (!clueInstances.isEmpty())
+		{
+			if (clueInstances.stream().anyMatch(clueInstance
+				-> clueInstance.getClueIds().stream().anyMatch(clueId
+					-> Clues.forClueId(clueId).getMarked(configManager))))
+			{
+				Tile[][][] tiles = client.getScene().getTiles();
+				LocalPoint local = LocalPoint.fromWorld(client, worldPoint);
+				Tile tile = tiles[worldPoint.getPlane()][local.getSceneX()][local.getSceneY()];
+
+				// TODO: Currently outlines all items in the tile
+				modelOutlineRenderer.drawOutline(
+					tile.getItemLayer(),
+					config.outlineWidth(),
+					JagexColors.CHAT_PUBLIC_TEXT_OPAQUE_BACKGROUND,
+					config.highlightFeather());
+			}
+		}
 	}
 }

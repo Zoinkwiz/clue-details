@@ -31,36 +31,26 @@ import com.google.common.collect.Multimap;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import javax.inject.Singleton;
 import net.runelite.api.Client;
-import net.runelite.api.GameState;
 import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
-import net.runelite.api.Perspective;
-import net.runelite.api.Player;
 import net.runelite.api.Point;
 import net.runelite.api.Tile;
-import net.runelite.api.TileItem;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ClientTick;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuOpened;
 import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.ui.JagexColors;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -85,9 +75,6 @@ public class ClueDetailsOverlay extends OverlayPanel
 	private final ClueGroundManager clueGroundManager;
 	private final ClueInventoryManager clueInventoryManager;
 
-	protected Multimap<Tile, Integer> tileHighlights = ArrayListMultimap.create();
-
-	protected static final int MAX_DISTANCE = 2350;
 	protected static final int SCENE_TO_LOCAL = 128;
 
 	@Inject
@@ -109,12 +96,6 @@ public class ClueDetailsOverlay extends OverlayPanel
 		this.modelOutlineRenderer = modelOutlineRenderer;
 		this.configManager = configManager;
 		this.notifier = notifier;
-
-		tileHighlights.clear();
-		if (client.getGameState() == GameState.LOGGING_IN)
-		{
-			refreshHighlights();
-		}
 	}
 
 	@Override
@@ -131,9 +112,6 @@ public class ClueDetailsOverlay extends OverlayPanel
 				showHoveredItem();
 			}
 		}
-
-		tileHighlights.keySet().forEach(tile -> checkAllTilesForHighlighting(tile, tileHighlights.get(tile)));
-
 		return super.render(graphics);
 	}
 
@@ -429,11 +407,10 @@ public class ClueDetailsOverlay extends OverlayPanel
 		return Clues.isClue(itemId, clueDetailsPlugin.isDeveloperMode()) && option.equals("Read");
 	}
 
-	private boolean shouldHighlight(int id)
+	private boolean shouldHighlight(WorldPoint tileWp)
 	{
-		if (id < 2677) return false; //TODO: Support fake beginner & master IDs
-		String shouldHighlight = configManager.getConfiguration("clue-details-highlights", String.valueOf(id));
-		return "true".equals(shouldHighlight);
+		SortedSet<ClueInstance> clueInstances = clueGroundManager.getAllGroundCluesOnWp(tileWp);
+		return clueInstances.stream().anyMatch(clueInstance -> clueInstance.getClueIds().stream().anyMatch(clueId -> Clues.forClueId(clueId).getMarked(configManager)));
 	}
 
 	private int getScrollID(MenuEntry menuEntry)
@@ -543,125 +520,12 @@ public class ClueDetailsOverlay extends OverlayPanel
 	}
 
 	@Subscribe
-	public void onGameStateChanged(final GameStateChanged event)
-	{
-		if (event.getGameState() == GameState.LOADING)
-		{
-			tileHighlights.clear();
-		}
-
-		if (event.getGameState() == GameState.LOGGED_IN)
-		{
-			addItemTiles();
-		}
-	}
-
-	@Subscribe
 	public void onItemSpawned(ItemSpawned itemSpawned)
 	{
-		TileItem item = itemSpawned.getItem();
 		Tile tile = itemSpawned.getTile();
-		if (shouldHighlight(item.getId()))
+		if (shouldHighlight(tile.getWorldLocation()))
 		{
 			notifier.notify(config.markedClueDroppedNotification(), "A highlighted clue has dropped!");
-			tileHighlights.get(tile).add(item.getId());
-		}
-	}
-
-	@Subscribe
-	public void onItemDespawned(ItemDespawned itemDespawned)
-	{
-		Tile tile = itemDespawned.getTile();
-		if (tileHighlights.containsKey(tile))
-		{
-			tileHighlights.get(tile).removeIf((i) -> i == itemDespawned.getItem().getId());
-		}
-	}
-
-	protected void addItemTiles()
-	{
-		tileHighlights.clear();
-
-		Tile[][] squareOfTiles = client.getTopLevelWorldView().getScene().getTiles()[client.getTopLevelWorldView().getPlane()];
-
-		// Reduce the two-dimensional array into a single list for processing.
-		List<Tile> tiles = Stream.of(squareOfTiles)
-			.flatMap(Arrays::stream)
-			.filter(Objects::nonNull)
-			.collect(Collectors.toList());
-
-		for (Tile tile : tiles)
-		{
-			List<TileItem> items = tile.getGroundItems();
-			if (items != null)
-			{
-				for (TileItem item : items)
-				{
-					if (item == null)
-					{
-						continue;
-					}
-
-					if (shouldHighlight(item.getId()))
-					{
-						tileHighlights.get(tile).add(item.getId());
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	public void refreshHighlights()
-	{
-		if (client.getGameState() != GameState.LOGGED_IN)
-		{
-			return;
-		}
-
-		addItemTiles();
-	}
-
-	private void checkAllTilesForHighlighting(Tile tile, Collection<Integer> ids)
-	{
-		if (!config.highlightMarkedClues())
-		{
-			return;
-		}
-		Player player = client.getLocalPlayer();
-
-		if (player == null)
-		{
-			return;
-		}
-
-		LocalPoint playerLocation = player.getLocalLocation();
-		if (!ids.isEmpty())
-		{
-			LocalPoint location = tile.getLocalLocation();
-
-			if (location == null)
-			{
-				return;
-			}
-
-			if (location.distanceTo(playerLocation) > MAX_DISTANCE)
-			{
-				return;
-			}
-
-			Polygon poly = Perspective.getCanvasTilePoly(client, location);
-			if (poly == null)
-			{
-				return;
-			}
-
-			// TODO: Currently outlines all items in the tile
-			modelOutlineRenderer.drawOutline(
-				tile.getItemLayer(),
-				config.outlineWidth(),
-				JagexColors.CHAT_PUBLIC_TEXT_OPAQUE_BACKGROUND,
-				config.highlightFeather());
 		}
 	}
 }

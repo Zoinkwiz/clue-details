@@ -1220,6 +1220,11 @@ public class Clues
 		return null;
 	}
 
+	public boolean getMarked(ConfigManager configManager)
+	{
+		return "true".equals(configManager.getConfiguration("clue-details-highlights", String.valueOf(getClueID())));
+	}
+
 	public static boolean isClue(int itemId, boolean isDeveloperMode)
 	{
 		return itemIdClueCache.containsKey(itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
