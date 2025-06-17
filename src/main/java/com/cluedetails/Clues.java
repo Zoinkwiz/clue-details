@@ -417,7 +417,7 @@ public class Clues
 		new Clues("Proudspire river: Emote", ItemID.CLUE_SCROLL_MEDIUM_29858, ClueTier.MEDIUM, null, List.of(new WorldPoint(1626, 3241, 0))),
 		new Clues("6859", ItemID.CHALLENGE_SCROLL_MEDIUM, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint( 2444, 3049, 0))),
 		new Clues("9", ItemID.CHALLENGE_SCROLL_MEDIUM_2844, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(3208, 3213, 0))),
-		new Clues("40", ItemID.CHALLENGE_SCROLL_MEDIUM_2846, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2613, 3269, 0))),
+		new Clues("51", ItemID.CHALLENGE_SCROLL_MEDIUM_2846, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2613, 3269, 0))),
 		new Clues("5", ItemID.CHALLENGE_SCROLL_MEDIUM_2850, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(3273, 3181, 0))),
 		new Clues("48", ItemID.CHALLENGE_SCROLL_MEDIUM_2852, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(3013, 3501, 0))),
 		new Clues("5096", ItemID.CHALLENGE_SCROLL_MEDIUM_2854, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2386, 3487, 0))),
