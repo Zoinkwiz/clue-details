@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import net.runelite.api.Client;
 import net.runelite.client.config.ConfigManager;
 
 @Singleton
@@ -54,29 +53,27 @@ public class ClueBankSaveDataManager
 		this.gson = gson;
 	}
 
-	public void saveStateToConfig(Client client, Map<Integer, ClueInstance> bankClues)
+	public void saveStateToConfig(Map<Integer, ClueInstance> bankClues)
 	{
 		// Serialize groundClues save to config
-		updateData(client, bankClues);
+		updateData(bankClues);
 		String bankCluesData = gson.toJson(clueInstanceData);
 		configManager.setConfiguration(CONFIG_GROUP, BANK_CLUES_KEY, bankCluesData);
 	}
 
-	private void updateData(Client client, Map<Integer, ClueInstance> bankClues)
+	private void updateData(Map<Integer, ClueInstance> bankClues)
 	{
-		int currentTick = client.getTickCount();
-
 		List<ClueInstanceData> newData = new ArrayList<>();
 		for (Map.Entry<Integer, ClueInstance> entry : bankClues.entrySet())
 		{
 			ClueInstance data = entry.getValue();
-			newData.add(new ClueInstanceData(data, currentTick));
+			newData.add(new ClueInstanceData(data));
 		}
 		clueInstanceData.clear();
 		clueInstanceData.addAll(newData);
 	}
 
-	public Map<Integer, ClueInstance> loadStateFromConfig(Client client)
+	public Map<Integer, ClueInstance> loadStateFromConfig()
 	{
 		String groundCluesJson = configManager.getConfiguration(CONFIG_GROUP, BANK_CLUES_KEY);
 		clueInstanceData.clear();
@@ -105,7 +102,7 @@ public class ClueBankSaveDataManager
 			} catch (Exception err)
 			{
 				bankClues.clear();
-				saveStateToConfig(client, bankClues);
+				saveStateToConfig(bankClues);
 			}
 		}
 

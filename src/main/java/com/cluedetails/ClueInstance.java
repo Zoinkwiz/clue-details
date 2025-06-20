@@ -206,7 +206,7 @@ public class ClueInstance
 		return color;
 	}
 
-	public int getDespawnTick(int currentTick)
+	public int getDespawnTick()
 	{
 		if (tileItem != null)
 		{
@@ -310,8 +310,8 @@ public class ClueInstance
 		}
 		else if (tileItem == null && clueInstance.tileItem == null)
 		{
-			diff1 = getDespawnTick(ClueDetailsPlugin.getCurrentTick());
-			diff2 = clueInstance.getDespawnTick(ClueDetailsPlugin.getCurrentTick());
+			diff1 = getDespawnTick();
+			diff2 = clueInstance.getDespawnTick();
 		}
 		else
 		{
@@ -325,14 +325,14 @@ public class ClueInstance
 	@Override
 	public int hashCode()
 	{
-		int despawnTime = getDespawnTick(ClueDetailsPlugin.getCurrentTick());
+		int despawnTime = getDespawnTick();
 		return Objects.hash(itemId, despawnTime, location);
 	}
 
 	@Override
 	public String toString()
 	{
-		int despawnTime = getDespawnTick(ClueDetailsPlugin.getCurrentTick());
+		int despawnTime = getDespawnTick();
 		return "ClueInstance{" + "itemId=" + itemId + ", despawnTick=" + despawnTime + ", worldPoint=" + location + ", orderId=" + sequenceNumber + "}";
 	}
 }

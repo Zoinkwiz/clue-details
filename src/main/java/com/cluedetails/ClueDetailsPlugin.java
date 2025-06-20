@@ -532,7 +532,7 @@ public class ClueDetailsPlugin extends Plugin
 		// Populate timers
 		for (WorldPoint worldPoint : worldPoints)
 		{
-			TreeMap<ClueInstance, Integer> clueInstancesWithQuantityAtWp = clueGroundManager.getClueInstancesWithQuantityAtWp(config, worldPoint, client.getTickCount());
+			TreeMap<ClueInstance, Integer> clueInstancesWithQuantityAtWp = clueGroundManager.getClueInstancesWithQuantityAtWp(config, worldPoint);
 
 			if (clueInstancesWithQuantityAtWp != null && clueInstancesWithQuantityAtWp.firstEntry() != null)
 			{
@@ -547,7 +547,7 @@ public class ClueDetailsPlugin extends Plugin
 					}
 				}
 
-				int despawnTick = oldestEnabledClueInstance.getDespawnTick(client.getTickCount());
+				int despawnTick = oldestEnabledClueInstance.getDespawnTick();
 
 				boolean createNewTimer = true;
 

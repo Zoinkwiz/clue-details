@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import net.runelite.api.Client;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.config.ConfigManager;
 
@@ -53,28 +52,26 @@ public class ClueGroundSaveDataManager
 		this.gson = gson;
 	}
 
-	public void saveStateToConfig(Client client, List<ClueInstance> groundClues)
+	public void saveStateToConfig(List<ClueInstance> groundClues)
 	{
 		// Serialize groundClues save to config
-		updateData(client, groundClues);
+		updateData(groundClues);
 		String groundCluesJson = gson.toJson(clueInstanceData);
 		configManager.setConfiguration(CONFIG_GROUP, GROUND_CLUES_KEY, groundCluesJson);
 	}
 
-	private void updateData(Client client, List<ClueInstance> groundClues)
+	private void updateData(List<ClueInstance> groundClues)
 	{
-		int currentTick = client.getTickCount();
-
 		List<ClueInstanceData> newData = new ArrayList<>();
 		for (ClueInstance groundClue : groundClues)
 		{
-			newData.add(new ClueInstanceData(groundClue, currentTick));
+			newData.add(new ClueInstanceData(groundClue));
 		}
 		clueInstanceData.clear();
 		clueInstanceData.addAll(newData);
 	}
 
-	public Map<WorldPoint, List<ClueInstance>> loadStateFromConfig(Client client)
+	public Map<WorldPoint, List<ClueInstance>> loadStateFromConfig()
 	{
 		String groundCluesJson = configManager.getConfiguration(CONFIG_GROUP, GROUND_CLUES_KEY);
 		clueInstanceData.clear();
@@ -111,7 +108,7 @@ public class ClueGroundSaveDataManager
 			} catch (Exception err)
 			{
 				groundClues.clear();
-				saveStateToConfig(client, new ArrayList<>());
+				saveStateToConfig(new ArrayList<>());
 			}
 		}
 

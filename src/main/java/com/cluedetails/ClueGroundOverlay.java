@@ -124,7 +124,7 @@ public class ClueGroundOverlay extends Overlay
 			}
 
 			// Get list of ClueInstances at wp with optionally collapsed quantities
-			Map<ClueInstance, Integer> clueInstancesWithQuantityAtWp = clueGroundManager.getClueInstancesWithQuantityAtWp(config, wp, client.getTickCount());
+			Map<ClueInstance, Integer> clueInstancesWithQuantityAtWp = clueGroundManager.getClueInstancesWithQuantityAtWp(config, wp);
 
 			if (clueInstancesWithQuantityAtWp == null)
 			{
@@ -174,7 +174,7 @@ public class ClueGroundOverlay extends Overlay
 
 	private int getSecondsLeft(ClueInstance item)
 	{
-		int ticksLeft = item.getDespawnTick(client.getTickCount()) - client.getTickCount();
+		int ticksLeft = item.getDespawnTick() - client.getTickCount();
 		int millisLeft = ticksLeft * 600;
 		return (int) (millisLeft / 1000L);
 	}

@@ -283,7 +283,7 @@ public class ClueGroundManager
 		{
 			// We assume it is the same clue. It is possible for it to be swapped with another clue though in
 			// another client/mobile, and this will be wrong
-			if (storedClues.get(0).getDespawnTick(currentTick) >= cluesOnTile.get(0).getDespawnTime())
+			if (storedClues.get(0).getDespawnTick() >= cluesOnTile.get(0).getDespawnTime())
 			{
 				storedClues.get(0).setTileItem(cluesOnTile.get(0));
 				return storedClues;
@@ -315,7 +315,7 @@ public class ClueGroundManager
 
 		// Sort ground clues by despawn time ascending
 		List<TileItem> sortedGroundClues = new ArrayList<>(cluesOnTile);
-		sortedGroundClues.removeIf((tileItem -> tileItem.getDespawnTime() > sortedStoredClues.get(sortedStoredClues.size() - 1).getDespawnTick(currentTick)));
+		sortedGroundClues.removeIf((tileItem -> tileItem.getDespawnTime() > sortedStoredClues.get(sortedStoredClues.size() - 1).getDespawnTick()));
 		sortedGroundClues.sort(Comparator.comparingInt(TileItem::getDespawnTime));
 
 		Map<Integer, List<TileItem>> groundItemsByItemID = sortedGroundClues.stream()
@@ -343,8 +343,6 @@ public class ClueGroundManager
 
 	private void findMatchingClues(List<ClueInstance> sortedStoredClues, List<TileItem> sortedGroundClues)
 	{
-		int currentTick = client.getTickCount();
-
 		// Need to loop diffs, and see matches in each.
 		// For items with the same ID, no matter what item you click in a stack, you will always pick up the first item dropped in the stack
 		// This means we don't need to worry about considering gaps where a clue has been taken from the middle of a stack.
@@ -354,7 +352,7 @@ public class ClueGroundManager
 		{
 			// We assume it is the same clue. It is possible for it to be swapped with another clue though in
 			// another client/mobile, and this will be wrong
-			if (sortedStoredClues.get(0).getDespawnTick(currentTick) >= sortedGroundClues.get(0).getDespawnTime())
+			if (sortedStoredClues.get(0).getDespawnTick() >= sortedGroundClues.get(0).getDespawnTime())
 			{
 				sortedStoredClues.get(0).setTileItem(sortedGroundClues.get(0));
 				return;
@@ -375,8 +373,8 @@ public class ClueGroundManager
 			// Same diff, probs same thing
 			if (currentGroundClueDiff != currentStoredClueDiff) continue;
 			// If item will despawn later than the stored clue, it can't be it.
-			if (groundClue1.getDespawnTime() > clueInstance1.getDespawnTick(currentTick)) continue;
-			if (groundClue2.getDespawnTime() > clueInstance2.getDespawnTick(currentTick)) continue;
+			if (groundClue1.getDespawnTime() > clueInstance1.getDespawnTick()) continue;
+			if (groundClue2.getDespawnTime() > clueInstance2.getDespawnTick()) continue;
 			clueInstance1.setTileItem(groundClue1);
 			clueInstance2.setTileItem(groundClue2);
 			minGroundItemFound++;
@@ -414,12 +412,12 @@ public class ClueGroundManager
 		{
 			return Comparator
 				.comparingLong(ClueInstance::getSequenceNumber)
-				.thenComparingInt((ClueInstance oc) -> oc.getDespawnTick(client.getTickCount()))
+				.thenComparingInt(ClueInstance::getDespawnTick)
 				.compare(o1, o2);
 		}
 	}
 
-	public TreeMap<ClueInstance, Integer> getClueInstancesWithQuantityAtWp(ClueDetailsConfig config, WorldPoint wp, int currentTick)
+	public TreeMap<ClueInstance, Integer> getClueInstancesWithQuantityAtWp(ClueDetailsConfig config, WorldPoint wp)
 	{
 		if (!trackedClues.getAllTrackedWorldPoints().contains(wp)) return null;
 
@@ -428,11 +426,11 @@ public class ClueGroundManager
 
 		if (config.collapseGroundCluesByTier())
 		{
-			groundItemMap = keepOldestTierClues(groundItemList, currentTick);
+			groundItemMap = keepOldestTierClues(groundItemList);
 		}
 		else if (config.collapseGroundClues())
 		{
-			groundItemMap = keepOldestUniqueClues(groundItemList, currentTick);
+			groundItemMap = keepOldestUniqueClues(groundItemList);
 		}
 		else
 		{
@@ -450,7 +448,7 @@ public class ClueGroundManager
 	}
 
 	// Remove duplicate step clues, maintaining a count of the original amount of each
-	public static Map<ClueInstance, Integer> keepOldestUniqueClues(SortedSet<ClueInstance> items, int currentTick)
+	public static Map<ClueInstance, Integer> keepOldestUniqueClues(SortedSet<ClueInstance> items)
 	{
 		Map<List<Integer>, ClueInstance> lowestValueItems = new HashMap<>();
 		Map<List<Integer>, Integer> uniqueCount = new HashMap<>();
@@ -460,7 +458,7 @@ public class ClueGroundManager
 			List<Integer> clueIds = item.getUniqueIds();
 
 			if (!lowestValueItems.containsKey(clueIds)
-				|| item.getDespawnTick(currentTick) < lowestValueItems.get(clueIds).getDespawnTick(currentTick))
+				|| item.getDespawnTick() < lowestValueItems.get(clueIds).getDespawnTick())
 			{
 				lowestValueItems.put(clueIds, item);
 				uniqueCount.put(clueIds, 1);
@@ -476,7 +474,7 @@ public class ClueGroundManager
 	}
 
 	// Remove duplicate tier clues, maintaining a count of the original amount of each
-	public static Map<ClueInstance, Integer> keepOldestTierClues(SortedSet<ClueInstance> items, int currentTick)
+	public static Map<ClueInstance, Integer> keepOldestTierClues(SortedSet<ClueInstance> items)
 	{
 		Map<ClueTier, ClueInstance> lowestValueItems = new HashMap<>();
 		Map<ClueTier, Integer> uniqueCount = new HashMap<>();
@@ -486,7 +484,7 @@ public class ClueGroundManager
 			ClueTier tier = item.getTier();
 
 			if (!lowestValueItems.containsKey(tier)
-				|| item.getDespawnTick(currentTick) < lowestValueItems.get(tier).getDespawnTick(currentTick))
+				|| item.getDespawnTick() < lowestValueItems.get(tier).getDespawnTick())
 			{
 				lowestValueItems.put(tier, item);
 				uniqueCount.put(tier, 1);
@@ -508,13 +506,13 @@ public class ClueGroundManager
 
 	public void saveStateToConfig()
 	{
-		clueGroundSaveDataManager.saveStateToConfig(client, trackedClues.getAllClues());
+		clueGroundSaveDataManager.saveStateToConfig(trackedClues.getAllClues());
 	}
 
 	public void loadStateFromConfig()
 	{
 		trackedClues.clearAllClues();
-		overwriteGroundClues(clueGroundSaveDataManager.loadStateFromConfig(client));
+		overwriteGroundClues(clueGroundSaveDataManager.loadStateFromConfig());
 	}
 
 	private void overwriteGroundClues(Map<WorldPoint, List<ClueInstance>> newGroundClues)

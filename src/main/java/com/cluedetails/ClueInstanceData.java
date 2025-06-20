@@ -38,11 +38,11 @@ public class ClueInstanceData
 	private int y;
 	private int plane;
 
-	public ClueInstanceData(ClueInstance clue, int currentTick)
+	public ClueInstanceData(ClueInstance clue)
 	{
 		this.clueIds = clue.getClueIds();
 		this.itemId = clue.getItemId();
-		this.despawnTick = clue.getDespawnTick(currentTick);
+		this.despawnTick = clue.getDespawnTick();
 		if (clue.getLocation() == null) return;
 
 		this.x = clue.getLocation().getX();
