@@ -212,7 +212,7 @@ public class ClueInstance
 		{
 			return tileItem.getDespawnTime();
 		}
-		return currentTick + timeToDespawnFromDataInTicks;
+		return timeToDespawnFromDataInTicks;
 	}
 
 	// Theory: This should mean that tiles we've seen have TileItem, and the actual despawn is used for ALL items on that tile

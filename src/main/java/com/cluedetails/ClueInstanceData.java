@@ -42,7 +42,7 @@ public class ClueInstanceData
 	{
 		this.clueIds = clue.getClueIds();
 		this.itemId = clue.getItemId();
-		this.despawnTick = clue.getTicksToDespawnConsideringTileItem(currentTick);
+		this.despawnTick = clue.getDespawnTick(currentTick);
 		if (clue.getLocation() == null) return;
 
 		this.x = clue.getLocation().getX();
