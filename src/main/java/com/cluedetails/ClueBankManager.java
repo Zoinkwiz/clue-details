@@ -29,14 +29,12 @@ import com.google.inject.Singleton;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 
 @Singleton
 public class ClueBankManager
 {
-	private final Client client;
 	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueBankSaveDataManager clueBankSaveDataManager;
 
@@ -47,9 +45,8 @@ public class ClueBankManager
 	private final Map<Integer, ClueInstance> cluesGoneFromInventory = new HashMap<>();
 
 	@Inject
-	public ClueBankManager(Client client, ClueDetailsPlugin clueDetailsPlugin, ClueBankSaveDataManager clueBankSaveDataManager)
+	public ClueBankManager(ClueDetailsPlugin clueDetailsPlugin, ClueBankSaveDataManager clueBankSaveDataManager)
 	{
-		this.client = client;
 		this.clueDetailsPlugin = clueDetailsPlugin;
 		this.clueBankSaveDataManager = clueBankSaveDataManager;
 	}
@@ -112,13 +109,13 @@ public class ClueBankManager
 
 	public void saveStateToConfig()
 	{
-		clueBankSaveDataManager.saveStateToConfig(client, cluesInBank);
+		clueBankSaveDataManager.saveStateToConfig(cluesInBank);
 	}
 
 	public void loadStateFromConfig()
 	{
 		cluesInBank.clear();
 		cluesGoneFromInventory.clear();
-		cluesInBank.putAll(clueBankSaveDataManager.loadStateFromConfig(client));
+		cluesInBank.putAll(clueBankSaveDataManager.loadStateFromConfig());
 	}
 }

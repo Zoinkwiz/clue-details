@@ -56,7 +56,7 @@ public class WorldPointToClueInstances
 
 		clueComparator = Comparator
 			.comparingLong(ClueInstance::getSequenceNumber)
-			.thenComparingInt((ClueInstance oc) -> oc.getDespawnTick(client.getTickCount()));
+			.thenComparingInt(ClueInstance::getDespawnTick);
 	}
 
 	private void createGroupedSet(WorldPoint wp)
@@ -214,7 +214,7 @@ public class WorldPointToClueInstances
 	{
 		for (ClueInstance clueInstance : getAllClues())
 		{
-			if (clueInstance.getDespawnTick(client.getTickCount()) <= client.getTickCount())
+			if (clueInstance.getDespawnTick() <= client.getTickCount())
 			{
 				removeClue(clueInstance);
 			}
