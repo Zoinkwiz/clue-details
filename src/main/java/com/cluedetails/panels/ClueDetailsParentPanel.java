@@ -639,11 +639,12 @@ public class ClueDetailsParentPanel extends PluginPanel
 		final String[] searchTerms = searchText.toLowerCase().split("\\s+");
 
 		List<ListItem> filteredItems = new ArrayList<>();
+		ListItem header = null;
 		for (ListItem item : allClues)
 		{
 			if (item.isHeader())
 			{
-				filteredItems.add(item);
+				header = item;
 			}
 			else
 			{
@@ -657,6 +658,12 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 				if (matches)
 				{
+					// Only add header if search result contains items for that header
+					if (header != null)
+					{
+						filteredItems.add(header);
+						header = null;
+					}
 					filteredItems.add(item);
 				}
 			}
