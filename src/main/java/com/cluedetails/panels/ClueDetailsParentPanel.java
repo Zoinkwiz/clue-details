@@ -27,6 +27,7 @@ package com.cluedetails.panels;
 import com.cluedetails.*;
 import com.cluedetails.ClueDetailsConfig.*;
 
+import static com.cluedetails.ClueDetailsConfig.GROUP;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -678,6 +679,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 			@Override
 			protected List<ListItem> doInBackground()
 			{
+				// Update dropdowns to match current config
+				tierFilterDropdown.setSelectedItem(
+					ClueTierFilter.valueOf(configManager.getConfiguration(GROUP, "filterListByTier")));
+				regionFilterDropdown.setSelectedItem(
+					ClueRegionFilter.valueOf(configManager.getConfiguration(GROUP, "filterListByRegion")));
+				orderDropdown.setSelectedItem(
+					ClueOrdering.valueOf(configManager.getConfiguration(GROUP, "orderListBy")));
+
 				List<Clues> filteredClues = Clues.CLUES.stream()
 					.filter(config.filterListByTier())
 					.filter(config.filterListByRegion())
