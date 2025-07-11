@@ -57,6 +57,7 @@ public class ClueInstance
 	@Getter
 	private final Integer timeToDespawnFromDataInTicks;
 	private TileItem tileItem;
+	private boolean isNewClue;
 
 	// Constructor for clues from config
 	public ClueInstance(ClueInstanceData data)
@@ -90,7 +91,19 @@ public class ClueInstance
 		this.itemId = itemId;
 		this.location = location;
 		this.tileItem = tileItem;
-		this.timeToDespawnFromDataInTicks = currentTick;
+		this.timeToDespawnFromDataInTicks = tileItem.getDespawnTime();
+
+		this.sequenceNumber = sequenceGenerator.getAndIncrement();
+	}
+
+	public ClueInstance(List<Integer> clueIds, int itemId, WorldPoint location, TileItem tileItem, boolean isNewClue)
+	{
+		this.clueIds = clueIds;
+		this.itemId = itemId;
+		this.location = location;
+		this.tileItem = tileItem;
+		this.timeToDespawnFromDataInTicks = tileItem.getDespawnTime() - 1;
+		this.isNewClue = isNewClue;
 
 		this.sequenceNumber = sequenceGenerator.getAndIncrement();
 	}
@@ -144,7 +157,14 @@ public class ClueInstance
 
 		if (clueIds.isEmpty())
 		{
-			clueText = WordUtils.capitalizeFully(this.getTier().toString().replace("_", " "));
+			if (this.getTier() == null)
+			{
+				clueText = "";
+			}
+			else
+			{
+				clueText = WordUtils.capitalizeFully(this.getTier().toString().replace("_", " "));
+			}
 		}
 		else
 		{
@@ -210,7 +230,9 @@ public class ClueInstance
 	{
 		if (tileItem != null)
 		{
-			return tileItem.getDespawnTime();
+			int subValue = 0;
+			if (isNewClue) subValue = 1;
+			return tileItem.getDespawnTime() - subValue;
 		}
 		return timeToDespawnFromDataInTicks;
 	}
