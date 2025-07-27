@@ -99,7 +99,7 @@ public class ClueGroundManager
 		// If clue in inventory AND new clue appeared with fresh despawn timer, it must be the inventory item being dropped
 		if (isNewGroundClue(item.getId(), item.getDespawnTime()) && inventoryClue != null)
 		{
-			ClueInstance newGroundClue = new ClueInstance(inventoryClue.getClueIds(), inventoryClue.getItemId(), tile.getWorldLocation(), item, client.getTickCount());
+			ClueInstance newGroundClue = new ClueInstance(inventoryClue.getClueIds(), inventoryClue.getItemId(), tile.getWorldLocation(), item, true);
 			trackedClues.addClue(newGroundClue);
 			return;
 		}
