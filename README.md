@@ -99,3 +99,9 @@ You can share your edited clue detail text, colors, and items, or import from so
 ![java_WJJq9uFwNH](https://github.com/user-attachments/assets/504a4bb8-a0dc-429d-be3d-1684e663a264)
 
 You can find custom clue details examples at https://thelope.github.io/clue-tags/details/
+
+## Other Plugins
+
+On its own, Clue Details is unable to identify individual Hot Cold clue steps, and instead will provide a single hint for all.
+
+However, if you have the [Hot Cold Helper](https://runelite.net/plugin-hub/show/hot-cold-helper) plugin installed, Hot Cold clue steps will be automatically identified once you have solved the Hot Cold location.

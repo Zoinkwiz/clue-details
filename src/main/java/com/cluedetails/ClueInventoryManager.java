@@ -48,7 +48,6 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
-import net.runelite.client.util.Text;
 
 @Slf4j
 @Singleton
@@ -195,18 +194,18 @@ public class ClueInventoryManager
 		}
 	}
 
-	// Only used for Beginner Map Clues
-	public void updateClueText(Integer interfaceId)
+	// Only used for Beginner Map Clues and Hot Cold Clues
+	public void updateClueText(Integer otherId, Integer itemId)
 	{
 		List<Integer> clueIds = new ArrayList<>();
 
 		// Beginner Map Clues all use the same ItemID, but the InterfaceID used to display them is unique
-		clueIds.add(Clues.forInterfaceIdGetId(interfaceId));
+		// Hot Cold Clues all use the same ItemID, but have a unique enum from Clue Scroll plugin
+		clueIds.add(Clues.forOtherIdGetId(otherId));
 
-		// Assume can only be beginner for now
-		ClueInstance beginnerClueInInv = cluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
-		if (beginnerClueInInv == null) return;
-		beginnerClueInInv.setClueIds(clueIds);
+		ClueInstance clueInInv = cluesInInventory.get(itemId);
+		if (clueInInv == null) return;
+		clueInInv.setClueIds(clueIds);
 		clueDetailsPlugin.getClueInventoryManager().updateLastInventoryRefreshTime();
 	}
 

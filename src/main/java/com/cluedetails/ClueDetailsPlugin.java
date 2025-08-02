@@ -30,6 +30,7 @@ import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.inject.Inject;
@@ -57,6 +58,7 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.client.Notifier;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.events.ClientShutdown;
+import net.runelite.client.events.PluginMessage;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.callback.ClientThread;
@@ -69,6 +71,7 @@ import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.cluescrolls.clues.hotcold.HotColdLocation;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
@@ -318,7 +321,7 @@ public class ClueDetailsPlugin extends Plugin
 		if (event.getGroupId() >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
 			&& event.getGroupId() <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER)
 		{
-			clueInventoryManager.updateClueText(event.getGroupId());
+			clueInventoryManager.updateClueText(event.getGroupId(), ItemID.CLUE_SCROLL_BEGINNER);
 		}
 		else if (event.getGroupId() == ComponentID.CLUESCROLL_TEXT >> 16)
 		{
@@ -332,6 +335,27 @@ public class ClueDetailsPlugin extends Plugin
 					clueThreeStepSaver.scanInventory();
 				}
 			});
+		}
+	}
+
+	@Subscribe
+	public void onPluginMessage(PluginMessage event)
+	{
+		// Subscribe to Hot Cold Helper for HotColdLocation
+		if ("hot-cold-helper".equals(event.getNamespace()))
+		{
+			if ("location-solved".equals(event.getName()))
+			{
+				Map<String, Object> data = event.getData();
+				if (data == null) return;
+
+				HotColdLocation solvedLocation = HotColdLocation.valueOf(data.get("location").toString());
+				if (solvedLocation != null)
+				{
+					clueInventoryManager.updateClueText(solvedLocation.ordinal(),
+						solvedLocation.isBeginnerClue() ? ItemID.CLUE_SCROLL_BEGINNER : ItemID.CLUE_SCROLL_MASTER);
+				}
+			}
 		}
 	}
 
