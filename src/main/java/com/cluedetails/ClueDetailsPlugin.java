@@ -43,6 +43,7 @@ import net.runelite.api.ItemID;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ClientTick;
+import net.runelite.api.events.FocusChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -336,6 +337,18 @@ public class ClueDetailsPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onFocusChanged(FocusChanged e){
+		if (e.isFocused()){
+			String minutes_config = configManager.getConfiguration("logouttimer", "idleTimeout");
+			int minutes_parsed = 25;
+			if (minutes_config != null){
+				minutes_parsed = Integer.parseInt(minutes_config);
+			}
+			client.setIdleTimeout(50 * 60 * minutes_parsed);
+		}
+	}
+
+	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
@@ -388,6 +401,9 @@ public class ClueDetailsPlugin extends Plugin
 					if (!timer.isNotified() && timer.shouldNotify() && !timer.isRenotifying())
 					{
 						notifier.notify("Your clue scroll is about to disappear!");
+						if (config.decreaseIdleTimeout()){
+							client.setIdleTimeout(1);  // client forces this to be minimum 5 minutes
+						}
 						if (config.groundClueTimersRenotificationTime() != 0)
 						{
 							timer.startRenotification();
@@ -479,6 +495,13 @@ public class ClueDetailsPlugin extends Plugin
 		if (!event.getGroup().equals(ClueDetailsConfig.class.getAnnotation(ConfigGroup.class).value()))
 		{
 			return;
+		}
+
+		if ("groundClueTimersDecreaseIdleTimeout".equals(event.getKey())){
+			String minutes_config = configManager.getConfiguration("logouttimer", "idleTimeout");
+			if (minutes_config != null){
+				client.setIdleTimeout(50 * 60 * Integer.parseInt(minutes_config));
+			}
 		}
 
 		if ("showSidebar".equals(event.getKey()))
