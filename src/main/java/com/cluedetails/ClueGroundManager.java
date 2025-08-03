@@ -369,7 +369,6 @@ public class ClueGroundManager
 
 			int currentStoredClueDiff = clueInstance2.getTimeToDespawnFromDataInTicks() - clueInstance1.getTimeToDespawnFromDataInTicks();
 			int currentGroundClueDiff = groundClue2.getDespawnTime() - groundClue1.getDespawnTime();
-
 			// Same diff, probs same thing
 			if (currentGroundClueDiff != currentStoredClueDiff) continue;
 			// If item will despawn later than the stored clue, it can't be it.
@@ -378,6 +377,11 @@ public class ClueGroundManager
 			clueInstance1.setTileItem(groundClue1);
 			clueInstance2.setTileItem(groundClue2);
 			minGroundItemFound++;
+		}
+
+		for (ClueInstance sortedStoredClue : sortedStoredClues)
+		{
+			sortedStoredClue.updateDespawnTick();
 		}
 	}
 
