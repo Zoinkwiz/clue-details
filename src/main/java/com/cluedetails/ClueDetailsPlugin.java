@@ -29,9 +29,12 @@ import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.TreeMap;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -52,6 +55,7 @@ import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
 import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.SpriteID;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
@@ -336,6 +340,13 @@ public class ClueDetailsPlugin extends Plugin
 				}
 			});
 		}
+		else if (event.getGroupId() == InterfaceID.FAIRY_RING_PANEL)
+		{
+			if (config.fairyRingAutoScroll())
+			{
+				clientThread.invokeLater(this::handleFairyRingPanel);
+			}
+		}
 	}
 
 	@Subscribe
@@ -613,5 +624,117 @@ public class ClueDetailsPlugin extends Plugin
 			infoBoxManager.removeInfoBox(timer);
 		}
 		clueGroundTimers.clear();
+	}
+
+	/**
+	 * Taken from Hunter Rumours Plugin
+	 * Called when the fairy ring dialog is opened.
+	 * Responsible for scrolling to the relevant code and highlighting it, if found in clue detail.
+	 */
+	private void handleFairyRingPanel()
+	{
+		List<String> cluesInInventoryText = clueInventoryManager.getCluesInInventory().stream()
+			.filter(Objects::nonNull)
+			.map(clueInventoryManager::getClueByClueItemId)
+			.filter(Objects::nonNull)
+			.flatMap(instance -> instance.getClueIds().stream())
+			.map(Clues::forClueIdFiltered)
+			.filter(clue -> clue != null && clue.isEnabled(config))
+			.map(clue -> clue.getDetail(configManager))
+			.collect(Collectors.toList());
+
+		if (cluesInInventoryText.isEmpty()) return;
+
+		// Find all the necessary widgets
+		Widget panelList = client.getWidget(ComponentID.FAIRY_RING_PANEL_LIST);
+		Widget favoritesList = client.getWidget(ComponentID.FAIRY_RING_PANEL_FAVORITES);
+		Widget scrollBar = client.getWidget(ComponentID.FAIRY_RING_PANEL_SCROLLBAR);
+
+		if (panelList == null || scrollBar == null || favoritesList == null) return;
+
+		Widget scrollBarContainer = null, scrollBarHandle = null, scrollBarHandleTop = null,
+			scrollBarHandleBottom = null, scrollBarUpButton = null, scrollBarDownButton = null;
+		for (var scrollChild : scrollBar.getDynamicChildren())
+		{
+			switch (scrollChild.getSpriteId())
+			{
+				case SpriteID.SCROLLBAR_ARROW_DOWN:
+					scrollBarDownButton = scrollChild;
+					break;
+				case SpriteID.SCROLLBAR_ARROW_UP:
+					scrollBarUpButton = scrollChild;
+					break;
+				case SpriteID.SCROLLBAR_THUMB_MIDDLE:
+					scrollBarHandle = scrollChild;
+					break;
+				case SpriteID.SCROLLBAR_THUMB_TOP:
+					scrollBarHandleTop = scrollChild;
+					break;
+				case SpriteID.SCROLLBAR_THUMB_BOTTOM:
+					scrollBarHandleBottom = scrollChild;
+					break;
+				case SpriteID.SCROLLBAR_THUMB_MIDDLE_DARK:
+					scrollBarContainer = scrollChild;
+					break;
+			}
+		}
+
+		if (scrollBarContainer == null || scrollBarHandle == null || scrollBarHandleTop == null
+			|| scrollBarHandleBottom == null || scrollBarUpButton == null || scrollBarDownButton == null)
+		{
+			return;
+		}
+
+		// Construct a list of all widgets that are the fairy ring code texts
+		var codeWidgets = new ArrayList<Widget>();
+
+		// Add in all children from the big list
+		codeWidgets.addAll(Arrays.asList(panelList.getDynamicChildren()));
+
+		// Add in all children from the favorites list
+		codeWidgets.addAll(Arrays.asList(favoritesList.getStaticChildren()));
+
+		Widget foundCodeWidget = null;
+
+		// Check each clue in inventory
+		for (String clueDetail : cluesInInventoryText)
+		{
+			// Find the widget corresponding to the fairy ring code
+			for (var codeWidget : codeWidgets)
+			{
+				if (!codeWidget.getText().isEmpty()
+					&& clueDetail.contains(codeWidget.getText().replace(" ", "")))
+				{
+					foundCodeWidget = codeWidget;
+					break;
+				}
+			}
+			if (foundCodeWidget != null) break;
+		}
+
+		// If no widget found, bail out
+		if (foundCodeWidget == null) return;
+
+		// Scroll to the code entry and highlight it
+		int panelScrollY = Math.min(foundCodeWidget.getRelativeY(), panelList.getScrollHeight() - panelList.getHeight());
+		panelList.setScrollY(panelScrollY);
+		panelList.revalidateScroll();
+		foundCodeWidget.setTextColor(0x00FF00);
+		foundCodeWidget.setText("(Clue) " + foundCodeWidget.getText());
+
+		// Determine scrollbar placement
+		double codeEntryPlacement = (double) foundCodeWidget.getRelativeY() / (double) panelList.getScrollHeight();
+		final int ENTRY_PADDING = 4;
+		int maxHandleY = scrollBarContainer.getHeight() - ENTRY_PADDING;
+		int handleY = (int) ((double) scrollBarContainer.getHeight() * codeEntryPlacement) + scrollBarUpButton.getHeight();
+		handleY = Math.min(handleY, maxHandleY);
+		int handleBottomY = handleY + (scrollBarHandle.getHeight() - scrollBarHandleBottom.getHeight());
+
+		scrollBarHandle.setOriginalY(handleY);
+		scrollBarHandleTop.setOriginalY(handleY);
+		scrollBarHandleBottom.setOriginalY(handleBottomY);
+		scrollBarHandle.revalidateScroll();
+		scrollBarHandleTop.revalidateScroll();
+		scrollBarHandleBottom.revalidateScroll();
 	}
 }

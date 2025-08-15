@@ -812,4 +812,16 @@ public interface ClueDetailsConfig extends Config
 	{
 		return Color.GREEN.darker();
 	}
+
+	@ConfigItem(
+		keyName = "fairyRingAutoScroll",
+		name = "Fairy ring auto-scroll",
+		description = "Automatically scroll the fairy ring interface to a code if found in your current clue detail text",
+		section = helperSection,
+		position = 4
+	)
+	default boolean fairyRingAutoScroll()
+	{
+		return true;
+	}
 }
