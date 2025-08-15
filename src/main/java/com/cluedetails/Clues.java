@@ -429,7 +429,7 @@ public class Clues
 		new Clues("5", ItemID.CHALLENGE_SCROLL_MEDIUM_2850, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(3273, 3181, 0))),
 		new Clues("48", ItemID.CHALLENGE_SCROLL_MEDIUM_2852, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(3013, 3501, 0))),
 		new Clues("5096", ItemID.CHALLENGE_SCROLL_MEDIUM_2854, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2386, 3487, 0))),
-		new Clues("4", ItemID.CHALLENGE_SCROLL_MEDIUM_7275, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2658, 3670, 0))),
+		new Clues("5", ItemID.CHALLENGE_SCROLL_MEDIUM_7275, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2658, 3670, 0))),
 		new Clues("11", ItemID.CHALLENGE_SCROLL_MEDIUM_7277, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2790, 3066, 0))),
 		new Clues("38", ItemID.CHALLENGE_SCROLL_MEDIUM_7279, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2541, 3305, 0))),
 		new Clues("11", ItemID.CHALLENGE_SCROLL_MEDIUM_7281, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2715, 3302, 0))),
