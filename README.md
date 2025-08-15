@@ -100,6 +100,14 @@ You can share your edited clue detail text, colors, and items, or import from so
 
 You can find custom clue details examples at https://thelope.github.io/clue-tags/details/
 
+## Helpers
+
+### Three-stepper saver
+Allows you to set a three-step master clue you wish to save, removing the ability to combine torn scrolls when the set clue is in your inventory
+
+### Fairy ring auto-scroll
+Automatically scrolls the fairy ring interface to a code if one found in your current clue detail text
+
 ## Other Plugins
 
 On its own, Clue Details is unable to identify individual Hot Cold clue steps, and instead will provide a single hint for all.
