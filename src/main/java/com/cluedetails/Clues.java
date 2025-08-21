@@ -1244,6 +1244,7 @@ public class Clues
 
 		itemIdClueCache = enabledClues
 				.stream()
+				.filter(clue -> clue.getItemID() >= 2677) // Ignore InterfaceID and HotColdLocation
 				.collect(Collectors.groupingBy(Clues::getItemID));
 
 		clueIdClueCache = enabledClues
