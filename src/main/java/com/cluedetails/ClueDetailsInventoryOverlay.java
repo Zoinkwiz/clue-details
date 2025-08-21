@@ -73,29 +73,32 @@ public class ClueDetailsInventoryOverlay extends OverlayPanel
 	private void createInventoryCluesOverlay()
 	{
 		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
-		if (inventory == null) return;
+		if (inventory == null || clueInventoryManager == null ) return;
 
-		for (Item item : inventory.getItems())
+		for (Integer itemID : clueInventoryManager.getCluesInInventory())
 		{
-			ClueInstance clueInstance = clueInventoryManager.getClueByClueItemId(item.getId());
-			if (clueInstance == null || clueInstance.getClueIds().isEmpty()) continue;
+			if (itemID == null) continue;
+			ClueInstance instance = clueInventoryManager.getClueByClueItemId(itemID);
+			if (instance == null) continue;
 
-			for (Integer clueId : clueInstance.getClueIds())
+			instance.getClueIds().forEach((clueId) ->
 			{
-				Clues cluePart = Clues.forClueIdFiltered(clueId);
-				if (cluePart == null) continue;
-
 				Color color = TITLED_CONTENT_COLOR;
-				if (config.colorInventoryCluesOverlay())
+				Clues clue = Clues.forClueIdFiltered(clueId);
+				if (clue == null) return;
+				if (clue.isEnabled(config))
 				{
-					color = cluePart.getDetailColor(configManager);
-				}
+					if (config.colorInventoryCluesOverlay())
+					{
+						color = clue.getDetailColor(configManager);
+					}
 
-				panelComponent.getChildren().add(LineComponent.builder()
-					.left(cluePart.getDetail(configManager))
-					.leftColor(color)
-					.build());
-			}
+					panelComponent.getChildren().add(LineComponent.builder()
+						.left(clue.getDetail(configManager))
+						.leftColor(color)
+						.build());
+				}
+			});
 		}
 	}
 }
