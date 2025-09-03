@@ -1231,6 +1231,7 @@ public class Clues
 	);
 
 	private static Map<Integer, List<Clues>> itemIdClueCache = new HashMap<>();
+	private static Map<Integer, List<Clues>> otherIdClueCache = new HashMap<>();
 	private static Map<Integer, Clues> clueIdClueCache = new HashMap<>();
 	private static Map<Integer, Clues> unfilteredClueCache = new HashMap<>();
 
@@ -1246,6 +1247,11 @@ public class Clues
 				.stream()
 				.filter(clue -> clue.getItemID() >= 2677) // Ignore InterfaceID and HotColdLocation
 				.collect(Collectors.groupingBy(Clues::getItemID));
+
+		otherIdClueCache = enabledClues
+			.stream()
+				.filter(clue -> clue.getItemID() < 2677) // Only InterfaceID and HotColdLocation
+			.collect(Collectors.groupingBy(Clues::getItemID));
 
 		clueIdClueCache = enabledClues
 				.stream()
@@ -1333,7 +1339,7 @@ public class Clues
 
 	public static Integer forOtherIdGetId(int otherId)
 	{
-		List<Clues> clues = itemIdClueCache.get(otherId);
+		List<Clues> clues = otherIdClueCache.get(otherId);
 		if (!clues.isEmpty())
 		{
 			return clues.get(0).clueID;
