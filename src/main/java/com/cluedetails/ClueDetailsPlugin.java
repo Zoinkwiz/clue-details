@@ -44,6 +44,7 @@ import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
+import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ClientTick;
@@ -63,6 +64,7 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.client.Notifier;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.events.ClientShutdown;
+import net.runelite.client.events.InfoBoxMenuClicked;
 import net.runelite.client.events.PluginMessage;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
@@ -81,6 +83,7 @@ import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.ImageUtil;
 
@@ -212,6 +215,8 @@ public class ClueDetailsPlugin extends Plugin
 
 	@Getter
 	public static int currentPlane;
+
+	private static final String CLUE_GROUND_TIMER_CLEAR = "Clear";
 
 	@Override
 	protected void startUp() throws Exception
@@ -636,9 +641,28 @@ public class ClueDetailsPlugin extends Plugin
 						clueInstancesWithQuantityAtWp,
 						itemManager.getImage(ItemID.CLUE_SCROLL_23815)
 					);
+					// Set clear option
+					timer.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, CLUE_GROUND_TIMER_CLEAR, "Tracked clues"));
 					clueGroundTimers.add(timer);
 					infoBoxManager.addInfoBox(timer);
 				}
+			}
+		}
+	}
+
+	@Subscribe
+	public void onInfoBoxMenuClicked(InfoBoxMenuClicked infoBoxMenuClicked)
+	{
+		if (infoBoxMenuClicked.getEntry().getOption().equals(CLUE_GROUND_TIMER_CLEAR))
+		{
+			ClueGroundTimer clickedTimer = (ClueGroundTimer) infoBoxMenuClicked.getInfoBox();
+			if (clickedTimer != null && clueGroundTimers.contains(clickedTimer))
+			{
+				// Clear infobox and tracked clues for world point
+				infoBoxManager.removeInfoBox(clickedTimer);
+				clueGroundTimers.remove(clickedTimer);
+				clueGroundManager.clearBeginnerAndMasterCluesAtWorldPoint(clickedTimer.getWorldPoint());
+				clueGroundManager.clearEasyToEliteCluesAtWorldPoint(clickedTimer.getWorldPoint());
 			}
 		}
 	}
