@@ -33,12 +33,14 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import net.runelite.api.Client;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.config.ConfigManager;
 
 @Singleton
 public class ClueGroundSaveDataManager
 {
+	private final Client client;
 	private final ConfigManager configManager;
 	private final Gson gson;
 	private static final String CONFIG_GROUP = "clue-details";
@@ -46,8 +48,9 @@ public class ClueGroundSaveDataManager
 	private final List<ClueInstanceData> clueInstanceData = new ArrayList<>();
 
 	@Inject
-	public ClueGroundSaveDataManager(ConfigManager configManager, Gson gson)
+	public ClueGroundSaveDataManager(Client client, ConfigManager configManager, Gson gson)
 	{
+		this.client = client;
 		this.configManager = configManager;
 		this.gson = gson;
 	}
@@ -56,6 +59,11 @@ public class ClueGroundSaveDataManager
 	{
 		// Serialize groundClues save to config
 		updateData(groundClues);
+		// Offset despawn time by current client tick count
+		for (ClueInstanceData data : clueInstanceData)
+		{
+			data.setDespawnTick(data.getDespawnTick() - client.getTickCount());
+		}
 		String groundCluesJson = gson.toJson(clueInstanceData);
 		configManager.setConfiguration(CONFIG_GROUP, GROUND_CLUES_KEY, groundCluesJson);
 	}
@@ -94,6 +102,8 @@ public class ClueGroundSaveDataManager
 
 					WorldPoint location = clueData.getLocation();
 					ClueInstance clue = new ClueInstance(clueData);
+					// Offset despawn time by current client tick count
+					clue.setTimeToDespawnFromDataInTicks(clue.getTimeToDespawnFromDataInTicks() + client.getTickCount());
 					if (groundClues.containsKey(location))
 					{
 						groundClues.get(location).add(clue);
