@@ -503,6 +503,11 @@ public class ClueGroundManager
 			.collect(Collectors.toMap(item -> item, item ->	uniqueCount.get(item.getTier())));
 	}
 
+	public void clearBeginnerAndMasterCluesAtWorldPoint(WorldPoint wp)
+	{
+		trackedClues.clearBeginnerAndMasterCluesAtWorldPoint(wp);
+	}
+
 	public void clearEasyToEliteCluesAtWorldPoint(WorldPoint wp)
 	{
 		trackedClues.clearEasyToEliteCluesAtWorldPoint(wp);
