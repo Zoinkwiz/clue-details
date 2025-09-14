@@ -76,7 +76,15 @@ class ClueGroundTimer extends InfoBox
 			}
 			return String.format("%d:%02d", minutes, secs);
 		}
-		return String.format("%dm", minutes);
+		// Something went wrong when tracking despawn time
+		else if (minutes > 61)
+		{
+			return "?";
+		}
+		else
+		{
+			return String.format("%dm", minutes);
+		}
 	}
 
 	@Override
