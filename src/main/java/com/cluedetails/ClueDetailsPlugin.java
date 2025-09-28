@@ -604,6 +604,8 @@ public class ClueDetailsPlugin extends Plugin
 
 		// Remove timers if worldPoint not managed by clueGroundManager
 		clueGroundTimers.removeIf(timer-> !worldPoints.contains(timer.getWorldPoint()));
+		// Remove world map point if worldPoint not managed by clueGroundManager
+		worldMapPointManager.removeIf(worldMapPoint-> !worldPoints.contains(worldMapPoint.getWorldPoint()));
 
 		// Populate timers
 		for (WorldPoint worldPoint : worldPoints)
