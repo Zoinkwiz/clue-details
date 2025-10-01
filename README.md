@@ -41,15 +41,15 @@ The "Change ground item menu text" toggle in the plugin's settings adjusts the a
 
 ![Screenshot 2024-09-01 221305](https://github.com/user-attachments/assets/72685ba5-f441-4cac-b18c-6cc0ddf42d98)
 
-The "Inventory tag clue scrolls" toggle applies inventory tags to clues in your inventory using configured clue colors
+The "Inventory tag clue scrolls" toggle applies inventory tags to clues in your inventory using configured clue colors.
 
 ![image](https://github.com/user-attachments/assets/ba9ca49f-df55-48c5-a112-5302ecef1683)
 
-The "Inventory tag clue items" toggle applies inventory tags to configured items for each clue in your inventory
+The "Inventory tag clue items" toggle applies inventory tags to configured items for each clue in your inventory.
 
 ![image](https://github.com/user-attachments/assets/3dc33f5b-f300-4614-b6bf-db7359f23ae5)
 
-The "Highlight clue widgets" toggle highlights configured widgets on the user interface for each clue in your inventory using configured clue colors
+The "Highlight clue widgets" toggle highlights configured widgets on the user interface for each clue in your inventory using configured clue colors.
 
 ![image](https://github.com/user-attachments/assets/9a3a66bb-0476-4fdd-ae0e-76c63fd28078)
 
@@ -61,20 +61,24 @@ The "Show ground clue timers" toggle shows despawn timers for ground clues, simi
 
 ![ground_clue_timers](https://github.com/user-attachments/assets/73e70e22-a541-48a2-a9ef-92f324a8f38e)
 
+- Shift + right-clicking the infobox will provide additional options for "Tracked Clues".
+  - "Clear" will remove the clues on the associated world point from tracking. Loading the area with the clues will cause them to be tracked.
+  - "Locate/Unlocate" adds or removes a world point from the world map indicating the location of the tracked clues.
+
 ## Editing clue details
 
 ### Text
 You can edit the clue details shown to you, this can be done 3 different ways.
-1. In the sidebar, right-click the clue hint you want to change and select "Edit text for clue"
-2. Shift+right-click on a clue in your inventory, then select the "Clue details" option
-3. Via Import/Export. See below
+1. In the sidebar, right-click the clue hint you want to change and select "Edit text for clue".
+2. Shift+right-click on a clue in your inventory, then select the "Clue details" option.
+3. Via Import/Export. See below.
 
 Input the next text you want shown for it, and then submit. It will now be what is shown to you for the specific clue.
 
 ### Colors
 You can edit the clue details colors shown to you, this can be done 2 different ways.
-1. In the sidebar, right-click the clue hint you want to change and select "Edit color for clue"
-2. Via Import/Export in RGB Hexadecimal format. See below
+1. In the sidebar, right-click the clue hint you want to change and select "Edit color for clue".
+2. Via Import/Export in RGB Hexadecimal format. See below.
 
 Colors will now be updated for the specific clue depending on the configuration toggles shown below.
 
@@ -88,9 +92,9 @@ Updating colors for the Ground Items and Inventory Tags plugins is also supporte
 ### Items
 You can edit the clue details items for each clue, this can be done 3 different ways.
 1. If you have the clue in your inventory for which you would like to inventory tag an item:
-    - Right-click the desired inventory item and choose "Add" or "Remove" for the clue via the option specifying its tier
-2. In the sidebar, right-click the clue you would like to inventory tag an item for, and select "Add/Remove item"
-3. Via Import/Export. See below
+    - Right-click the desired inventory item and choose "Add" or "Remove" for the clue via the option specifying its tier.
+2. In the sidebar, right-click the clue you would like to inventory tag an item for, and select "Add/Remove item".
+3. Via Import/Export. See below.
 
 ## Import/Export clue details
 
@@ -98,15 +102,15 @@ You can share your edited clue detail text, colors, and items, or import from so
 
 ![java_WJJq9uFwNH](https://github.com/user-attachments/assets/504a4bb8-a0dc-429d-be3d-1684e663a264)
 
-You can find custom clue details examples at https://thelope.github.io/clue-tags/details/
+You can find custom clue details examples at https://thelope.github.io/clue-tags/details/.
 
 ## Helpers
 
 ### Three-stepper saver
-Allows you to set a three-step master clue you wish to save, removing the ability to combine torn scrolls when the set clue is in your inventory
+Allows you to set a three-step master clue you wish to save, removing the ability to combine torn scrolls when the set clue is in your inventory.
 
 ### Fairy ring auto-scroll
-Automatically scrolls the fairy ring interface to a code if one found in your current clue detail text
+Automatically scrolls the fairy ring interface to a code if one found in your current clue detail text.
 
 ## Other Plugins
 
