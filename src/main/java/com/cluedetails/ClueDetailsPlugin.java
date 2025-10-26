@@ -25,6 +25,7 @@
 package com.cluedetails;
 
 import com.cluedetails.panels.ClueDetailsParentPanel;
+import com.cluedetails.tools.ClueDetailsWorldMapPoint;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
@@ -85,6 +86,7 @@ import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.client.ui.overlay.worldmap.WorldMapPointManager;
 import net.runelite.client.util.ImageUtil;
 
 @Slf4j
@@ -198,6 +200,9 @@ public class ClueDetailsPlugin extends Plugin
 	private Notifier notifier;
 
 	@Inject
+	private WorldMapPointManager worldMapPointManager;
+
+	@Inject
 	private InfoBoxManager infoBoxManager;
 
 	@Getter
@@ -216,7 +221,10 @@ public class ClueDetailsPlugin extends Plugin
 	@Getter
 	public static int currentPlane;
 
+	public static final String CLUE_GROUND_TIMER_TARGET = "Tracked Clues";
 	private static final String CLUE_GROUND_TIMER_CLEAR = "Clear";
+	private static final String CLUE_GROUND_TIMER_LOCATE = "Locate";
+	private static final String CLUE_GROUND_TIMER_UNLOCATE = "Unlocate";
 
 	@Override
 	protected void startUp() throws Exception
@@ -260,6 +268,8 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			infoBoxManager.removeInfoBox(timer);
 		}
+
+		worldMapPointManager.removeIf(ClueDetailsWorldMapPoint.class::isInstance);
 
 		resetIdleTimeout();
 	}
@@ -594,6 +604,8 @@ public class ClueDetailsPlugin extends Plugin
 
 		// Remove timers if worldPoint not managed by clueGroundManager
 		clueGroundTimers.removeIf(timer-> !worldPoints.contains(timer.getWorldPoint()));
+		// Remove world map point if worldPoint not managed by clueGroundManager
+		worldMapPointManager.removeIf(worldMapPoint-> !worldPoints.contains(worldMapPoint.getWorldPoint()));
 
 		// Populate timers
 		for (WorldPoint worldPoint : worldPoints)
@@ -639,12 +651,13 @@ public class ClueDetailsPlugin extends Plugin
 						despawnTick,
 						worldPoint,
 						clueInstancesWithQuantityAtWp,
-						itemManager.getImage(ItemID.CLUE_SCROLL_23815)
+						getClueScrollImage()
 					);
-					// Set clear option
-					timer.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, CLUE_GROUND_TIMER_CLEAR, "Tracked clues"));
 					clueGroundTimers.add(timer);
 					infoBoxManager.addInfoBox(timer);
+					// Set menu entries
+					timer.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, CLUE_GROUND_TIMER_CLEAR, CLUE_GROUND_TIMER_TARGET));
+					timer.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, CLUE_GROUND_TIMER_LOCATE, CLUE_GROUND_TIMER_TARGET));
 				}
 			}
 		}
@@ -653,18 +666,44 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onInfoBoxMenuClicked(InfoBoxMenuClicked infoBoxMenuClicked)
 	{
-		if (infoBoxMenuClicked.getEntry().getOption().equals(CLUE_GROUND_TIMER_CLEAR))
+		String option = infoBoxMenuClicked.getEntry().getOption();
+		if (option.isEmpty()) return;
+
+		ClueGroundTimer clickedTimer = (ClueGroundTimer) infoBoxMenuClicked.getInfoBox();
+		if (clickedTimer == null) return;
+		if (!clueGroundTimers.contains(clickedTimer)) return;
+
+		switch (option)
 		{
-			ClueGroundTimer clickedTimer = (ClueGroundTimer) infoBoxMenuClicked.getInfoBox();
-			if (clickedTimer != null && clueGroundTimers.contains(clickedTimer))
-			{
-				// Clear infobox and tracked clues for world point
+			// Clear infobox and tracked clues for world point
+			case CLUE_GROUND_TIMER_CLEAR:
 				infoBoxManager.removeInfoBox(clickedTimer);
 				clueGroundTimers.remove(clickedTimer);
 				clueGroundManager.clearBeginnerAndMasterCluesAtWorldPoint(clickedTimer.getWorldPoint());
 				clueGroundManager.clearEasyToEliteCluesAtWorldPoint(clickedTimer.getWorldPoint());
-			}
+				break;
+			// Add world map point for timer
+			case CLUE_GROUND_TIMER_LOCATE:
+				worldMapPointManager.add(clickedTimer.getClueDetailsWorldMapPoint());
+				switchTimerLocateEntry(clickedTimer, CLUE_GROUND_TIMER_LOCATE, CLUE_GROUND_TIMER_UNLOCATE);
+				break;
+			// Remove world map point for timer
+			case CLUE_GROUND_TIMER_UNLOCATE:
+				worldMapPointManager.remove(clickedTimer.getClueDetailsWorldMapPoint());
+				switchTimerLocateEntry(clickedTimer, CLUE_GROUND_TIMER_UNLOCATE, CLUE_GROUND_TIMER_LOCATE);
+				break;
 		}
+	}
+
+	private static void switchTimerLocateEntry(ClueGroundTimer timer, String oldEntry, String newEntry)
+	{
+		timer.getMenuEntries().removeIf(e -> Objects.equals(e.getOption(), oldEntry));
+		timer.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, newEntry, CLUE_GROUND_TIMER_TARGET));
+	}
+
+	public BufferedImage getClueScrollImage()
+	{
+		return itemManager.getImage(net.runelite.api.gameval.ItemID.SOTE_CLUE2);
 	}
 
 	private void resetClueGroundTimers()
