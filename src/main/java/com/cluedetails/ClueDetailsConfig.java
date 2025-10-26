@@ -838,4 +838,16 @@ public interface ClueDetailsConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		keyName = "inventoryClueChatMessages",
+		name = "Inventory clue chat messages",
+		description = "Sends a console message containing the Clue Detail text when an identified clue enters your inventory",
+		section = helperSection,
+		position = 5
+	)
+	default boolean inventoryClueChatMessages()
+	{
+		return false;
+	}
 }

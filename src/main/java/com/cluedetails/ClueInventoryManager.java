@@ -27,11 +27,13 @@ package com.cluedetails;
 import com.cluedetails.panels.ClueDetailsParentPanel;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
@@ -46,6 +48,7 @@ import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 
@@ -112,6 +115,28 @@ public class ClueInventoryManager
 				if (removedClue != null)
 				{
 					clueDetailsPlugin.getClueBankManager().addToRemovedClues(removedClue);
+				}
+			}
+		}
+
+		if (config.inventoryClueChatMessages())
+		{
+			// Send chat message for new clues only
+			Map<Integer, ClueInstance> newCluesInInventory = cluesInInventory.entrySet().stream()
+				.filter(entry -> !previousCluesInInventory.containsKey(entry.getKey()))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+			for (ClueInstance clueInstance : newCluesInInventory.values())
+			{
+				if (Clues.isBeginnerOrMasterClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
+				{
+					sendChatMessage("New inventory Clue Detail text:");
+					sendChatMessage(clueInstance.getCombinedClueText(configManager, false, false));
+				}
+				else if (Clues.isClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
+				{
+					sendChatMessage("New inventory Clue Detail text:");
+					sendChatMessage(Clues.forItemId(clueInstance.getItemId()).getDetail(configManager));
 				}
 			}
 		}
@@ -562,5 +587,13 @@ public class ClueInventoryManager
 			return config.masterDetails();
 		}
 		return true;
+	}
+
+	private void sendChatMessage(final String message)
+	{
+		clueDetailsPlugin.getChatMessageManager().queue(QueuedMessage.builder()
+			.type(ChatMessageType.CONSOLE)
+			.runeLiteFormattedMessage(message)
+			.build());
 	}
 }
