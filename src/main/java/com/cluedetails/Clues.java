@@ -258,6 +258,7 @@ public class Clues
 		new Clues("Aldarin bank: Dig", ItemID.CLUE_SCROLL_EASY_29853, ClueTier.EASY, null, List.of(new WorldPoint(1390, 2926, 0))),
 		new Clues("Quetzacalli Gorge: Dig", ItemID.CLUE_SCROLL_EASY_29854, ClueTier.EASY, null, List.of(new WorldPoint(1490, 3257, 0))),
 		new Clues("Ranulph: Talk", ItemID.CLUE_SCROLL_EASY_30928, ClueTier.EASY, null, List.of(new WorldPoint(1366, 3367, 0))),
+		new Clues("Pandemonium: Emote", ItemID.CLUE_SCROLL_EASY_31268, ClueTier.EASY, null, List.of(new WorldPoint(3049, 2966, 0))),
 		new Clues("H.A.M. Hideout: Dig", ItemID.CLUE_SCROLL_MEDIUM, ClueTier.MEDIUM, null, List.of(new WorldPoint(3160, 3251, 0))),
 		new Clues("Tree Gnome Village: Dig", ItemID.CLUE_SCROLL_MEDIUM_2809, ClueTier.MEDIUM, null, List.of(new WorldPoint(2479, 3158, 0))),
 		new Clues("Karamja banana: Dig", ItemID.CLUE_SCROLL_MEDIUM_3588, ClueTier.MEDIUM, null, List.of(new WorldPoint(2887, 3154, 0))),
@@ -423,6 +424,8 @@ public class Clues
 		new Clues("Proudspire river: Emote", ItemID.CLUE_SCROLL_MEDIUM_29858, ClueTier.MEDIUM, null, List.of(new WorldPoint(1626, 3241, 0))),
 		new Clues("Teicuh: Talk", ItemID.CLUE_SCROLL_MEDIUM_30933, ClueTier.MEDIUM, null, List.of(new WorldPoint(1212, 3119, 0))),
 		new Clues("Gloomthorn crate: Search", ItemID.CLUE_SCROLL_MEDIUM_30935, ClueTier.MEDIUM, null, List.of(new WorldPoint(1388, 3216, 0))),
+		new Clues("Torgan: Talk", ItemID.CLUE_SCROLL_MEDIUM_31274, ClueTier.MEDIUM, null, List.of(new WorldPoint(3143, 2423, 0))),
+		new Clues("Great Conch: Dig", ItemID.CLUE_SCROLL_MEDIUM_31275, ClueTier.MEDIUM, null, List.of(new WorldPoint(3183, 2453, 0))),
 		new Clues("6859", ItemID.CHALLENGE_SCROLL_MEDIUM, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint( 2444, 3049, 0))),
 		new Clues("9", ItemID.CHALLENGE_SCROLL_MEDIUM_2844, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(3208, 3213, 0))),
 		new Clues("51", ItemID.CHALLENGE_SCROLL_MEDIUM_2846, ClueTier.MEDIUM_CHALLENGE, null, List.of(new WorldPoint(2613, 3269, 0))),
@@ -663,6 +666,8 @@ public class Clues
 		new Clues("Twlight Temple: Emote", ItemID.CLUE_SCROLL_HARD_29859, ClueTier.HARD, null, List.of(new WorldPoint(1694, 3247, 0))),
 		new Clues("Sulisal: Talk", ItemID.CLUE_SCROLL_HARD_30929, ClueTier.HARD, null, List.of(new WorldPoint(1376, 3037, 0))),
 		new Clues("Custodia Pass south: Dig", ItemID.CLUE_SCROLL_HARD_30931, ClueTier.HARD, null, List.of(new WorldPoint(1321, 3323, 0))),
+		new Clues("Tear: Talk", ItemID.CLUE_SCROLL_HARD_31272, ClueTier.HARD, null, List.of(new WorldPoint(2324, 2772, 0))),
+		new Clues("Laguna Aurorae: Dig", ItemID.CLUE_SCROLL_HARD_31273, ClueTier.HARD, null, List.of(new WorldPoint(1193, 2774, 0))),
 		new Clues("6", ItemID.CHALLENGE_SCROLL_HARD, ClueTier.HARD_CHALLENGE, null, List.of(new WorldPoint(2395, 3486, 0))),
 		new Clues("13", ItemID.CHALLENGE_SCROLL_HARD_7271, ClueTier.HARD_CHALLENGE, null, List.of(new WorldPoint(2529, 3162, 0))),
 		new Clues("33", ItemID.CHALLENGE_SCROLL_HARD_7273, ClueTier.HARD_CHALLENGE, null, List.of(new WorldPoint(2807, 3191, 0))),
@@ -885,6 +890,9 @@ public class Clues
 		new Clues("Proudspire summit: Dig", ItemID.CLUE_SCROLL_ELITE_29855, ClueTier.ELITE, null, List.of(new WorldPoint(1571, 3245, 0))),
 		new Clues("Frost Nagua: Kill", ItemID.CLUE_SCROLL_ELITE_29856, ClueTier.ELITE, null, List.of(new WorldPoint(1627, 9623, 0))),
 		new Clues("Earthen Nagua: Kill", ItemID.CLUE_SCROLL_ELITE_30932, ClueTier.ELITE, null, List.of(new WorldPoint(1305, 3033, 0))),
+		new Clues("Wintumber Island: Emote", ItemID.CLUE_SCROLL_ELITE_31269, ClueTier.ELITE, null, List.of(new WorldPoint(2069, 2608, 0))),
+		new Clues("Gryphon: Kill", ItemID.CLUE_SCROLL_ELITE_31270, ClueTier.ELITE, null, List.of(new WorldPoint(3120, 2424, 0))),
+		new Clues("Lledrith Island: Dig", ItemID.CLUE_SCROLL_ELITE_31271, ClueTier.ELITE, null, List.of(new WorldPoint(2081, 3184, 0))),
 		new Clues("Challenge: Sherlock", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, null, List.of(new WorldPoint(2733, 3415, 0))),
 		new Clues("Challenge", ItemID.CHALLENGE_SCROLL_ELITE_12139, ClueTier.ELITE_CHALLENGE, null, List.of(new WorldPoint(0, 0, 0))),
 		new Clues(500, "Snowflake: Talk", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_ANAGRAM_0, List.of(new WorldPoint(2872, 3935, 0))),
@@ -1163,7 +1171,12 @@ public class Clues
 		new Clues(774, "Tithe Farm: Dig", HotColdLocation.ZEAH_VANNAHS_FARM_STORE.ordinal(), ClueTier.MASTER, HotColdLocation.ZEAH_VANNAHS_FARM_STORE.getArea(), List.of(HotColdLocation.ZEAH_VANNAHS_FARM_STORE.getWorldPoint())),
 		new Clues(775, "Farming Guild: Dig", HotColdLocation.ZEAH_FARMING_GUILD_W.ordinal(), ClueTier.MASTER, HotColdLocation.ZEAH_FARMING_GUILD_W.getArea(), List.of(HotColdLocation.ZEAH_FARMING_GUILD_W.getWorldPoint())),
 		new Clues(776, "Battlefront: Dig", HotColdLocation.ZEAH_DAIRY_COW.ordinal(), ClueTier.MASTER, HotColdLocation.ZEAH_DAIRY_COW.getArea(), List.of(HotColdLocation.ZEAH_DAIRY_COW.getWorldPoint())),
-		new Clues(777, "Kebos Swamp: Dig", HotColdLocation.ZEAH_CRIMSON_SWIFTS.ordinal(), ClueTier.MASTER, HotColdLocation.ZEAH_CRIMSON_SWIFTS.getArea(), List.of(HotColdLocation.ZEAH_CRIMSON_SWIFTS.getWorldPoint()))
+		new Clues(777, "Kebos Swamp: Dig", HotColdLocation.ZEAH_CRIMSON_SWIFTS.ordinal(), ClueTier.MASTER, HotColdLocation.ZEAH_CRIMSON_SWIFTS.getArea(), List.of(HotColdLocation.ZEAH_CRIMSON_SWIFTS.getWorldPoint())),
+		new Clues(778, "Brittle Isle: Emote", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_EMOTE_24, List.of(new WorldPoint(1946, 4074, 0))),
+		new Clues(779, "Dragon keel: Falo", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_FALO_19, List.of(new WorldPoint(2689, 3549, 0))),
+		new Clues(780, "Great Conch: Dig", HotColdLocation.SAIL_GREAT_CONCH.ordinal(), ClueTier.MASTER, HotColdLocation.SAIL_GREAT_CONCH.getArea(), List.of(HotColdLocation.SAIL_GREAT_CONCH.getWorldPoint())),
+		new Clues(781, "Isle of Serpents: Dig", HotColdLocation.SAIL_ISLE_OF_SERPENTS.ordinal(), ClueTier.MASTER, HotColdLocation.SAIL_ISLE_OF_SERPENTS.getArea(), List.of(HotColdLocation.SAIL_ISLE_OF_SERPENTS.getWorldPoint())),
+		new Clues(782, "Drumstick Isle: Dig", HotColdLocation.SAIL_DRUMSTICK_ISLE.ordinal(), ClueTier.MASTER, HotColdLocation.SAIL_DRUMSTICK_ISLE.getArea(), List.of(HotColdLocation.SAIL_DRUMSTICK_ISLE.getWorldPoint()))
 	);
 
 	final String clueText;
