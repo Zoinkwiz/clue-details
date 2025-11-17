@@ -161,6 +161,7 @@ public class BeginnerMasterClueText
 	public static final String MASTER_EMOTE_21 = "Wave on the northern wall of Castle Drakan. Beware of double agents! Wear a dragon sq shield, splitbark body and any boater.";
 	public static final String MASTER_EMOTE_22 = "Yawn in the 7th room of Pyramid Plunder. Beware of double agents! Equip a pharaoh sceptre and a full set of menaphite robes.";
 	public static final String MASTER_EMOTE_23 = "Think on the western coast of Salvager Overlook. Beware of double agents! Equip a Hueycoatl hide coif and some Hueycoatl hide vambraces.";
+	public static final String MASTER_EMOTE_24 = "Bow in front of the cave of Brittle Isle. Beware of double agents! Equip a medallion of the deep and a rosewood blowpipe.";
 	public static final String MASTER_FALO_0 = "A blood red weapon, a strong curved sword, found on the island of primate lords.";
 	public static final String MASTER_FALO_1 = "A book that preaches of some great figure, lending strength, might and vigour.";
 	public static final String MASTER_FALO_2 = "A bow of elven craft was made, it shimmers bright, but will soon fade.";
@@ -180,6 +181,7 @@ public class BeginnerMasterClueText
 	public static final String MASTER_FALO_16 = "They come from some time ago, from a land unto the east. Fossilised they have become, this small and gentle beast.";
 	public static final String MASTER_FALO_17 = "To slay a dragon you must first do, before this chest piece can be put on you.";
 	public static final String MASTER_FALO_18 = "Vampyres are agile opponents, damaged best with a weapon of many components.";
+	public static final String MASTER_FALO_19 = "You won't bring me to heel, unless you have a bright red keel.";
 	public static final String MASTER_SHERLOCK_0 = "Angle for an Anglerfish whilst sporting the finest fishing gear.";
 	public static final String MASTER_SHERLOCK_1 = "Bind a blood rune at the Blood Altar.";
 	public static final String MASTER_SHERLOCK_2 = "Burn a magic log.";
@@ -227,7 +229,8 @@ public class BeginnerMasterClueText
 		MASTER_FALO_15,
 		MASTER_FALO_16,
 		MASTER_FALO_17,
-		MASTER_FALO_18
+		MASTER_FALO_18,
+		MASTER_FALO_19
 	};
 
 	private static final Map<String, String> charlieTaskToClueText = new HashMap<>()
