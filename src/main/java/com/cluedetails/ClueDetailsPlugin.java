@@ -807,6 +807,23 @@ public class ClueDetailsPlugin extends Plugin
 	 */
 	private Widget findCodeWidget()
 	{
+		String fairyRingCode = getFirstFairyRingCodeInInventoryClues();
+
+		// Search through favourited fairy rings by ID
+		for (int faveId = InterfaceID.FairyringsLog.FAVE_CODE_1; faveId <= InterfaceID.FairyringsLog.FAVE_CODE_10; faveId++)
+		{
+			Widget codeWidget = client.getWidget(faveId);
+			if (codeWidget != null)
+			{
+				String codeWidgetCode = codeWidget.getText().replace(" ","");
+
+				if (codeWidgetCode.equals(fairyRingCode) || codeWidgetCode.equals("(Clue)" + fairyRingCode))
+				{
+					return codeWidget;
+				}
+			}
+		}
+
 		Widget codeWidgets = client.getWidget(InterfaceID.FairyringsLog.CONTENTS);
 		if(codeWidgets == null) return null;
 
@@ -817,7 +834,6 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			String codeWidgetCode = codeWidget.getText().replace(" ","");
 
-			String fairyRingCode = getFirstFairyRingCodeInInventoryClues();
 			if(codeWidgetCode.equals(fairyRingCode)
 				|| codeWidgetCode.equals("(Clue)"+fairyRingCode))
 			{
