@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.TreeMap;
 import javax.inject.Inject;
@@ -368,7 +369,7 @@ public class ClueDetailsPlugin extends Plugin
 		else if (event.getGroupId() == InterfaceID.FAIRYRINGS && config.fairyRingAutoScroll())
 		{
 			setFairyRingOpen(true);
-			clientThread.invokeLater(this::handleFairyRingPanel);
+			clientThread.invokeLater(this.handleFairyRingPanel);
 		}
 	}
 
@@ -754,17 +755,19 @@ public class ClueDetailsPlugin extends Plugin
 	 * Taken from Hunter Rumours Plugin
 	 * Called when the fairy ring dialog is opened.
 	 * Responsible for scrolling to the relevant code and highlighting it, if found in any inventory clue detail.
+	 * Returns false if it needs to be called again, to work around the widget list not instantly populating after
+	 * search was used.
 	 */
-	private void handleFairyRingPanel()
+	private final BooleanSupplier handleFairyRingPanel = () ->
 	{
 		String fairyRingCode = getFirstFairyRingCodeInInventoryClues();
-		if (fairyRingCode == null) return;
+		if (fairyRingCode == null) return true;
 
 		Widget foundCodeWidget = findCodeWidget();
-		if (foundCodeWidget == null) return;
+		if (foundCodeWidget == null) return false;
 
 		// Scroll to the code entry and highlight it
-		int panelScrollY = (foundCodeWidget.getRelativeY())  ;
+		int panelScrollY = (foundCodeWidget.getRelativeY());
 		int scrollable = InterfaceID.FairyringsLog.CONTENTS;
 		int scrollbar = InterfaceID.FairyringsLog.SCROLLBAR;
 
@@ -773,7 +776,8 @@ public class ClueDetailsPlugin extends Plugin
 			scrollbar,
 			scrollable,
 			panelScrollY);
-	}
+		return true;
+	};
 
 	/**
 	 * Finds the first fairy ring code in inventory clue detail text.
@@ -807,6 +811,23 @@ public class ClueDetailsPlugin extends Plugin
 	 */
 	private Widget findCodeWidget()
 	{
+		String fairyRingCode = getFirstFairyRingCodeInInventoryClues();
+
+		// Search through favourited fairy rings by ID
+		for (int faveId = InterfaceID.FairyringsLog.FAVE_CODE_1; faveId <= InterfaceID.FairyringsLog.FAVE_CODE_10; faveId++)
+		{
+			Widget codeWidget = client.getWidget(faveId);
+			if (codeWidget != null)
+			{
+				String codeWidgetCode = codeWidget.getText().replace(" ","");
+
+				if (codeWidgetCode.equals(fairyRingCode) || codeWidgetCode.equals("(Clue)" + fairyRingCode))
+				{
+					return codeWidget;
+				}
+			}
+		}
+
 		Widget codeWidgets = client.getWidget(InterfaceID.FairyringsLog.CONTENTS);
 		if(codeWidgets == null) return null;
 
@@ -817,7 +838,6 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			String codeWidgetCode = codeWidget.getText().replace(" ","");
 
-			String fairyRingCode = getFirstFairyRingCodeInInventoryClues();
 			if(codeWidgetCode.equals(fairyRingCode)
 				|| codeWidgetCode.equals("(Clue)"+fairyRingCode))
 			{
