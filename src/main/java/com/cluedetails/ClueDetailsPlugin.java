@@ -769,7 +769,8 @@ public class ClueDetailsPlugin extends Plugin
 		if (fairyRingCode == null) return true;
 
 		Widget foundCodeWidget = findCodeWidget();
-		if (foundCodeWidget == null) return false;
+		// If widget is not found (due to search etc) then rerun only if the panel is open
+		if (foundCodeWidget == null) return !isFairyRingOpen();
 
 		// Scroll to the code entry and highlight it
 		int panelScrollY = (foundCodeWidget.getRelativeY());
