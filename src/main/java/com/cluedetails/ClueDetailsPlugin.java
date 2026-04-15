@@ -234,8 +234,10 @@ public class ClueDetailsPlugin extends Plugin
 	@Getter @Setter
 	private boolean fairyRingOpen = false;
 
-	// Case-insensitive. Matches first occurrence of a validly formed fairy ring code or the word hideout.
-	private final Pattern fairyRingPattern = Pattern.compile("(?i)(?:^|.*?\\b)(?<code>[A-D][I-L][P-S]|HIDEOUT)(?:$|\\b.*)");
+	// Matches first occurrence of a validly formed fairy ring code or the word hideout.
+	private final String fairyRingRegex = "(?:^|.*?\\b)(?<code>[A-D][I-L][P-S]|HIDEOUT)(?:$|\\b.*)";
+	private final Pattern fairyRingPattern = Pattern.compile(fairyRingRegex);
+	private final Pattern fairyRingPatternInsensitive = Pattern.compile(fairyRingRegex, Pattern.CASE_INSENSITIVE);
 
 	@Override
 	protected void startUp() throws Exception
@@ -805,7 +807,7 @@ public class ClueDetailsPlugin extends Plugin
 		// Find the first (from top left) inventory clue with a valid-formatted fairy-ring code
 		return cluesInInventoryText.stream()
 			.map(clueText -> {
-				Matcher m = fairyRingPattern.matcher(clueText);
+				Matcher m = config.autoScrollCaseSensitivity() ? fairyRingPattern.matcher(clueText) : fairyRingPatternInsensitive.matcher(clueText);
 				return m.matches() ? m.group("code") : null;
 			})
 			.filter(Objects::nonNull)
@@ -816,6 +818,7 @@ public class ClueDetailsPlugin extends Plugin
 	private boolean codeWidgetMatches(Widget codeWidget, String code)
 	{
 		String codeWidgetCode = codeWidget.getText().replace(" ","");
+		// Config check is unneeded here
 		return codeWidgetCode.equalsIgnoreCase(code) || codeWidgetCode.equalsIgnoreCase("(Clue)" + code);
 	}
 
@@ -829,7 +832,7 @@ public class ClueDetailsPlugin extends Plugin
 		if (fairyRingCode == null) return null;
 
 		// Don't need to search for hideout
-		if (fairyRingCode.equalsIgnoreCase("hideout")) return client.getWidget(InterfaceID.FairyringsLog.HIDEOUT);
+		if (fairyRingCode.equalsIgnoreCase("HIDEOUT")) return client.getWidget(InterfaceID.FairyringsLog.HIDEOUT);
 
 		// Search through favourited fairy rings by ID
 		for (int faveId = InterfaceID.FairyringsLog.FAVE_CODE_1; faveId <= InterfaceID.FairyringsLog.FAVE_CODE_10; faveId++)
