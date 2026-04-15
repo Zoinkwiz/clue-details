@@ -235,7 +235,7 @@ public class ClueDetailsPlugin extends Plugin
 	private boolean fairyRingOpen = false;
 
 	// Matches first occurrence of a validly formed fairy ring code or the word hideout.
-	private final String fairyRingRegex = "(?:^|.*?\\b)(?<code>[A-D][I-L][P-S]|HIDEOUT)(?:$|\\b.*)";
+	private final String fairyRingRegex = "(?:^|.*?\\b)(?<code>[A-D][I-L][P-S]|[A-D] [I-L] [P-S]|HIDEOUT)(?:$|\\b.*)";
 	private final Pattern fairyRingPattern = Pattern.compile(fairyRingRegex);
 	private final Pattern fairyRingPatternInsensitive = Pattern.compile(fairyRingRegex, Pattern.CASE_INSENSITIVE);
 
@@ -808,7 +808,7 @@ public class ClueDetailsPlugin extends Plugin
 		return cluesInInventoryText.stream()
 			.map(clueText -> {
 				Matcher m = config.autoScrollCaseSensitivity() ? fairyRingPattern.matcher(clueText) : fairyRingPatternInsensitive.matcher(clueText);
-				return m.matches() ? m.group("code") : null;
+				return m.matches() ? m.group("code").replace(" ", "") : null;
 			})
 			.filter(Objects::nonNull)
 			.findFirst()
