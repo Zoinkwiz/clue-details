@@ -30,6 +30,7 @@ import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -85,6 +86,7 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.cluescrolls.clues.hotcold.HotColdLocation;
+import net.runelite.client.plugins.fairyring.FairyRing;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
@@ -239,6 +241,8 @@ public class ClueDetailsPlugin extends Plugin
 	private final Pattern fairyRingPattern = Pattern.compile(fairyRingRegex);
 	private final Pattern fairyRingPatternInsensitive = Pattern.compile(fairyRingRegex, Pattern.CASE_INSENSITIVE);
 
+	private final HashSet<String> validFairyRings = new HashSet<>();
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -248,6 +252,8 @@ public class ClueDetailsPlugin extends Plugin
 		clueGroundManager.startUp();
 
 		Clues.rebuildFilteredCluesCache();
+
+		populateValidFairyRings();
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -805,11 +811,16 @@ public class ClueDetailsPlugin extends Plugin
 
 		if (cluesInInventoryText.isEmpty()) return null;
 
-		// Find the first (from top left) inventory clue with a valid-formatted fairy-ring code
+		// Find the first (from top left) inventory clue with a valid fairy-ring code
 		return cluesInInventoryText.stream()
 			.map(clueText -> {
 				Matcher m = config.autoScrollCaseSensitivity() ? fairyRingPattern.matcher(clueText) : fairyRingPatternInsensitive.matcher(clueText);
-				return m.matches() ? m.group("code").replace(" ", "") : null;
+				if (m.matches())
+				{
+					String matchedRing = m.group("code").replace(" ", "");
+					return validFairyRings.contains(matchedRing) ? matchedRing : null;
+				}
+				return null;
 			})
 			.filter(Objects::nonNull)
 			.findFirst()
@@ -869,5 +880,14 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			foundCodeWidget.setText("(Clue) " + foundCodeWidget.getText());
 		}
+	}
+
+	private void populateValidFairyRings()
+	{
+		for (FairyRing fairyRing : FairyRing.values())
+		{
+			validFairyRings.add(fairyRing.name());
+		}
+		validFairyRings.add("HIDEOUT");
 	}
 }
