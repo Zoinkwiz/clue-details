@@ -30,12 +30,14 @@ import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.TreeMap;
 import javax.inject.Inject;
@@ -234,6 +236,13 @@ public class ClueDetailsPlugin extends Plugin
 	@Getter @Setter
 	private boolean fairyRingOpen = false;
 
+	// Matches first occurrence of a validly formed fairy ring code or the word hideout.
+	private final String fairyRingRegex = "(?:^|.*?\\b)(?<code>[A-D][I-L][P-S]|[A-D] [I-L] [P-S]|HIDEOUT)(?:$|\\b.*)";
+	private final Pattern fairyRingPattern = Pattern.compile(fairyRingRegex);
+	private final Pattern fairyRingPatternInsensitive = Pattern.compile(fairyRingRegex, Pattern.CASE_INSENSITIVE);
+
+	private final HashSet<String> validFairyRings = new HashSet<>();
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -243,6 +252,8 @@ public class ClueDetailsPlugin extends Plugin
 		clueGroundManager.startUp();
 
 		Clues.rebuildFilteredCluesCache();
+
+		populateValidFairyRings();
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -764,7 +775,8 @@ public class ClueDetailsPlugin extends Plugin
 		if (fairyRingCode == null) return true;
 
 		Widget foundCodeWidget = findCodeWidget();
-		if (foundCodeWidget == null) return false;
+		// If widget is not found (due to search etc) then rerun only if the panel is open
+		if (foundCodeWidget == null) return !isFairyRingOpen();
 
 		// Scroll to the code entry and highlight it
 		int panelScrollY = (foundCodeWidget.getRelativeY());
@@ -799,11 +811,27 @@ public class ClueDetailsPlugin extends Plugin
 
 		if (cluesInInventoryText.isEmpty()) return null;
 
-		// Find the first-declared fairy ring for clues in inventory
-		return String.valueOf(Arrays.stream(FairyRing.values())
-			.filter(code -> cluesInInventoryText.stream().anyMatch(text -> text.contains(code.toString())))
+		// Find the first (from top left) inventory clue with a valid fairy-ring code
+		return cluesInInventoryText.stream()
+			.map(clueText -> {
+				Matcher m = config.autoScrollCaseSensitivity() ? fairyRingPattern.matcher(clueText) : fairyRingPatternInsensitive.matcher(clueText);
+				if (m.matches())
+				{
+					String matchedRing = m.group("code").replace(" ", "");
+					return validFairyRings.contains(matchedRing) ? matchedRing : null;
+				}
+				return null;
+			})
+			.filter(Objects::nonNull)
 			.findFirst()
-			.orElse(null));
+			.orElse(null);
+	}
+
+	private boolean codeWidgetMatches(Widget codeWidget, String code)
+	{
+		String codeWidgetCode = codeWidget.getText().replace(" ","");
+		// Config check is unneeded here
+		return codeWidgetCode.equalsIgnoreCase(code) || codeWidgetCode.equalsIgnoreCase("(Clue)" + code);
 	}
 
 	/**
@@ -813,19 +841,16 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		String fairyRingCode = getFirstFairyRingCodeInInventoryClues();
 
+		if (fairyRingCode == null) return null;
+
+		// Don't need to search for hideout
+		if (fairyRingCode.equalsIgnoreCase("HIDEOUT")) return client.getWidget(InterfaceID.FairyringsLog.HIDEOUT);
+
 		// Search through favourited fairy rings by ID
 		for (int faveId = InterfaceID.FairyringsLog.FAVE_CODE_1; faveId <= InterfaceID.FairyringsLog.FAVE_CODE_10; faveId++)
 		{
 			Widget codeWidget = client.getWidget(faveId);
-			if (codeWidget != null)
-			{
-				String codeWidgetCode = codeWidget.getText().replace(" ","");
-
-				if (codeWidgetCode.equals(fairyRingCode) || codeWidgetCode.equals("(Clue)" + fairyRingCode))
-				{
-					return codeWidget;
-				}
-			}
+			if (codeWidget != null && codeWidgetMatches(codeWidget, fairyRingCode)) return codeWidget;
 		}
 
 		Widget codeWidgets = client.getWidget(InterfaceID.FairyringsLog.CONTENTS);
@@ -836,13 +861,7 @@ public class ClueDetailsPlugin extends Plugin
 
 		for (Widget codeWidget : codeWidgetDynamicChildren)
 		{
-			String codeWidgetCode = codeWidget.getText().replace(" ","");
-
-			if(codeWidgetCode.equals(fairyRingCode)
-				|| codeWidgetCode.equals("(Clue)"+fairyRingCode))
-			{
-				return codeWidget;
-			}
+			if (codeWidgetMatches(codeWidget, fairyRingCode)) return codeWidget;
 		}
 		return null;
 	}
@@ -861,5 +880,14 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			foundCodeWidget.setText("(Clue) " + foundCodeWidget.getText());
 		}
+	}
+
+	private void populateValidFairyRings()
+	{
+		for (FairyRing fairyRing : FairyRing.values())
+		{
+			validFairyRings.add(fairyRing.name());
+		}
+		validFairyRings.add("HIDEOUT");
 	}
 }
