@@ -77,7 +77,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private JTable clueTable;
 	@Getter
 	private int hoveredRow = -1;
-	private int rightClickedRow = -1;
 	private final IconTextField searchBar = new IconTextField();
 	private List<ListItem> allClues = new ArrayList<>();
 
@@ -196,10 +195,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 					cluePreferenceManager.saveHighlightPreference(clue.getClueID(), newState);
 					clueTable.repaint();
 				}
-				else if (SwingUtilities.isRightMouseButton(e))
-				{
-					rightClickedRow = row;
-				}
 			}
 
 			@Override
@@ -263,8 +258,9 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JMenuItem inputTextItem = new JMenuItem("Edit text for clue");
 		inputTextItem.addActionListener(event ->
 		{
-			clueTableModel.setEditableRow(rightClickedRow);
-			clueTable.editCellAt(rightClickedRow, 0);
+			var selectedRow = clueTable.getSelectedRow();
+			clueTableModel.setEditableRow(selectedRow);
+			clueTable.editCellAt(selectedRow, 0);
 			Component editorComponent = clueTable.getEditorComponent();
 			if (editorComponent != null)
 			{
@@ -276,7 +272,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JMenuItem inputColorItem = new JMenuItem("Edit color for clue");
 		inputColorItem.addActionListener(event ->
 		{
-			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			ListItem item = (ListItem) clueTableModel.getValueAt(clueTable.getSelectedRow(), 0);
 			Clues clue = item.getClue();
 			int clueItemId = clue.getItemID();
 			int clueClueID = clue.getClueID();
@@ -331,7 +327,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JMenuItem inputItems = new JMenuItem(inputItemsTooltip);
 		inputItems.addActionListener(event ->
 		{
-			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			ListItem item = (ListItem) clueTableModel.getValueAt(clueTable.getSelectedRow(), 0);
 			Clues clue = item.getClue();
 
 			ChatboxItemSearch itemSearch = getItemSearch(inputItemsTooltip);

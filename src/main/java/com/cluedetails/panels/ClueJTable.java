@@ -25,6 +25,8 @@
 package com.cluedetails.panels;
 
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -45,6 +47,25 @@ public class ClueJTable extends JTable
 		setSurrendersFocusOnKeystroke(false);
 		setCellSelectionEnabled(false);
 		setFocusable(false);
+	}
+
+	@Override
+	public Point getPopupLocation(MouseEvent e)
+	{
+		if (e != null)
+		{
+			var viewRow = rowAtPoint(e.getPoint());
+			if (viewRow >= 0)
+			{
+				setRowSelectionInterval(viewRow, viewRow);
+			}
+			else
+			{
+				clearSelection();
+			}
+		}
+
+		return super.getPopupLocation(e);
 	}
 
 	@Override
