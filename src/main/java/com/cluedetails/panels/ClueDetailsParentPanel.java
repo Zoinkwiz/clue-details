@@ -172,7 +172,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 		clueTable.setDefaultEditor(Object.class, new ClueTableCellEditor(configManager, clueTable));
 
 		JPopupMenu clueTablePopupMenu = getClueTablePopupMenu();
-		clueTable.setComponentPopupMenu(clueTablePopupMenu);
 		clueTable.addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -180,7 +179,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 			{
 				int row = clueTable.rowAtPoint(e.getPoint());
 				int column = clueTable.columnAtPoint(e.getPoint());
-
 				if (row < 0 || column < 0) return;
 
 				ListItem item = (ListItem) clueTableModel.getValueAt(row, column);
@@ -199,6 +197,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 				else if (SwingUtilities.isRightMouseButton(e))
 				{
 					rightClickedRow = row;
+					clueTablePopupMenu.show(clueTable, e.getX(), e.getY());
 				}
 			}
 
