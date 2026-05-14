@@ -840,11 +840,20 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "autoScrollCaseSensitivity",
+		name = "Auto-scroll case sensitivity",
+		description = "If enabled, only codes in all-caps will be detected (eg. AIQ, HIDEOUT).",
+		section = helperSection,
+		position = 5
+	)
+	default boolean autoScrollCaseSensitivity() { return true; }
+
+	@ConfigItem(
 		keyName = "inventoryClueChatMessages",
 		name = "Inventory clue chat messages",
 		description = "Sends a console message containing the Clue Detail text when an identified clue enters your inventory",
 		section = helperSection,
-		position = 5
+		position = 6
 	)
 	default boolean inventoryClueChatMessages()
 	{
