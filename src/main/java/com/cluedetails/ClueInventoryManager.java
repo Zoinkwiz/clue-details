@@ -43,6 +43,8 @@ import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NpcID;
+import net.runelite.api.Tile;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
@@ -277,16 +279,13 @@ public class ClueInventoryManager
 		final Widget w = entry.getWidget();
 		boolean isInventoryMenu = w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY;
 
-		int itemId = isInventoryMenu ? event.getItemId() : event.getIdentifier();
-		// Runs on both inventory and ground clues
-		if (hasClueName(event.getMenuEntry().getTarget()))
-		{
-			handleMarkClue(cluePreferenceManager, panel, event.getTarget(), itemId);
-		}
-
 		if (isInventoryMenu)
 		{
 			handleInventory(cluePreferenceManager, event, panel);
+		}
+		else
+		{
+			handleGround(cluePreferenceManager, panel, event);
 		}
 	}
 
@@ -311,17 +310,6 @@ public class ClueInventoryManager
 
 		// Is a clue item, add clue item menu entries
 		handleClueDetailsMenuEntry(panel, menuEntry, itemId);
-	}
-
-	private void handleMarkClue(CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, String name, int itemId)
-	{
-		boolean isMarked = cluePreferenceManager.getHighlightPreference(itemId);
-
-		// Mark Option
-		if (!Clues.isBeginnerOrMasterClue(itemId, clueDetailsPlugin.isDeveloperMode()))
-		{
-			toggleMarkClue(cluePreferenceManager, panel, itemId, isMarked, name);
-		}
 	}
 
 	private void handleClueDetailsMenuEntry(ClueDetailsParentPanel panel, MenuEntry entry, int itemId)
@@ -414,18 +402,49 @@ public class ClueInventoryManager
 				updateClueItems(clue, itemId, cluePreferenceManager));
 	}
 
-	private void toggleMarkClue(CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, int clueId, boolean isMarked, String target)
+	private void handleGround(CluePreferenceManager cluePreferenceManager, ClueDetailsParentPanel panel, MenuEntryAdded event)
 	{
-		// We don't want to have marking on masters I think
+		if(!hasClueName(event.getMenuEntry().getTarget())) return;
+
+		int itemId = event.getIdentifier();
+		Clues clue = Clues.forItemId(itemId);
+		int clueId;
+
+		if (clue != null)
+		{
+			clueId = itemId;
+		}
+		else
+		{
+			Tile tile = client.getSelectedSceneTile();
+			if (tile == null) return;
+
+			WorldPoint worldPoint = tile.getWorldLocation();
+			SortedSet<ClueInstance> clueInstances = clueGroundManager.getAllGroundCluesOnWp(worldPoint);
+			if (clueInstances.isEmpty())
+			{
+				return;
+			}
+			else
+			{
+				// TODO: Only supports 1 beginner or master per tile
+				List<Integer> clueIds = clueInstances.first().getClueIds();
+				// Don't provide mark option for three-step cryptic clues
+				if (clueIds.size() > 1) return;
+				clueId = clueIds.get(0);
+			}
+		}
+
+		boolean isMarked = cluePreferenceManager.getHighlightPreference(clueId);
+
 		client.getMenu().createMenuEntry(-1)
 			.setOption(isMarked ? "Unmark" : "Mark")
-			.setTarget(target)
-			.setIdentifier(clueId)
+			.setTarget(event.getTarget())
+			.setIdentifier(itemId)
 			.setType(MenuAction.RUNELITE)
 			.onClick(e ->
 			{
-				boolean currentValue = cluePreferenceManager.getHighlightPreference(e.getIdentifier());
-				cluePreferenceManager.saveHighlightPreference(e.getIdentifier(), !currentValue);
+				cluePreferenceManager.saveHighlightPreference(clueId, !isMarked);
 				panel.refresh();
 			});
 	}
