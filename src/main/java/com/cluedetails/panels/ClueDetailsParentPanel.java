@@ -27,6 +27,7 @@ package com.cluedetails.panels;
 import com.cluedetails.*;
 import com.cluedetails.ClueDetailsConfig.*;
 
+import static com.cluedetails.ClueDetailsConfig.GROUP;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -171,7 +172,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 		clueTable.setDefaultEditor(Object.class, new ClueTableCellEditor(configManager, clueTable));
 
 		JPopupMenu clueTablePopupMenu = getClueTablePopupMenu();
-		clueTable.setComponentPopupMenu(clueTablePopupMenu);
 		clueTable.addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -179,7 +179,6 @@ public class ClueDetailsParentPanel extends PluginPanel
 			{
 				int row = clueTable.rowAtPoint(e.getPoint());
 				int column = clueTable.columnAtPoint(e.getPoint());
-
 				if (row < 0 || column < 0) return;
 
 				ListItem item = (ListItem) clueTableModel.getValueAt(row, column);
@@ -198,6 +197,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 				else if (SwingUtilities.isRightMouseButton(e))
 				{
 					rightClickedRow = row;
+					clueTablePopupMenu.show(clueTable, e.getX(), e.getY());
 				}
 			}
 
@@ -639,11 +639,12 @@ public class ClueDetailsParentPanel extends PluginPanel
 		final String[] searchTerms = searchText.toLowerCase().split("\\s+");
 
 		List<ListItem> filteredItems = new ArrayList<>();
+		ListItem header = null;
 		for (ListItem item : allClues)
 		{
 			if (item.isHeader())
 			{
-				filteredItems.add(item);
+				header = item;
 			}
 			else
 			{
@@ -657,6 +658,12 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 				if (matches)
 				{
+					// Only add header if search result contains items for that header
+					if (header != null)
+					{
+						filteredItems.add(header);
+						header = null;
+					}
 					filteredItems.add(item);
 				}
 			}
@@ -678,6 +685,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 			@Override
 			protected List<ListItem> doInBackground()
 			{
+				// Update dropdowns to match current config
+				tierFilterDropdown.setSelectedItem(
+					ClueTierFilter.valueOf(configManager.getConfiguration(GROUP, "filterListByTier")));
+				regionFilterDropdown.setSelectedItem(
+					ClueRegionFilter.valueOf(configManager.getConfiguration(GROUP, "filterListByRegion")));
+				orderDropdown.setSelectedItem(
+					ClueOrdering.valueOf(configManager.getConfiguration(GROUP, "orderListBy")));
+
 				List<Clues> filteredClues = Clues.CLUES.stream()
 					.filter(config.filterListByTier())
 					.filter(config.filterListByRegion())

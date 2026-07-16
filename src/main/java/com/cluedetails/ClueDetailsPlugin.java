@@ -25,24 +25,36 @@
 package com.cluedetails;
 
 import com.cluedetails.panels.ClueDetailsParentPanel;
+import com.cluedetails.tools.ClueDetailsWorldMapPoint;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.TreeMap;
 import javax.inject.Inject;
 import javax.inject.Named;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
+import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.ScriptID;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ClientTick;
+import net.runelite.api.events.FocusChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
@@ -50,13 +62,17 @@ import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
+import net.runelite.api.events.PostClientTick;
+import net.runelite.api.events.WidgetClosed;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.ComponentID;
-import net.runelite.api.widgets.InterfaceID;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.Notifier;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.events.ClientShutdown;
+import net.runelite.client.events.InfoBoxMenuClicked;
+import net.runelite.client.events.PluginMessage;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.callback.ClientThread;
@@ -69,11 +85,15 @@ import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.cluescrolls.clues.hotcold.HotColdLocation;
+import net.runelite.client.plugins.fairyring.FairyRing;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.OverlayMenuEntry;
 import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
+import net.runelite.client.ui.overlay.worldmap.WorldMapPointManager;
 import net.runelite.client.util.ImageUtil;
 
 @Slf4j
@@ -187,6 +207,9 @@ public class ClueDetailsPlugin extends Plugin
 	private Notifier notifier;
 
 	@Inject
+	private WorldMapPointManager worldMapPointManager;
+
+	@Inject
 	private InfoBoxManager infoBoxManager;
 
 	@Getter
@@ -205,6 +228,21 @@ public class ClueDetailsPlugin extends Plugin
 	@Getter
 	public static int currentPlane;
 
+	public static final String CLUE_GROUND_TIMER_TARGET = "Tracked Clues";
+	private static final String CLUE_GROUND_TIMER_CLEAR = "Clear";
+	private static final String CLUE_GROUND_TIMER_LOCATE = "Locate";
+	private static final String CLUE_GROUND_TIMER_UNLOCATE = "Unlocate";
+
+	@Getter @Setter
+	private boolean fairyRingOpen = false;
+
+	// Matches first occurrence of a validly formed fairy ring code or the word hideout.
+	private final String fairyRingRegex = "(?:^|.*?\\b)(?<code>[A-D][I-L][P-S]|[A-D] [I-L] [P-S]|HIDEOUT)(?:$|\\b.*)";
+	private final Pattern fairyRingPattern = Pattern.compile(fairyRingRegex);
+	private final Pattern fairyRingPatternInsensitive = Pattern.compile(fairyRingRegex, Pattern.CASE_INSENSITIVE);
+
+	private final HashSet<String> validFairyRings = new HashSet<>();
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -214,6 +252,8 @@ public class ClueDetailsPlugin extends Plugin
 		clueGroundManager.startUp();
 
 		Clues.rebuildFilteredCluesCache();
+
+		populateValidFairyRings();
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
@@ -247,6 +287,10 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			infoBoxManager.removeInfoBox(timer);
 		}
+
+		worldMapPointManager.removeIf(ClueDetailsWorldMapPoint.class::isInstance);
+
+		resetIdleTimeout();
 	}
 
 	private void startUpOverlays()
@@ -315,10 +359,10 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
-		if (event.getGroupId() >= InterfaceID.CLUE_BEGINNER_MAP_CHAMPIONS_GUILD
-			&& event.getGroupId() <= InterfaceID.CLUE_BEGINNER_MAP_WIZARDS_TOWER)
+		if (event.getGroupId() >= InterfaceID.TRAIL_MAP01 // Beginner map clue Champion's Guild
+			&& event.getGroupId() <= InterfaceID.TRAIL_MAP11) // Beginner map clue Wizard's Tower
 		{
-			clueInventoryManager.updateClueText(event.getGroupId());
+			clueInventoryManager.updateClueText(event.getGroupId(), ItemID.CLUE_SCROLL_BEGINNER);
 		}
 		else if (event.getGroupId() == ComponentID.CLUESCROLL_TEXT >> 16)
 		{
@@ -332,6 +376,59 @@ public class ClueDetailsPlugin extends Plugin
 					clueThreeStepSaver.scanInventory();
 				}
 			});
+		}
+		else if (event.getGroupId() == InterfaceID.FAIRYRINGS && config.fairyRingAutoScroll())
+		{
+			setFairyRingOpen(true);
+			clientThread.invokeLater(this.handleFairyRingPanel);
+		}
+	}
+
+	@Subscribe
+	public void onWidgetClosed(WidgetClosed event)
+	{
+		if(event.getGroupId() == InterfaceID.FAIRYRINGS)
+		{
+			setFairyRingOpen(false);
+		}
+	}
+
+	@Subscribe
+	public void onPostClientTick(PostClientTick event)
+	{
+		if(isFairyRingOpen() && config.fairyRingAutoScroll())
+		{
+			adjustFairyRingWidget();
+		}
+	}
+
+	@Subscribe
+	public void onFocusChanged(FocusChanged e)
+	{
+		if (e.isFocused())
+		{
+			resetIdleTimeout();
+		}
+	}
+
+	@Subscribe
+	public void onPluginMessage(PluginMessage event)
+	{
+		// Subscribe to Hot Cold Helper for HotColdLocation
+		if ("hot-cold-helper".equals(event.getNamespace()))
+		{
+			if ("location-solved".equals(event.getName()))
+			{
+				Map<String, Object> data = event.getData();
+				if (data == null) return;
+
+				HotColdLocation solvedLocation = HotColdLocation.valueOf(data.get("location").toString());
+				if (solvedLocation != null)
+				{
+					clueInventoryManager.updateClueText(solvedLocation.ordinal(),
+						solvedLocation.isBeginnerClue() ? ItemID.CLUE_SCROLL_BEGINNER : ItemID.CLUE_SCROLL_MASTER);
+				}
+			}
 		}
 	}
 
@@ -388,6 +485,10 @@ public class ClueDetailsPlugin extends Plugin
 					if (!timer.isNotified() && timer.shouldNotify() && !timer.isRenotifying())
 					{
 						notifier.notify("Your clue scroll is about to disappear!");
+						if (config.decreaseIdleTimeout())
+						{
+							client.setIdleTimeout(1); // client forces this to be minimum 5 minutes
+						}
 						if (config.groundClueTimersRenotificationTime() != 0)
 						{
 							timer.startRenotification();
@@ -476,6 +577,16 @@ public class ClueDetailsPlugin extends Plugin
 			return;
 		}
 
+		if ("groundClueTimersDecreaseIdleTimeout".equals(event.getKey()))
+		{
+			String minutes_config = configManager.getConfiguration("logouttimer", "idleTimeout");
+
+			if (minutes_config != null)
+			{
+				client.setIdleTimeout(50 * 60 * Integer.parseInt(minutes_config));
+			}
+		}
+
 		if ("showSidebar".equals(event.getKey()))
 		{
 			if ("true".equals(event.getNewValue()))
@@ -523,11 +634,14 @@ public class ClueDetailsPlugin extends Plugin
 
 		// Remove timers if worldPoint not managed by clueGroundManager
 		clueGroundTimers.removeIf(timer-> !worldPoints.contains(timer.getWorldPoint()));
+		// Remove world map point if worldPoint not managed by clueGroundManager
+		worldMapPointManager.removeIf(worldMapPoint->
+			worldMapPoint instanceof ClueDetailsWorldMapPoint && !worldPoints.contains(worldMapPoint.getWorldPoint()));
 
 		// Populate timers
 		for (WorldPoint worldPoint : worldPoints)
 		{
-			TreeMap<ClueInstance, Integer> clueInstancesWithQuantityAtWp = clueGroundManager.getClueInstancesWithQuantityAtWp(config, worldPoint, client.getTickCount());
+			TreeMap<ClueInstance, Integer> clueInstancesWithQuantityAtWp = clueGroundManager.getClueInstancesWithQuantityAtWp(config, worldPoint);
 
 			if (clueInstancesWithQuantityAtWp != null && clueInstancesWithQuantityAtWp.firstEntry() != null)
 			{
@@ -542,7 +656,7 @@ public class ClueDetailsPlugin extends Plugin
 					}
 				}
 
-				int despawnTick = oldestEnabledClueInstance.getDespawnTick(client.getTickCount());
+				int despawnTick = oldestEnabledClueInstance.getDespawnTick();
 
 				boolean createNewTimer = true;
 
@@ -568,13 +682,59 @@ public class ClueDetailsPlugin extends Plugin
 						despawnTick,
 						worldPoint,
 						clueInstancesWithQuantityAtWp,
-						itemManager.getImage(ItemID.CLUE_SCROLL_23815)
+						getClueScrollImage()
 					);
 					clueGroundTimers.add(timer);
 					infoBoxManager.addInfoBox(timer);
+					// Set menu entries
+					timer.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, CLUE_GROUND_TIMER_CLEAR, CLUE_GROUND_TIMER_TARGET));
+					timer.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, CLUE_GROUND_TIMER_LOCATE, CLUE_GROUND_TIMER_TARGET));
 				}
 			}
 		}
+	}
+
+	@Subscribe
+	public void onInfoBoxMenuClicked(InfoBoxMenuClicked infoBoxMenuClicked)
+	{
+		String option = infoBoxMenuClicked.getEntry().getOption();
+		if (option.isEmpty()) return;
+
+		ClueGroundTimer clickedTimer = (ClueGroundTimer) infoBoxMenuClicked.getInfoBox();
+		if (clickedTimer == null) return;
+		if (!clueGroundTimers.contains(clickedTimer)) return;
+
+		switch (option)
+		{
+			// Clear infobox and tracked clues for world point
+			case CLUE_GROUND_TIMER_CLEAR:
+				infoBoxManager.removeInfoBox(clickedTimer);
+				clueGroundTimers.remove(clickedTimer);
+				clueGroundManager.clearBeginnerAndMasterCluesAtWorldPoint(clickedTimer.getWorldPoint());
+				clueGroundManager.clearEasyToEliteCluesAtWorldPoint(clickedTimer.getWorldPoint());
+				break;
+			// Add world map point for timer
+			case CLUE_GROUND_TIMER_LOCATE:
+				worldMapPointManager.add(clickedTimer.getClueDetailsWorldMapPoint());
+				switchTimerLocateEntry(clickedTimer, CLUE_GROUND_TIMER_LOCATE, CLUE_GROUND_TIMER_UNLOCATE);
+				break;
+			// Remove world map point for timer
+			case CLUE_GROUND_TIMER_UNLOCATE:
+				worldMapPointManager.remove(clickedTimer.getClueDetailsWorldMapPoint());
+				switchTimerLocateEntry(clickedTimer, CLUE_GROUND_TIMER_UNLOCATE, CLUE_GROUND_TIMER_LOCATE);
+				break;
+		}
+	}
+
+	private static void switchTimerLocateEntry(ClueGroundTimer timer, String oldEntry, String newEntry)
+	{
+		timer.getMenuEntries().removeIf(e -> Objects.equals(e.getOption(), oldEntry));
+		timer.getMenuEntries().add(new OverlayMenuEntry(MenuAction.RUNELITE_INFOBOX, newEntry, CLUE_GROUND_TIMER_TARGET));
+	}
+
+	public BufferedImage getClueScrollImage()
+	{
+		return itemManager.getImage(net.runelite.api.gameval.ItemID.SOTE_CLUE2);
 	}
 
 	private void resetClueGroundTimers()
@@ -584,5 +744,145 @@ public class ClueDetailsPlugin extends Plugin
 			infoBoxManager.removeInfoBox(timer);
 		}
 		clueGroundTimers.clear();
+	}
+
+	private void resetIdleTimeout()
+	{
+		String minutes_config = configManager.getConfiguration("logouttimer", "idleTimeout");
+		int minutes_parsed = 25;
+		if (minutes_config != null)
+		{
+			minutes_parsed = Integer.parseInt(minutes_config);
+		}
+		client.setIdleTimeout(50 * 60 * minutes_parsed);
+	}
+
+	/*
+	 * Taken from Hunter Rumours Plugin
+	 * Called when the fairy ring dialog is opened.
+	 * Responsible for scrolling to the relevant code and highlighting it, if found in any inventory clue detail.
+	 * Returns false if it needs to be called again, to work around the widget list not instantly populating after
+	 * search was used.
+	 */
+	private final BooleanSupplier handleFairyRingPanel = () ->
+	{
+		String fairyRingCode = getFirstFairyRingCodeInInventoryClues();
+		if (fairyRingCode == null) return true;
+
+		Widget foundCodeWidget = findCodeWidget();
+		// If widget is not found (due to search etc) then rerun only if the panel is open
+		if (foundCodeWidget == null) return !isFairyRingOpen();
+
+		// Scroll to the code entry and highlight it
+		int panelScrollY = (foundCodeWidget.getRelativeY());
+		int scrollable = InterfaceID.FairyringsLog.CONTENTS;
+		int scrollbar = InterfaceID.FairyringsLog.SCROLLBAR;
+
+		client.runScript(
+			ScriptID.UPDATE_SCROLLBAR,
+			scrollbar,
+			scrollable,
+			panelScrollY);
+		return true;
+	};
+
+	/**
+	 * Finds the first fairy ring code in inventory clue detail text.
+	 *
+	 * @return A String containing the fairy ring code, or null if none is found.
+	 */
+	private String getFirstFairyRingCodeInInventoryClues()
+	{
+		// Ensure we have clues in inventory
+		List<String> cluesInInventoryText = clueInventoryManager.getCluesInInventory().stream()
+			.filter(Objects::nonNull)
+			.map(clueInventoryManager::getClueByClueItemId)
+			.filter(Objects::nonNull)
+			.flatMap(instance -> instance.getClueIds().stream())
+			.map(Clues::forClueIdFiltered)
+			.filter(clue -> clue != null && clue.isEnabled(config))
+			.map(clue -> clue.getDetail(configManager))
+			.collect(Collectors.toList());
+
+		if (cluesInInventoryText.isEmpty()) return null;
+
+		// Find the first (from top left) inventory clue with a valid fairy-ring code
+		return cluesInInventoryText.stream()
+			.map(clueText -> {
+				Matcher m = config.autoScrollCaseSensitivity() ? fairyRingPattern.matcher(clueText) : fairyRingPatternInsensitive.matcher(clueText);
+				if (m.matches())
+				{
+					String matchedRing = m.group("code").replace(" ", "");
+					return validFairyRings.contains(matchedRing) ? matchedRing : null;
+				}
+				return null;
+			})
+			.filter(Objects::nonNull)
+			.findFirst()
+			.orElse(null);
+	}
+
+	private boolean codeWidgetMatches(Widget codeWidget, String code)
+	{
+		String codeWidgetCode = codeWidget.getText().replace(" ","");
+		// Config check is unneeded here
+		return codeWidgetCode.equalsIgnoreCase(code) || codeWidgetCode.equalsIgnoreCase("(Clue)" + code);
+	}
+
+	/**
+	 * @return  Widget based on the given fairyRingCode
+	 */
+	private Widget findCodeWidget()
+	{
+		String fairyRingCode = getFirstFairyRingCodeInInventoryClues();
+
+		if (fairyRingCode == null) return null;
+
+		// Don't need to search for hideout
+		if (fairyRingCode.equalsIgnoreCase("HIDEOUT")) return client.getWidget(InterfaceID.FairyringsLog.HIDEOUT);
+
+		// Search through favourited fairy rings by ID
+		for (int faveId = InterfaceID.FairyringsLog.FAVE_CODE_1; faveId <= InterfaceID.FairyringsLog.FAVE_CODE_10; faveId++)
+		{
+			Widget codeWidget = client.getWidget(faveId);
+			if (codeWidget != null && codeWidgetMatches(codeWidget, fairyRingCode)) return codeWidget;
+		}
+
+		Widget codeWidgets = client.getWidget(InterfaceID.FairyringsLog.CONTENTS);
+		if(codeWidgets == null) return null;
+
+		Widget[] codeWidgetDynamicChildren = codeWidgets.getDynamicChildren();
+		if(codeWidgetDynamicChildren == null) return null;
+
+		for (Widget codeWidget : codeWidgetDynamicChildren)
+		{
+			if (codeWidgetMatches(codeWidget, fairyRingCode)) return codeWidget;
+		}
+		return null;
+	}
+
+	/*
+	 * Adjusts the color of the fairy ring to green and adds (Clue) to it
+	 */
+	private void adjustFairyRingWidget()
+	{
+		Widget foundCodeWidget = findCodeWidget();
+		if(foundCodeWidget == null) return;
+
+		foundCodeWidget.setTextColor(0x00FF00);
+
+		if(!foundCodeWidget.getText().contains("(Clue)"))
+		{
+			foundCodeWidget.setText("(Clue) " + foundCodeWidget.getText());
+		}
+	}
+
+	private void populateValidFairyRings()
+	{
+		for (FairyRing fairyRing : FairyRing.values())
+		{
+			validFairyRings.add(fairyRing.name());
+		}
+		validFairyRings.add("HIDEOUT");
 	}
 }

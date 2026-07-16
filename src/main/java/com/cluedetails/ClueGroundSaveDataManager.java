@@ -40,6 +40,7 @@ import net.runelite.client.config.ConfigManager;
 @Singleton
 public class ClueGroundSaveDataManager
 {
+	private final Client client;
 	private final ConfigManager configManager;
 	private final Gson gson;
 	private static final String CONFIG_GROUP = "clue-details";
@@ -47,34 +48,38 @@ public class ClueGroundSaveDataManager
 	private final List<ClueInstanceData> clueInstanceData = new ArrayList<>();
 
 	@Inject
-	public ClueGroundSaveDataManager(ConfigManager configManager, Gson gson)
+	public ClueGroundSaveDataManager(Client client, ConfigManager configManager, Gson gson)
 	{
+		this.client = client;
 		this.configManager = configManager;
 		this.gson = gson;
 	}
 
-	public void saveStateToConfig(Client client, List<ClueInstance> groundClues)
+	public void saveStateToConfig(List<ClueInstance> groundClues)
 	{
 		// Serialize groundClues save to config
-		updateData(client, groundClues);
+		updateData(groundClues);
+		// Offset despawn time by current client tick count
+		for (ClueInstanceData data : clueInstanceData)
+		{
+			data.setDespawnTick(data.getDespawnTick() - client.getTickCount());
+		}
 		String groundCluesJson = gson.toJson(clueInstanceData);
 		configManager.setConfiguration(CONFIG_GROUP, GROUND_CLUES_KEY, groundCluesJson);
 	}
 
-	private void updateData(Client client, List<ClueInstance> groundClues)
+	private void updateData(List<ClueInstance> groundClues)
 	{
-		int currentTick = client.getTickCount();
-
 		List<ClueInstanceData> newData = new ArrayList<>();
 		for (ClueInstance groundClue : groundClues)
 		{
-			newData.add(new ClueInstanceData(groundClue, currentTick));
+			newData.add(new ClueInstanceData(groundClue));
 		}
 		clueInstanceData.clear();
 		clueInstanceData.addAll(newData);
 	}
 
-	public Map<WorldPoint, List<ClueInstance>> loadStateFromConfig(Client client)
+	public Map<WorldPoint, List<ClueInstance>> loadStateFromConfig()
 	{
 		String groundCluesJson = configManager.getConfiguration(CONFIG_GROUP, GROUND_CLUES_KEY);
 		clueInstanceData.clear();
@@ -97,6 +102,8 @@ public class ClueGroundSaveDataManager
 
 					WorldPoint location = clueData.getLocation();
 					ClueInstance clue = new ClueInstance(clueData);
+					// Offset despawn time by current client tick count
+					clue.setTimeToDespawnFromDataInTicks(clue.getTimeToDespawnFromDataInTicks() + client.getTickCount());
 					if (groundClues.containsKey(location))
 					{
 						groundClues.get(location).add(clue);
@@ -111,7 +118,7 @@ public class ClueGroundSaveDataManager
 			} catch (Exception err)
 			{
 				groundClues.clear();
-				saveStateToConfig(client, new ArrayList<>());
+				saveStateToConfig(new ArrayList<>());
 			}
 		}
 

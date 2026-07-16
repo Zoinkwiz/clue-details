@@ -27,11 +27,13 @@ package com.cluedetails;
 import com.cluedetails.panels.ClueDetailsParentPanel;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
@@ -48,9 +50,9 @@ import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
-import net.runelite.client.util.Text;
 
 @Slf4j
 @Singleton
@@ -115,6 +117,28 @@ public class ClueInventoryManager
 				if (removedClue != null)
 				{
 					clueDetailsPlugin.getClueBankManager().addToRemovedClues(removedClue);
+				}
+			}
+		}
+
+		if (config.inventoryClueChatMessages())
+		{
+			// Send chat message for new clues only
+			Map<Integer, ClueInstance> newCluesInInventory = cluesInInventory.entrySet().stream()
+				.filter(entry -> !previousCluesInInventory.containsKey(entry.getKey()))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+			for (ClueInstance clueInstance : newCluesInInventory.values())
+			{
+				if (Clues.isBeginnerOrMasterClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
+				{
+					sendChatMessage("New inventory Clue Detail text:");
+					sendChatMessage(clueInstance.getCombinedClueText(configManager, false, false));
+				}
+				else if (Clues.isClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
+				{
+					sendChatMessage("New inventory Clue Detail text:");
+					sendChatMessage(Clues.forItemId(clueInstance.getItemId()).getDetail(configManager));
 				}
 			}
 		}
@@ -197,18 +221,18 @@ public class ClueInventoryManager
 		}
 	}
 
-	// Only used for Beginner Map Clues
-	public void updateClueText(Integer interfaceId)
+	// Only used for Beginner Map Clues and Hot Cold Clues
+	public void updateClueText(Integer otherId, Integer itemId)
 	{
 		List<Integer> clueIds = new ArrayList<>();
 
 		// Beginner Map Clues all use the same ItemID, but the InterfaceID used to display them is unique
-		clueIds.add(Clues.forInterfaceIdGetId(interfaceId));
+		// Hot Cold Clues all use the same ItemID, but have a unique enum from Clue Scroll plugin
+		clueIds.add(Clues.forOtherIdGetId(otherId));
 
-		// Assume can only be beginner for now
-		ClueInstance beginnerClueInInv = cluesInInventory.get(ItemID.CLUE_SCROLL_BEGINNER);
-		if (beginnerClueInInv == null) return;
-		beginnerClueInInv.setClueIds(clueIds);
+		ClueInstance clueInInv = cluesInInventory.get(itemId);
+		if (clueInInv == null) return;
+		clueInInv.setClueIds(clueIds);
 		clueDetailsPlugin.getClueInventoryManager().updateLastInventoryRefreshTime();
 	}
 
@@ -582,5 +606,13 @@ public class ClueInventoryManager
 			return config.masterDetails();
 		}
 		return true;
+	}
+
+	private void sendChatMessage(final String message)
+	{
+		clueDetailsPlugin.getChatMessageManager().queue(QueuedMessage.builder()
+			.type(ChatMessageType.CONSOLE)
+			.runeLiteFormattedMessage(message)
+			.build());
 	}
 }

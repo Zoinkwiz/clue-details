@@ -667,7 +667,7 @@ public interface ClueDetailsConfig extends Config
 	@ConfigItem(
 		keyName = "groundClueTimersRenotificationTime",
 		name = "Timer renotifications",
-		description = "Seconds after initial notificiaton to periodically renotify. Set to 0 to disable the notification." +
+		description = "Seconds after initial notification to periodically renotify. Set to 0 to disable the notification." +
 			"<br> This also acts as a cooldown between notifications for clues in the same tile",
 		section = groundCluesSection,
 		position = 9
@@ -675,6 +675,20 @@ public interface ClueDetailsConfig extends Config
 	default int groundClueTimersRenotificationTime()
 	{
 		return 0;
+	}
+
+	@ConfigItem(
+		keyName = "groundClueTimersDecreaseIdleTimeout",
+		name = "Lower idle logout on notification",
+		description = "Lowers idle logout timer when ground clue despawn notification happens." +
+			"<br> Minimum is 5 minutes: recommend 'Timer notifications' set to 300 or higher." +
+			"<br> Uses Logout Timer plugin config when resetting idle timer.",
+		section = groundCluesSection,
+		position = 10
+	)
+	default boolean decreaseIdleTimeout()
+	{
+		return false;
 	}
 
 	@ConfigSection(name = "Tier Toggles", description = "Options to enable particular clue tiers", position = 7)
@@ -811,5 +825,38 @@ public interface ClueDetailsConfig extends Config
 	default Color invThreeStepperHighlightColor()
 	{
 		return Color.GREEN.darker();
+	}
+
+	@ConfigItem(
+		keyName = "fairyRingAutoScroll",
+		name = "Fairy ring auto-scroll",
+		description = "Automatically scroll the fairy ring interface to a code if found in your current clue detail text",
+		section = helperSection,
+		position = 4
+	)
+	default boolean fairyRingAutoScroll()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "autoScrollCaseSensitivity",
+		name = "Auto-scroll case sensitivity",
+		description = "If enabled, only codes in all-caps will be detected (eg. AIQ, HIDEOUT).",
+		section = helperSection,
+		position = 5
+	)
+	default boolean autoScrollCaseSensitivity() { return true; }
+
+	@ConfigItem(
+		keyName = "inventoryClueChatMessages",
+		name = "Inventory clue chat messages",
+		description = "Sends a console message containing the Clue Detail text when an identified clue enters your inventory",
+		section = helperSection,
+		position = 6
+	)
+	default boolean inventoryClueChatMessages()
+	{
+		return false;
 	}
 }
