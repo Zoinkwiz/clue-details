@@ -753,8 +753,11 @@ public class ClueDetailsPlugin extends Plugin
 
 	private void resetIdleTimeout()
 	{
+		// Only modify idle timeout if related config is enabled
+		if (!config.decreaseIdleTimeout()) return;
+
 		String minutes_config = configManager.getConfiguration("logouttimer", "idleTimeout");
-		int minutes_parsed = 25;
+		int minutes_parsed = 30; // Reset to max idle timeout if idleTimeout cannot be parsed
 		if (minutes_config != null)
 		{
 			minutes_parsed = Integer.parseInt(minutes_config);
