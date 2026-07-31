@@ -12,12 +12,13 @@ import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.client.config.ConfigManager;
 import javax.inject.Inject;
 
 @Slf4j
 @Singleton
-public class ClueThreeStepSaver
+public class ClueSaver
 {
 	@Inject
 	private Client client;
@@ -34,31 +35,49 @@ public class ClueThreeStepSaver
 	@Inject
 	private ClueInventoryManager cim;
 
+	private ClueInstance activeElite;
 	private ClueInstance activeMaster;
 
 	@Getter
+	private ClueInstance savedEliteSherlock;
+	@Getter
 	private ClueInstance savedThreeStepper;
 
-	private boolean removeEntries = false;
+	private boolean removeMasterEntries = false;
 
+	private static final String SHERLOCK_ELITE_KEY = "sherlock-elite";
 	private static final String THREE_STEP_MASTER_KEY = "three-step-master";
 
 	public void scanInventory()
 	{
-		if (!config.threeStepperSaver()) return;
-
-		activeMaster = cim.getClueByClueItemId(ItemID.CLUE_SCROLL_MASTER);
-		if(activeMaster == null || savedThreeStepper == null)
+		if (config.eliteSherlockSaver())
 		{
-			removeEntries = false;
-			return;
+			activeElite = cim.getClueByClueItemId(ItemID.CHALLENGE_SCROLL_ELITE);
 		}
 
-		//removes entries if we don't know what clue is in their inv, can be made a toggle.
-		removeEntries = cluesMatch() || activeMaster.getClueIds().isEmpty();
+		if (config.threeStepperSaver())
+		{
+			activeMaster = cim.getClueByClueItemId(ItemID.CLUE_SCROLL_MASTER);
+			if(activeMaster == null || savedThreeStepper == null)
+			{
+				removeMasterEntries = false;
+
+			}
+			else
+			{
+				//removes entries if we don't know what clue is in their inv, can be made a toggle.
+				removeMasterEntries = mastersMatch() || activeMaster.getClueIds().isEmpty();
+			}
+		}
 	}
 
-	public boolean cluesMatch()
+	public boolean elitesMatch()
+	{
+		if (activeElite == null || savedEliteSherlock == null) return false;
+		else return activeElite.getClueIds().equals(savedEliteSherlock.getClueIds());
+	}
+
+	public boolean mastersMatch()
 	{
 		if (activeMaster == null || savedThreeStepper == null) return false;
 		else return activeMaster.getClueIds().equals(savedThreeStepper.getClueIds());
@@ -71,45 +90,94 @@ public class ClueThreeStepSaver
 			return;
 		}
 
-		if (!config.threeStepperSaver()) return;
-		if (activeMaster == null) return;
-
 		MenuEntry firstEntry = event.getFirstEntry();
+		if (firstEntry == null) return;
+		if (firstEntry.getWidget() == null) return;
+
 		//only menus generated from a clue in inventory pass this widget check.
-		if (activeMaster.getClueIds().size() == 3 && firstEntry.getWidget() != null && firstEntry.getTarget().contains("Clue scroll (master)"))
+		if (firstEntry.getTarget().contains("Challenge scroll (elite)"))
 		{
-			MenuEntry[] menuEntries = client.getMenu().getMenuEntries();
-			if (cluesMatch())
+			if (config.eliteSherlockSaver() && activeElite != null)
 			{
-				client.getMenu().createMenuEntry(-menuEntries.length)
-					.setOption("Unset three-stepper")
-					.setTarget(event.getFirstEntry().getTarget())
-					.setType(MenuAction.RUNELITE)
-					.onClick(e -> removeThreeStepper());
+				MenuEntry[] menuEntries = client.getMenu().getMenuEntries();
+				if (elitesMatch())
+				{
+					client.getMenu().createMenuEntry(-menuEntries.length)
+						.setOption("Unset elite sherlock")
+						.setTarget(event.getFirstEntry().getTarget())
+						.setType(MenuAction.RUNELITE)
+						.onClick(e -> removeEliteSherlock());
+				}
+				else
+				{
+					client.getMenu().createMenuEntry(-menuEntries.length)
+						.setOption("Set elite sherlock")
+						.setTarget(event.getFirstEntry().getTarget())
+						.setType(MenuAction.RUNELITE)
+						.onClick(e -> saveEliteSherlock());
+				}
 			}
-			else
+		}
+
+		//only menus generated from a clue in inventory pass this widget check.
+		if (firstEntry.getTarget().contains("Clue scroll (master)"))
+		{
+			if (config.threeStepperSaver() && activeMaster != null && activeMaster.getClueIds().size() == 3)
 			{
-				client.getMenu().createMenuEntry(-menuEntries.length)
-					.setOption("Set three-stepper")
-					.setTarget(event.getFirstEntry().getTarget())
-					.setType(MenuAction.RUNELITE)
-					.onClick(e -> saveThreeStepper());
+				MenuEntry[] menuEntries = client.getMenu().getMenuEntries();
+				if (mastersMatch())
+				{
+					client.getMenu().createMenuEntry(-menuEntries.length)
+						.setOption("Unset three-stepper")
+						.setTarget(event.getFirstEntry().getTarget())
+						.setType(MenuAction.RUNELITE)
+						.onClick(e -> removeThreeStepper());
+				}
+				else
+				{
+					client.getMenu().createMenuEntry(-menuEntries.length)
+						.setOption("Set three-stepper")
+						.setTarget(event.getFirstEntry().getTarget())
+						.setType(MenuAction.RUNELITE)
+						.onClick(e -> saveThreeStepper());
+				}
+			}
+		}
+	}
+
+	public void onMenuOptionClicked(MenuOptionClicked event)
+	{
+		if (event.getMenuOption().equals("Talk-to") && event.getMenuTarget().contains("Sherlock"))
+		{
+			if (config.eliteSherlockSaver() && elitesMatch())
+			{
+				event.consume();
 			}
 		}
 	}
 
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
-		if (!config.threeStepperSaver()) return;
-
-		MenuEntry menuEntry = event.getMenuEntry();
-		if (menuEntry.getTarget().contains("Torn clue scroll") && removeEntries)
+		if (config.threeStepperSaver())
 		{
-			if (menuEntry.getOption().contains("Use") || menuEntry.getOption().contains("Combine"))
+			MenuEntry menuEntry = event.getMenuEntry();
+			if (menuEntry.getTarget().contains("Torn clue scroll") && removeMasterEntries)
 			{
-				client.getMenu().removeMenuEntry(menuEntry);
+				if (menuEntry.getOption().contains("Use") || menuEntry.getOption().contains("Combine"))
+				{
+					client.getMenu().removeMenuEntry(menuEntry);
+				}
 			}
 		}
+	}
+
+	public void saveEliteSherlock()
+	{
+		String clueInstanceJson = gson.toJson(activeElite);
+		configManager.setConfiguration(ClueDetailsConfig.GROUP, SHERLOCK_ELITE_KEY, clueInstanceJson);
+		client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully set clue as your elite sherlock.","");
+		updateEliteSherlock();
+		scanInventory();
 	}
 
 	public void saveThreeStepper()
@@ -121,12 +189,27 @@ public class ClueThreeStepSaver
 		scanInventory();
 	}
 
+	public void removeEliteSherlock()
+	{
+		configManager.setConfiguration(ClueDetailsConfig.GROUP, SHERLOCK_ELITE_KEY, "");
+		client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully unset clue as your elite sherlock.","");
+		updateEliteSherlock();
+		scanInventory();
+	}
+
 	public void removeThreeStepper()
 	{
 		configManager.setConfiguration(ClueDetailsConfig.GROUP, THREE_STEP_MASTER_KEY, "");
 		client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Successfully unset clue as your three-stepper.","");
 		updateThreeStepper();
 		scanInventory();
+	}
+
+	public void updateEliteSherlock()
+	{
+		String sherlockEliteJson = configManager.getConfiguration(ClueDetailsConfig.GROUP, SHERLOCK_ELITE_KEY);
+		if (sherlockEliteJson == null) return;
+		savedEliteSherlock = gson.fromJson(sherlockEliteJson, ClueInstance.class);
 	}
 
 	public void updateThreeStepper()
@@ -138,6 +221,7 @@ public class ClueThreeStepSaver
 
 	public void startUp()
 	{
+		updateEliteSherlock();
 		updateThreeStepper();
 		scanInventory();
 	}

@@ -7,22 +7,22 @@ import net.runelite.client.ui.overlay.WidgetItemOverlay;
 import javax.inject.Inject;
 import java.awt.Graphics2D;
 
-import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.BOTH;
-import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.INVENTORY;
+import static com.cluedetails.ClueDetailsConfig.SavedClueEnum.BOTH;
+import static com.cluedetails.ClueDetailsConfig.SavedClueEnum.INVENTORY;
 
 @Singleton
-public class ClueThreeStepSaverWidgetOverlay extends WidgetItemOverlay
+public class ClueSaverWidgetOverlay extends WidgetItemOverlay
 {
 	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueDetailsConfig config;
 
-	private final ClueThreeStepSaver clueThreeStepSaver;
+	private final ClueSaver clueSaver;
 
 	@Inject
-	private ClueThreeStepSaverWidgetOverlay(ClueDetailsPlugin clueDetailsPlugin, ClueThreeStepSaver clueThreeStepSaver, ClueDetailsConfig config)
+	private ClueSaverWidgetOverlay(ClueDetailsPlugin clueDetailsPlugin, ClueSaver clueSaver, ClueDetailsConfig config)
 	{
 		this.clueDetailsPlugin = clueDetailsPlugin;
-		this.clueThreeStepSaver = clueThreeStepSaver;
+		this.clueSaver = clueSaver;
 		this.config = config;
 		showOnInventory();
 	}
@@ -30,14 +30,20 @@ public class ClueThreeStepSaverWidgetOverlay extends WidgetItemOverlay
 	@Override
 	public void renderItemOverlay(Graphics2D graphics, int itemId, WidgetItem widgetItem)
 	{
-		if (itemId != ItemID.CLUE_SCROLL_MASTER || !clueThreeStepSaver.cluesMatch())
+		if (itemId == ItemID.CHALLENGE_SCROLL_ELITE && clueSaver.elitesMatch())
 		{
-			return;
+			if (config.eliteSherlockSaver() && (config.highlightSavedClues() == BOTH || config.highlightSavedClues() == INVENTORY))
+			{
+				clueDetailsPlugin.getItemsOverlay().inventoryTagsOverlay(graphics, itemId, widgetItem, config.invSavedClueHighlightColor());
+			}
 		}
 
-		if (config.threeStepperSaver() && (config.highlightSavedThreeStepper() == BOTH || config.highlightSavedThreeStepper() == INVENTORY))
+		if (itemId == ItemID.CLUE_SCROLL_MASTER && clueSaver.mastersMatch())
 		{
-			clueDetailsPlugin.getItemsOverlay().inventoryTagsOverlay(graphics, itemId, widgetItem, config.invThreeStepperHighlightColor());
+			if (config.threeStepperSaver() && (config.highlightSavedClues() == BOTH || config.highlightSavedClues() == INVENTORY))
+			{
+				clueDetailsPlugin.getItemsOverlay().inventoryTagsOverlay(graphics, itemId, widgetItem, config.invSavedClueHighlightColor());
+			}
 		}
 	}
 }

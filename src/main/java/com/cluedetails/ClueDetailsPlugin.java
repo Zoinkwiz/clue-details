@@ -62,6 +62,7 @@ import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.PostClientTick;
 import net.runelite.api.events.WidgetClosed;
 import net.runelite.api.events.WidgetLoaded;
@@ -137,7 +138,7 @@ public class ClueDetailsPlugin extends Plugin
 	private ClueDetailsWidgetsOverlay widgetsOverlay;
 
 	@Inject
-	private ClueThreeStepSaverWidgetOverlay clueThreeStepSaverWidgetOverlay;
+	private ClueSaverWidgetOverlay clueThreeStepSaverWidgetOverlay;
 
 	@Inject
 	private EventBus eventBus;
@@ -188,7 +189,7 @@ public class ClueDetailsPlugin extends Plugin
 	private CluePreferenceManager cluePreferenceManager;
 
 	@Inject
-	private ClueThreeStepSaver clueThreeStepSaver;
+	private ClueSaver clueSaver;
 
 	@Getter
 	@Inject
@@ -248,7 +249,7 @@ public class ClueDetailsPlugin extends Plugin
 	{
 		startUpOverlays();
 
-		clueThreeStepSaver.startUp();
+		clueSaver.startUp();
 		clueGroundManager.startUp();
 
 		Clues.rebuildFilteredCluesCache();
@@ -347,7 +348,7 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			itemsOverlay.invalidateCache();
 			clueInventoryManager.updateInventory(event.getItemContainer());
-			clueThreeStepSaver.scanInventory();
+			clueSaver.scanInventory();
 		}
 		else if (event.getContainerId() == InventoryID.BANK.getId())
 		{
@@ -373,7 +374,7 @@ public class ClueDetailsPlugin extends Plugin
 				{
 					String text = clueScrollText.getText();
 					clueInventoryManager.updateClueText(text);
-					clueThreeStepSaver.scanInventory();
+					clueSaver.scanInventory();
 				}
 			});
 		}
@@ -529,15 +530,21 @@ public class ClueDetailsPlugin extends Plugin
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		clueInventoryManager.onMenuEntryAdded(event, cluePreferenceManager, panel);
-		clueThreeStepSaver.onMenuEntryAdded(event);
+		clueSaver.onMenuEntryAdded(event);
 	}
 
 	@Subscribe
 	public void onMenuOpened(MenuOpened event)
 	{
 		MenuEntry[] entries = event.getMenuEntries();
-		clueThreeStepSaver.onMenuOpened(event);
+		clueSaver.onMenuOpened(event);
 		clueWidgetManager.addHighlightWidgetSubmenus(entries);
+	}
+
+	@Subscribe
+	public void onMenuOptionClicked(MenuOptionClicked event)
+	{
+		clueSaver.onMenuOptionClicked(event);
 	}
 
 	@Subscribe
