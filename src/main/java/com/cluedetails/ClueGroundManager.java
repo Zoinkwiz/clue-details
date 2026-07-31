@@ -89,7 +89,7 @@ public class ClueGroundManager
 		if (!Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode())) return;
 
 		// If easy-elite task, we just override
-		if (!Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
+		if (!Clues.isTrackedClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 		{
 			resetEasyToEliteThisTick.add(tile);
 			return;
@@ -133,7 +133,7 @@ public class ClueGroundManager
 			if (ClueDetailsPlugin.getCurrentPlane() != location.getPlane()) return;
 		}
 
-		if (!Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
+		if (!Clues.isTrackedClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 		{
 			ClueInstance clueInstance = new ClueInstance(List.of(), item.getId(), location, item, client.getTickCount());
 			trackedClues.removeClue(clueInstance);
@@ -245,7 +245,7 @@ public class ClueGroundManager
 
 		for (TileItem item : items)
 		{
-			if (Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode()) && !Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
+			if (Clues.isClue(item.getId(), clueDetailsPlugin.isDeveloperMode()) && !Clues.isTrackedClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 			{
 				ClueInstance clueInstance = new ClueInstance(List.of(), item.getId(), tile.getWorldLocation(), item, client.getTickCount());
 				trackedClues.addClue(clueInstance);
@@ -435,7 +435,7 @@ public class ClueGroundManager
 			return Collections.emptyList();
 		}
 		return items.stream()
-			.filter(item -> Clues.isBeginnerOrMasterClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
+			.filter(item -> Clues.isTrackedClue(item.getId(), clueDetailsPlugin.isDeveloperMode()))
 			.collect(Collectors.toList());
 	}
 

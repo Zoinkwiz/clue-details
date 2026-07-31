@@ -128,7 +128,7 @@ public class ClueInventoryManager
 
 			for (ClueInstance clueInstance : newCluesInInventory.values())
 			{
-				if (Clues.isBeginnerOrMasterClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
+				if (Clues.isTrackedClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
 				{
 					sendChatMessage("New inventory Clue Detail text:");
 					sendChatMessage(clueInstance.getCombinedClueText(configManager, false, false));
@@ -318,7 +318,7 @@ public class ClueInventoryManager
 		boolean isMarked = cluePreferenceManager.getHighlightPreference(itemId);
 
 		// Mark Option
-		if (!Clues.isBeginnerOrMasterClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+		if (!Clues.isTrackedClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 		{
 			toggleMarkClue(cluePreferenceManager, panel, itemId, isMarked, name);
 		}
@@ -331,7 +331,7 @@ public class ClueInventoryManager
 		String option = null;
 		String target = null;
 
-		if (Clues.isBeginnerOrMasterClue(itemId, clueDetailsPlugin.isDeveloperMode()))
+		if (Clues.isTrackedClue(itemId, clueDetailsPlugin.isDeveloperMode()))
 		{
 			ClueInstance clueSelected = cluesInInventory.get(itemId);
 			if (clueSelected == null || clueSelected.getClueIds().isEmpty()) return;

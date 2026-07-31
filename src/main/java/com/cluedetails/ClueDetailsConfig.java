@@ -48,7 +48,7 @@ public interface ClueDetailsConfig extends Config
 		/**
 		 * Sort clues in alphabetical order
 		 */
-		TIER(ClueOrders.sortByTier(), ClueTierFilter.BEGINNER, ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.MEDIUM_KEY, ClueTierFilter.HARD, ClueTierFilter.ELITE, ClueTierFilter.MASTER),
+		TIER(ClueOrders.sortByTier(), ClueTierFilter.BEGINNER, ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.MEDIUM_KEY, ClueTierFilter.HARD, ClueTierFilter.ELITE, ClueTierFilter.ELITE_CHALLENGE, ClueTierFilter.MASTER),
 		REGION(ClueOrders.sortByRegion(), ClueRegionFilter.MISTHALIN, ClueRegionFilter.ASGARNIA, ClueRegionFilter.KARAMJA, ClueRegionFilter.KANDARIN, ClueRegionFilter.FREMENNIK_PROVINCE, ClueRegionFilter.KHARIDIAN_DESERT,
 			ClueRegionFilter.MORYTANIA, ClueRegionFilter.TIRANNWN, ClueRegionFilter.WILDERNESS, ClueRegionFilter.KOUREND, ClueRegionFilter.VARLAMORE);
 
@@ -103,6 +103,7 @@ public interface ClueDetailsConfig extends Config
 		MEDIUM_KEY(c -> c.getClueTier() == ClueTier.MEDIUM_KEY, "Medium Key"),
 		HARD(c -> c.getClueTier() == ClueTier.HARD, "Hard"),
 		ELITE(c -> c.getClueTier() == ClueTier.ELITE, "Elite"),
+		ELITE_CHALLENGE(c -> c.getClueTier() == ClueTier.ELITE_CHALLENGE, "Elite Challenge"),
 		MASTER(c -> c.getClueTier() == ClueTier.MASTER, "Master");
 
 		private final Predicate<Clues> predicate;

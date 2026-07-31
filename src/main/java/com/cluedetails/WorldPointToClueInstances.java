@@ -108,7 +108,7 @@ public class WorldPointToClueInstances
 
 	public void addClue(ClueInstance clueInstance)
 	{
-		if (Clues.isBeginnerOrMasterClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
+		if (Clues.isTrackedClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
 		{
 			addBeginnerMasterClue(clueInstance);
 		}
@@ -122,7 +122,7 @@ public class WorldPointToClueInstances
 
 	public void removeClue(ClueInstance clueInstance)
 	{
-		if (Clues.isBeginnerOrMasterClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
+		if (Clues.isTrackedClue(clueInstance.getItemId(), clueDetailsPlugin.isDeveloperMode()))
 		{
 			removeBeginnerMasterClue(clueInstance);
 		}

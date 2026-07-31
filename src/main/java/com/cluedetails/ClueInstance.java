@@ -110,7 +110,7 @@ public class ClueInstance
 
 	public List<Integer> getClueIds()
 	{
-		if (clueIds.isEmpty() && !Clues.isBeginnerOrMasterClue(itemId, true))
+		if (clueIds.isEmpty() && !Clues.isTrackedClue(itemId, true))
 		{
 			return Collections.singletonList(itemId);
 		}
@@ -307,7 +307,7 @@ public class ClueInstance
 		{
 			return config.hardDetails();
 		}
-		else if (getTier() == ClueTier.ELITE)
+		if (getTier() == ClueTier.ELITE || getTier() == ClueTier.ELITE_CHALLENGE)
 		{
 			return config.eliteDetails();
 		}
