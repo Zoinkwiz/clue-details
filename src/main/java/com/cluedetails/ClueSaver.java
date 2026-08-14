@@ -152,6 +152,7 @@ public class ClueSaver
 			if (config.eliteSherlockSaver() && elitesMatch())
 			{
 				event.consume();
+				client.addChatMessage(ChatMessageType.GAMEMESSAGE,"","Current clue is set as your elite sherlock.","");
 			}
 		}
 	}
