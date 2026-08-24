@@ -120,6 +120,9 @@ public class ClueDetailsParentPanel extends PluginPanel
 		PASTE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(pasteIcon, 0.53f));
 	}
 
+	private final JLabel statusLabel;
+	private Timer statusLabelTimer;
+
 	public ClueDetailsParentPanel(ConfigManager configManager, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
 									ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager, ClueDetailsPlugin plugin)
 	{
@@ -141,6 +144,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JPanel titlePanel = setupTitlePanel();
 
 		titlePanel.add(setupImportExportButtons(), BorderLayout.EAST);
+
+		statusLabel = new JLabel("", SwingConstants.CENTER);
+		statusLabel.setVisible(false);
+		statusLabel.setOpaque(false);
+		statusLabel.setFocusable(false);
+		statusLabel.setBackground(null);
+		statusLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+		titlePanel.add(statusLabel, BorderLayout.SOUTH);
 
 		setupSearchBar();
 
@@ -778,5 +789,37 @@ public class ClueDetailsParentPanel extends PluginPanel
 			.type(ChatMessageType.CONSOLE)
 			.runeLiteFormattedMessage(message)
 			.build());
+	}
+
+	public void updateStatus(String newStatusText) {
+		SwingUtilities.invokeLater(() -> {
+			if (statusLabelTimer != null && statusLabelTimer.isRunning()) {
+				statusLabelTimer.stop();
+			}
+			statusLabel.setText(newStatusText);
+			statusLabel.setVisible(true);
+			revalidate();
+			repaint();
+		});
+	}
+
+	public void updateStatusTemporarily(String newStatusText, int durationMS) {
+		SwingUtilities.invokeLater(() -> {
+			if (statusLabelTimer != null && statusLabelTimer.isRunning()) {
+				statusLabelTimer.stop();
+			}
+			statusLabel.setText(newStatusText);
+			statusLabel.setVisible(true);
+			revalidate();
+			repaint();
+
+			statusLabelTimer = new Timer(durationMS, actionEvent -> {
+				statusLabel.setVisible(false);
+				revalidate();
+				repaint();
+			});
+			statusLabelTimer.setRepeats(false);
+			statusLabelTimer.start();
+		});
 	}
 }
