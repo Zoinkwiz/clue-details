@@ -178,7 +178,7 @@ public class ClueDetailsSharingManager
 				if (clueIdToDetailsList.isEmpty())
 				{
 					publish("You have no updated clue details to export.");
-					return null;
+					return clueIdToDetailsList;
 				}
 				return clueIdToDetailsList;
 			}
@@ -196,6 +196,12 @@ public class ClueDetailsSharingManager
 			protected void done()
 			{
 				try {
+					if (get().isEmpty()) {
+						plugin.getPanel().updateStatusTemporarily("No clue details to export.", 5000);
+						sendChatMessage("You have no updated clue details to export.");
+						return ;
+					}
+
 					final String exportDump = gson.toJson(get());
 
 					final String sortedExportDump = sortJsonArrayById(gson, exportDump);
