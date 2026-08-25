@@ -48,8 +48,8 @@ import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayUtil;
 import net.runelite.client.ui.overlay.components.TextComponent;
 
-import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.BOTH;
-import static com.cluedetails.ClueDetailsConfig.SavedThreeStepperEnum.GROUND;
+import static com.cluedetails.ClueDetailsConfig.SavedClueEnum.BOTH;
+import static com.cluedetails.ClueDetailsConfig.SavedClueEnum.GROUND;
 
 // Heavily lifted from net.runelite.client.plugins.grounditems.GroundItemsOverlay
 @Singleton
@@ -71,11 +71,11 @@ public class ClueGroundOverlay extends Overlay
 	private final ConfigManager configManager;
 	private final ClueDetailsPlugin plugin;
 	private final ClueGroundManager clueGroundManager;
-	private final ClueThreeStepSaver clueThreeStepSaver;
+	private final ClueSaver clueSaver;
 
 	@Inject
 	private ClueGroundOverlay(ClueDetailsPlugin plugin, Client client, ClueDetailsConfig config, ConfigManager configManager,
-	                          ClueThreeStepSaver clueThreeStepSaver, ClueGroundManager clueGroundManager)
+							  ClueSaver clueSaver, ClueGroundManager clueGroundManager)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.UNDER_WIDGETS);
@@ -83,7 +83,7 @@ public class ClueGroundOverlay extends Overlay
 		this.client = client;
 		this.config = config;
 		this.configManager = configManager;
-		this.clueThreeStepSaver = clueThreeStepSaver;
+		this.clueSaver = clueSaver;
 		this.clueGroundManager = clueGroundManager;
 	}
 
@@ -92,7 +92,7 @@ public class ClueGroundOverlay extends Overlay
 	{
 		if(clueGroundManager == null) return null;
 
-		if (!config.showGroundClues() && !shouldRenderSavedThreeStepper())
+		if (!config.showGroundClues() && !shouldRenderSavedEliteSherlock() && !shouldRenderSavedThreeStepper())
 		{
 			return null;
 		}
@@ -142,6 +142,11 @@ public class ClueGroundOverlay extends Overlay
 					renderClueInstanceGroundOverlay(graphics, item, quantity, groundPoint, fm);
 				}
 
+				if (shouldRenderSavedEliteSherlock())
+				{
+					renderSavedEliteSherlock(graphics, item, groundPoint);
+				}
+
 				if (shouldRenderSavedThreeStepper())
 				{
 					renderSavedThreeStepper(graphics, item, groundPoint);
@@ -152,24 +157,44 @@ public class ClueGroundOverlay extends Overlay
 		return null;
 	}
 
+	private void renderSavedEliteSherlock(Graphics2D graphics, ClueInstance clueInstance, LocalPoint lp)
+	{
+		if (isSavedEliteSherlock(clueInstance))
+		{
+			Polygon savedEliteSherlockPoly = Perspective.getCanvasTilePoly(client, lp);
+			OverlayUtil.renderPolygon(graphics, savedEliteSherlockPoly, config.groundSavedClueHighlightColor());
+		}
+	}
+
 	private void renderSavedThreeStepper(Graphics2D graphics, ClueInstance clueInstance, LocalPoint lp)
 	{
 		if (isSavedThreeStepper(clueInstance))
 		{
 			Polygon savedThreeStepperPoly = Perspective.getCanvasTilePoly(client, lp);
-			OverlayUtil.renderPolygon(graphics, savedThreeStepperPoly, config.groundThreeStepperHighlightColor());
+			OverlayUtil.renderPolygon(graphics, savedThreeStepperPoly, config.groundSavedClueHighlightColor());
 		}
+	}
+
+	private boolean shouldRenderSavedEliteSherlock()
+	{
+		return config.eliteSherlockSaver() && (config.highlightSavedClues() == BOTH || config.highlightSavedClues() == GROUND);
 	}
 
 	private boolean shouldRenderSavedThreeStepper()
 	{
-		return config.threeStepperSaver() && (config.highlightSavedThreeStepper() == BOTH || config.highlightSavedThreeStepper() == GROUND);
+		return config.threeStepperSaver() && (config.highlightSavedClues() == BOTH || config.highlightSavedClues() == GROUND);
+	}
+
+	private boolean isSavedEliteSherlock(ClueInstance clueInstance)
+	{
+		if (clueSaver.getSavedEliteSherlock() == null || !config.eliteSherlockSaver()) return false;
+		return clueInstance.getClueIds().equals(clueSaver.getSavedEliteSherlock().getClueIds());
 	}
 
 	private boolean isSavedThreeStepper(ClueInstance clueInstance)
 	{
-		if (clueThreeStepSaver.getSavedThreeStepper() == null || !config.threeStepperSaver()) return false;
-		return clueInstance.getClueIds().equals(clueThreeStepSaver.getSavedThreeStepper().getClueIds());
+		if (clueSaver.getSavedThreeStepper() == null || !config.threeStepperSaver()) return false;
+		return clueInstance.getClueIds().equals(clueSaver.getSavedThreeStepper().getClueIds());
 	}
 
 	private int getSecondsLeft(ClueInstance item)

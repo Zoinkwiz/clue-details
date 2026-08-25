@@ -48,7 +48,7 @@ public interface ClueDetailsConfig extends Config
 		/**
 		 * Sort clues in alphabetical order
 		 */
-		TIER(ClueOrders.sortByTier(), ClueTierFilter.BEGINNER, ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.MEDIUM_KEY, ClueTierFilter.HARD, ClueTierFilter.ELITE, ClueTierFilter.MASTER),
+		TIER(ClueOrders.sortByTier(), ClueTierFilter.BEGINNER, ClueTierFilter.EASY, ClueTierFilter.MEDIUM, ClueTierFilter.MEDIUM_KEY, ClueTierFilter.HARD, ClueTierFilter.ELITE, ClueTierFilter.ELITE_CHALLENGE, ClueTierFilter.MASTER),
 		REGION(ClueOrders.sortByRegion(), ClueRegionFilter.MISTHALIN, ClueRegionFilter.ASGARNIA, ClueRegionFilter.KARAMJA, ClueRegionFilter.KANDARIN, ClueRegionFilter.FREMENNIK_PROVINCE, ClueRegionFilter.KHARIDIAN_DESERT,
 			ClueRegionFilter.MORYTANIA, ClueRegionFilter.TIRANNWN, ClueRegionFilter.WILDERNESS, ClueRegionFilter.KOUREND, ClueRegionFilter.VARLAMORE);
 
@@ -103,6 +103,7 @@ public interface ClueDetailsConfig extends Config
 		MEDIUM_KEY(c -> c.getClueTier() == ClueTier.MEDIUM_KEY, "Medium Key"),
 		HARD(c -> c.getClueTier() == ClueTier.HARD, "Hard"),
 		ELITE(c -> c.getClueTier() == ClueTier.ELITE, "Elite"),
+		ELITE_CHALLENGE(c -> c.getClueTier() == ClueTier.ELITE_CHALLENGE, "Elite Challenge"),
 		MASTER(c -> c.getClueTier() == ClueTier.MASTER, "Master");
 
 		private final Predicate<Clues> predicate;
@@ -782,18 +783,30 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "highlightSavedThreeStepper",
-		name = "Highlight saved three-stepper",
-		description = "Configures where to highlight your saved three-stepper",
+		keyName = "eliteSherlockSaver",
+		name = "Elite Sherlock saver",
+		description = "Allows you to set a sherlock elite clue you wish to save, removing the ability to talk to Sherlock when the set clue is in your inventory",
 		section = helperSection,
 		position = 1
 	)
-	default SavedThreeStepperEnum highlightSavedThreeStepper()
+	default boolean eliteSherlockSaver()
 	{
-		return SavedThreeStepperEnum.OFF;
+		return true;
 	}
 
-	enum SavedThreeStepperEnum
+	@ConfigItem(
+		keyName = "highlightSavedThreeStepper",
+		name = "Highlight saved clues",
+		description = "Configures where to highlight your saved clues",
+		section = helperSection,
+		position = 2
+	)
+	default SavedClueEnum highlightSavedClues()
+	{
+		return SavedClueEnum.OFF;
+	}
+
+	enum SavedClueEnum
 	{
 		OFF,
 		GROUND,
@@ -804,12 +817,12 @@ public interface ClueDetailsConfig extends Config
 	@Alpha
 	@ConfigItem(
 		keyName = "groundThreeStepperHighlightColor",
-		name = "Ground saved three-stepper highlight color",
-		description = "Configures the color for highlighted saved three-stepper on the ground",
+		name = "Ground saved clue highlight color",
+		description = "Configures the color for highlighted saved clues on the ground",
 		section = helperSection,
-		position = 2
+		position = 3
 	)
-	default Color groundThreeStepperHighlightColor()
+	default Color groundSavedClueHighlightColor()
 	{
 		return Color.GREEN.darker();
 	}
@@ -817,12 +830,12 @@ public interface ClueDetailsConfig extends Config
 	@Alpha
 	@ConfigItem(
 		keyName = "threeStepperHighlightColor",
-		name = "Inventory saved three-stepper highlight color",
-		description = "Configures the color for highlighted saved three-stepper in inventory",
+		name = "Inventory saved clue highlight color",
+		description = "Configures the color for highlighted saved clues in inventory",
 		section = helperSection,
-		position = 3
+		position = 4
 	)
-	default Color invThreeStepperHighlightColor()
+	default Color invSavedClueHighlightColor()
 	{
 		return Color.GREEN.darker();
 	}
@@ -832,7 +845,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Fairy ring auto-scroll",
 		description = "Automatically scroll the fairy ring interface to a code if found in your current clue detail text",
 		section = helperSection,
-		position = 4
+		position = 5
 	)
 	default boolean fairyRingAutoScroll()
 	{
@@ -844,7 +857,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Auto-scroll case sensitivity",
 		description = "If enabled, only codes in all-caps will be detected (eg. AIQ, HIDEOUT).",
 		section = helperSection,
-		position = 5
+		position = 6
 	)
 	default boolean autoScrollCaseSensitivity() { return true; }
 
@@ -853,7 +866,7 @@ public interface ClueDetailsConfig extends Config
 		name = "Inventory clue chat messages",
 		description = "Sends a console message containing the Clue Detail text when an identified clue enters your inventory",
 		section = helperSection,
-		position = 6
+		position = 7
 	)
 	default boolean inventoryClueChatMessages()
 	{

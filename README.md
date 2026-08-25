@@ -109,6 +109,9 @@ You can find custom clue details examples at https://thelope.github.io/clue-tags
 ### Three-stepper saver
 Allows you to set a three-step master clue you wish to save, removing the ability to combine torn scrolls when the set clue is in your inventory.
 
+### Elite Sherlock saver
+Allows you to set a sherlock elite clue you wish to save, removing the ability to talk to Sherlock when the set clue is in your inventory.
+
 ### Fairy ring auto-scroll
 Automatically scrolls the fairy ring interface to a code if one found in your current clue detail text.
 

@@ -893,7 +893,31 @@ public class Clues
 		new Clues("Wintumber Island: Emote", ItemID.CLUE_SCROLL_ELITE_31269, ClueTier.ELITE, null, List.of(new WorldPoint(2069, 2608, 0))),
 		new Clues("Gryphon: Kill", ItemID.CLUE_SCROLL_ELITE_31270, ClueTier.ELITE, null, List.of(new WorldPoint(3120, 2424, 0))),
 		new Clues("Lledrith Island: Dig", ItemID.CLUE_SCROLL_ELITE_31271, ClueTier.ELITE, null, List.of(new WorldPoint(2081, 3184, 0))),
-		new Clues("Challenge: Sherlock", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, null, List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(400, "Dragon Scimitar: Equip", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_0,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(401, "Dragonstone: Enchant", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_1,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(402, "nature rune: Craft", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_2,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(403, "mottled eel: Catch", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_3,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(404, "skullball: Score", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_4,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(405, "Ape atoll: Lap", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_5,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(406, "super defence: Create", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_6,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(407, "Ardougne chest: Steal", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_7,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(408, "green dhide body: Craft", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_8,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(409, "yew longbow: String", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_9,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(410, "Dust Devil: Kill", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_10,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(411, "black warlock: Catch", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_11,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(412, "red chin: Catch", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_12,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(413, "mithril ore: Mine", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_13,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(414, "mithril 2h: Smith", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_14,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(415, "raw shark: Catch", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_15,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(416, "yew log: Cut", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_16,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(417, "magical lamp: Fix", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_17,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(418, "yew log: Burn", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_18,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(419, "swordfish: Cook", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_19,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(420, "cosmic runes: Craft", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_20,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(421, "watermelon: Plant", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_21,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(422, "Chivalry: Activate", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_22,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(423, "Shayzien platebody: Smith", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_23,  List.of(new WorldPoint(2733, 3415, 0))),
+		new Clues(424, "nickel: Mine", ItemID.CHALLENGE_SCROLL_ELITE, ClueTier.ELITE_CHALLENGE, EliteChallengeText.ELITE_SHERLOCK_24,  List.of(new WorldPoint(2733, 3415, 0))),
 		new Clues("Challenge", ItemID.CHALLENGE_SCROLL_ELITE_12139, ClueTier.ELITE_CHALLENGE, null, List.of(new WorldPoint(0, 0, 0))),
 		new Clues(500, "Snowflake: Talk", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_ANAGRAM_0, List.of(new WorldPoint(2872, 3935, 0))),
 		new Clues(501, "Captain Bruce: Talk", ItemID.CLUE_SCROLL_MASTER, ClueTier.MASTER, BeginnerMasterClueText.MASTER_ANAGRAM_1, List.of(new WorldPoint(1530, 3567, 0))),
@@ -1230,6 +1254,7 @@ public class Clues
 
 	private static final Collection<Integer> TRACKED_CLUE_IDS = List.of(
 		ItemID.CLUE_SCROLL_MASTER,
+		ItemID.CHALLENGE_SCROLL_ELITE,
 		ItemID.CLUE_SCROLL_BEGINNER
 	);
 
@@ -1391,7 +1416,7 @@ public class Clues
 		return itemIdClueCache.containsKey(itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
 	}
 
-	public static boolean isBeginnerOrMasterClue(int itemId, boolean isDeveloperMode)
+	public static boolean isTrackedClue(int itemId, boolean isDeveloperMode)
 	{
 		return TRACKED_CLUE_IDS.contains(itemId) || (isDeveloperMode && DEV_MODE_IDS.contains(itemId));
 	}
