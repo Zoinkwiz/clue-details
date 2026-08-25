@@ -144,6 +144,7 @@ public class ClueInstance
 		{
 			if (itemId == ItemID.CLUE_SCROLL_BEGINNER) return ClueTier.BEGINNER;
 			if (itemId == ItemID.CLUE_SCROLL_MASTER) return ClueTier.MASTER;
+			if (itemId == ItemID.CHALLENGE_SCROLL_ELITE) return ClueTier.ELITE_CHALLENGE;
 			return null;
 		}
 		return clue.getClueTier();

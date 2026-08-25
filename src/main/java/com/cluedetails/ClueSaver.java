@@ -50,31 +50,25 @@ public class ClueSaver
 
 	public void scanInventory()
 	{
-		if (config.eliteSherlockSaver())
+		activeElite = cim.getClueByClueItemId(ItemID.CHALLENGE_SCROLL_ELITE);
+		activeMaster = cim.getClueByClueItemId(ItemID.CLUE_SCROLL_MASTER);
+
+		if(activeMaster == null || savedThreeStepper == null)
 		{
-			activeElite = cim.getClueByClueItemId(ItemID.CHALLENGE_SCROLL_ELITE);
+			removeMasterEntries = false;
 		}
-
-		if (config.threeStepperSaver())
+		else
 		{
-			activeMaster = cim.getClueByClueItemId(ItemID.CLUE_SCROLL_MASTER);
-			if(activeMaster == null || savedThreeStepper == null)
-			{
-				removeMasterEntries = false;
-
-			}
-			else
-			{
-				//removes entries if we don't know what clue is in their inv, can be made a toggle.
-				removeMasterEntries = mastersMatch() || activeMaster.getClueIds().isEmpty();
-			}
+			//removes entries if we don't know what clue is in their inv, can be made a toggle.
+			removeMasterEntries = mastersMatch() || activeMaster.getClueIds().isEmpty();
 		}
 	}
 
 	public boolean elitesMatch()
 	{
 		if (activeElite == null || savedEliteSherlock == null) return false;
-		else return activeElite.getClueIds().equals(savedEliteSherlock.getClueIds());
+		if (savedEliteSherlock.getClueIds().isEmpty()) return false;
+		return activeElite.getClueIds().equals(savedEliteSherlock.getClueIds());
 	}
 
 	public boolean mastersMatch()
@@ -97,7 +91,7 @@ public class ClueSaver
 		//only menus generated from a clue in inventory pass this widget check.
 		if (firstEntry.getTarget().contains("Challenge scroll (elite)"))
 		{
-			if (config.eliteSherlockSaver() && activeElite != null)
+			if (config.eliteSherlockSaver() && activeElite != null && !activeElite.getClueIds().isEmpty())
 			{
 				MenuEntry[] menuEntries = client.getMenu().getMenuEntries();
 				if (elitesMatch())
