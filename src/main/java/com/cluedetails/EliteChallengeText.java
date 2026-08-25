@@ -27,7 +27,7 @@ package com.cluedetails;
 public class EliteChallengeText
 {
 	public static final String ELITE_SHERLOCK_0 = "Equip a Dragon Scimitar.";
-	public static final String ELITE_SHERLOCK_1 = "Enchant some Dragonstone Jewellery.";
+	public static final String ELITE_SHERLOCK_1 = "Enchant a piece of dragonstone jewellery.";
 	public static final String ELITE_SHERLOCK_2 = "Craft a nature rune.";
 	public static final String ELITE_SHERLOCK_3 = "Catch a mottled eel with aerial fishing in Lake Molch.";
 	public static final String ELITE_SHERLOCK_4 = "Score a goal in skullball.";
@@ -36,7 +36,7 @@ public class EliteChallengeText
 	public static final String ELITE_SHERLOCK_7 = "Steal from a chest in Ardougne Castle.";
 	public static final String ELITE_SHERLOCK_8 = "Craft a green dragonhide body.";
 	public static final String ELITE_SHERLOCK_9 = "String a yew longbow.";
-	public static final String ELITE_SHERLOCK_10 = "Kill a Dust Devil.";
+	public static final String ELITE_SHERLOCK_10 = "Slay a dust devil.";
 	public static final String ELITE_SHERLOCK_11 = "Catch a black warlock.";
 	public static final String ELITE_SHERLOCK_12 = "Catch a red chinchompa.";
 	public static final String ELITE_SHERLOCK_13 = "Mine a mithril ore.";
