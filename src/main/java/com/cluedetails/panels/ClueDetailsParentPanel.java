@@ -28,6 +28,7 @@ import com.cluedetails.*;
 import com.cluedetails.ClueDetailsConfig.*;
 
 import static com.cluedetails.ClueDetailsConfig.GROUP;
+import com.google.gson.Gson;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -35,6 +36,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -83,6 +86,8 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private ConfigManager configManager;
 
+	private Gson gson;
+
 	private ChatboxPanelManager chatboxPanelManager;
 
 	private CluePreferenceManager cluePreferenceManager;
@@ -120,12 +125,13 @@ public class ClueDetailsParentPanel extends PluginPanel
 		PASTE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(pasteIcon, 0.53f));
 	}
 
-	public ClueDetailsParentPanel(ConfigManager configManager, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
+	public ClueDetailsParentPanel(ConfigManager configManager, Gson gson, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
 									ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager, ClueDetailsPlugin plugin)
 	{
 		super(false);
 
 		this.configManager = configManager;
+		this.gson = gson;
 		this.cluePreferenceManager = cluePreferenceManager;
 		this.config = config;
 		this.chatboxPanelManager = chatboxPanelManager;
@@ -365,6 +371,16 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}).build();
 		});
 		popupMenu.add(inputItems);
+
+		JMenuItem copyClueDetail = new JMenuItem("Copy clue detail to clipboard");
+		copyClueDetail.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			ClueIdToDetails clueDetail = ClueIdToDetails.generateDetail(item.getClue().getClueID(), configManager, gson);
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(gson.toJson(clueDetail)), null);
+			sendChatMessage("The clue detail was copied to your clipboard.");
+		});
+		popupMenu.add(copyClueDetail);
 
 		return popupMenu;
 	}

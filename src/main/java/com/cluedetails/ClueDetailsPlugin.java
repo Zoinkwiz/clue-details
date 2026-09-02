@@ -258,7 +258,7 @@ public class ClueDetailsPlugin extends Plugin
 
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
-		panel = new ClueDetailsParentPanel(configManager, cluePreferenceManager, config, chatboxPanelManager, clueDetailsSharingManager, this);
+		panel = new ClueDetailsParentPanel(configManager, gson, cluePreferenceManager, config, chatboxPanelManager, clueDetailsSharingManager, this);
 		navButton = NavigationButton.builder()
 				.tooltip("Clue Details")
 				.icon(icon)

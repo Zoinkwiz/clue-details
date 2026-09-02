@@ -28,11 +28,13 @@ import static com.cluedetails.ClueDetailsConfig.CLUE_ITEMS_CONFIG;
 import static com.cluedetails.ClueDetailsConfig.CLUE_WIDGETS_CONFIG;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import java.awt.Color;
@@ -106,24 +108,9 @@ public class ClueDetailsSharingManager
 		for (Clues clue : filteredClues)
 		{
 			int id = clue.getClueID();
-			String clueText = exportText ? configManager.getConfiguration("clue-details-text", String.valueOf(id)) : null;
-			String clueColor = exportColors ? configManager.getConfiguration("clue-details-color", String.valueOf(id)) : null;
-			String clueItems = exportItems ? configManager.getConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id)) : null;
-			String clueWidgets = exportWidgets ? configManager.getConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id)) : null;
 
-			// Try to export text, color, and items. Export where valid configurations are returned
-			List<Integer> loadedClueItemsData = clueItems != null
-					? gson.fromJson(clueItems, new TypeToken<List<Integer>>(){}.getType())
-					: null;
-
-			List<WidgetId> loadedClueWidgetsData = clueWidgets != null
-					? gson.fromJson(clueWidgets, new TypeToken<List<WidgetId>>(){}.getType())
-					: null;
-
-			Color exportedColor = clueColor != null ? Color.decode(clueColor) : null;
-
-			ClueIdToDetails clueDetails = new ClueIdToDetails(id, clueText, exportedColor, loadedClueItemsData, loadedClueWidgetsData);
-			if (clueText != null || exportedColor != null || loadedClueItemsData != null || loadedClueWidgetsData != null)
+			ClueIdToDetails clueDetails = ClueIdToDetails.generateDetail(id, configManager, gson, exportText, exportColors, exportItems, exportWidgets);
+			if (exportText || exportColors || exportItems || exportWidgets)
 			{
 				clueIdToDetailsList.add(clueDetails);
 			}
@@ -209,30 +196,36 @@ public class ClueDetailsSharingManager
 		List<ClueIdToDetails> importClueDetails;
 		try
 		{
-			// CHECKSTYLE:OFF
-			importClueDetails = gson.fromJson(clipboardText, new TypeToken<List<ClueIdToDetails>>(){}.getType());
-			// CHECKSTYLE:ON
+			JsonElement jsonElement = new JsonParser().parse(clipboardText);
+			if (jsonElement.isJsonArray()) {
+				// CHECKSTYLE:OFF
+				importClueDetails = gson.fromJson(clipboardText, new TypeToken<List<ClueIdToDetails>>(){}.getType());
+				// CHECKSTYLE:ON
+			} else {
+				importClueDetails = Lists.newArrayList((ClueIdToDetails) gson.fromJson(clipboardText, new TypeToken<ClueIdToDetails>(){}.getType()));
+			}
+
 		}
 		catch (JsonSyntaxException e)
 		{
 			log.debug("Malformed JSON for clipboard import", e);
-			sendChatMessage("You do not have any clue details copied in your clipboard.");
+			sendChatMessage("You do not have any clue detail(s) copied in your clipboard.");
 			return;
 		}
 		catch (NumberFormatException e)
 		{
 			log.debug("Malformed JSON for clipboard import", e);
-			sendChatMessage("Your clue details color is not properly formatted.");
+			sendChatMessage("Your clue detail(s) color is not properly formatted.");
 			return;
 		}
 
 		if (importClueDetails.isEmpty())
 		{
-			sendChatMessage("You do not have any clue details copied in your clipboard.");
+			sendChatMessage("You do not have any clue detail(s) copied in your clipboard.");
 			return;
 		}
 
-		chatboxPanelManager.openTextMenuInput("Are you sure you want to import " + importClueDetails.size() + " clue details?")
+		chatboxPanelManager.openTextMenuInput("Are you sure you want to import " + importClueDetails.size() + " clue detail(s)?")
 			.option("Yes", () -> importClueDetails(importClueDetails))
 			.option("No", Runnables.doNothing())
 			.build();
