@@ -51,6 +51,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigGroup;
@@ -66,6 +67,7 @@ import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 import net.runelite.client.util.ImageUtil;
 import org.apache.commons.text.WordUtils;
 
+@Slf4j
 public class ClueDetailsParentPanel extends PluginPanel
 {
 	JPanel searchCluesPanel = new JPanel();
@@ -734,7 +736,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 				}
 				catch (InterruptedException | ExecutionException e)
 				{
-					e.printStackTrace();
+					log.error("Failed to refresh clue list", e);
 				}
 			}
 		};
