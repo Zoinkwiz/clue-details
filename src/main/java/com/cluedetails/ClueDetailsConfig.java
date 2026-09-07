@@ -767,7 +767,46 @@ public interface ClueDetailsConfig extends Config
 		return true;
 	}
 
-	@ConfigSection(name = "Helpers", description = "Options to configure particular helper features", position = 8)
+	@ConfigSection(name = "Bank filter", description = "Options that effect the bank filter", position = 8)
+	String bankSection = "Bank";
+
+	@ConfigItem(
+		keyName = "showClueBankTab",
+		name = "Show bank filter",
+		description = "Adds a bank button that filters to items for clues in your inventory",
+		section = bankSection,
+		position = 0
+	)
+	default boolean showClueBankTab()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "includeBankCluesInBankTab",
+		name = "Include banked clues in filter",
+		description = "Include banked clues in the bank filter",
+		section = bankSection,
+		position = 1
+	)
+	default boolean includeBankCluesInBankTab()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "clueBankTabHotkey",
+		name = "Filter hotkey",
+		description = "Hotkey to toggle the bank filter while it's visible",
+		section = bankSection,
+		position = 2
+	)
+	default Keybind clueBankTabHotkey()
+	{
+		return Keybind.NOT_SET;
+	}
+
+	@ConfigSection(name = "Helpers", description = "Options to configure particular helper features", position = 9)
 	String helperSection = "helperSection";
 
 	@ConfigItem(
