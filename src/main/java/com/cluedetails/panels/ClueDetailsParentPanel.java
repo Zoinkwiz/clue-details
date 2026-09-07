@@ -372,7 +372,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		});
 		popupMenu.add(inputItems);
 
-		JMenuItem copyClueDetail = new JMenuItem("Copy clue detail to clipboard");
+		JMenuItem copyClueDetail = new JMenuItem("Export detail to clipboard");
 		copyClueDetail.addActionListener(event ->
 		{
 			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
