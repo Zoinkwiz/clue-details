@@ -749,7 +749,8 @@ public class Clues
 				new WorldPoint(2355, 5241, 0), // Stronghold of Security
 				new WorldPoint(2468, 9802, 0),
 				new WorldPoint(3348, 10075, 0),
-				new WorldPoint(1637, 9991, 0)
+				new WorldPoint(1637, 9991, 0),
+				new WorldPoint(2051, 9181, 0) // Deepfin mine
 			)
 		),
 		new Clues("Crocodile: Kill", ItemID.CLUE_SCROLL_ELITE_19804, ClueTier.ELITE, null, List.of(
