@@ -237,7 +237,7 @@ public enum ClueRegion
 		// Wilderness Slayer Cave
 		new Zone(52, 157, 53, 158),
 		// Wildy GWD
-		new Zone(47, 153)
+		new Zone(47, 158)
 	),
 	KOUREND(
 		new Zone(17, 51, 18, 59),
