@@ -175,7 +175,13 @@ public class ClueBankTabInterface
 		boolean clickedTabTag = menuOption.startsWith("View tab") && !event.getMenuTarget().equals("clue-details");
 		boolean clickPotionStorage = menuOption.startsWith("Potion store");
 		boolean clickedOtherTab = menuOption.equals("View all items") || menuOption.startsWith("View tag tab");
-		if (clueTabActive && (clickedTabTag || clickedOtherTab || clickPotionStorage))
+		if (clueTabActive && clickPotionStorage)
+		{
+			closeTab();
+			// Opening potion storage doesn't trigger a bank rebuild on its own, so force one.
+			bankSearch.reset(true);
+		}
+		else if (clueTabActive && (clickedTabTag || clickedOtherTab))
 		{
 			closeTab();
 		}
