@@ -38,6 +38,7 @@ import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetType;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.game.ItemVariationMapping;
 import net.runelite.client.plugins.bank.BankSearch;
 
 import javax.inject.Inject;
@@ -237,6 +238,43 @@ public class PotionStorage
 			}
 		}
 		return -1;
+	}
+
+	/**
+	 * Given a candidate potion item id (e.g. a clue's configured dose), returns whatever dose of
+	 * that potion is actually in storage, since the store only tracks one dose at a time and
+	 * {@link #count(int)}/{@link #find(int)} won't match a different one. Returns itemId unchanged
+	 * if it isn't a tracked potion.
+	 */
+	public int resolveActualItemId(int itemId)
+	{
+		if (potions == null)
+		{
+			return itemId;
+		}
+
+		for (Potion potion : potions)
+		{
+			if (potion == null || potion.potionEnum == null)
+			{
+				continue;
+			}
+
+			if (potion.itemId == itemId)
+			{
+				return itemId;
+			}
+
+			// ItemVariationMapping.getVariations() only expands to the full family when called on
+			// the canonical member of that family - calling it on a non-canonical dose (e.g. 2 or 3
+			// doses of a potion) returns just that item on its own. map() is symmetric regardless of
+			// which member either side is, so compare canonical forms instead.
+			if (ItemVariationMapping.map(potion.itemId) == ItemVariationMapping.map(itemId))
+			{
+				return potion.itemId;
+			}
+		}
+		return itemId;
 	}
 
 	public void prepareWidgets()

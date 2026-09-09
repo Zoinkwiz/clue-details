@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
 
 /**
  * Covers the clue bank filter's section-building rules: inventory clues never include the clue
@@ -44,6 +45,7 @@ public class ClueBankTagServiceTest
 	private final ConfigManager configManager = mock(ConfigManager.class);
 	private final ItemManager itemManager = mock(ItemManager.class);
 	private final ClueDetailsPlugin plugin = mock(ClueDetailsPlugin.class);
+	private final PotionStorage potionStorage = mock(PotionStorage.class);
 
 	private ClueBankTagService service;
 
@@ -63,6 +65,9 @@ public class ClueBankTagServiceTest
 		when(itemComposition.getName()).thenReturn("Test item");
 		when(itemManager.getItemComposition(anyInt())).thenReturn(itemComposition);
 
+		// By default, nothing is a potion dose that needs substituting - echo the item id back.
+		when(potionStorage.resolveActualItemId(anyInt())).thenAnswer(returnsFirstArg());
+
 		// Clues.getItems() reads plugin.gson directly; avoids constructing a full real plugin.
 		setField(plugin, ClueDetailsPlugin.class, "gson", new Gson());
 
@@ -74,6 +79,7 @@ public class ClueBankTagServiceTest
 		setField(service, "clueBankManager", clueBankManager);
 		setField(service, "configManager", configManager);
 		setField(service, "itemManager", itemManager);
+		setField(service, "potionStorage", potionStorage);
 	}
 
 	private static void setField(Object target, String fieldName, Object value) throws Exception

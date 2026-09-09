@@ -78,6 +78,9 @@ public class ClueBankTagService
 	@Inject
 	private ItemManager itemManager;
 
+	@Inject
+	private PotionStorage potionStorage;
+
 	public List<BankTabItems> getBankTabSections()
 	{
 		List<BankTabItems> sections = new ArrayList<>();
@@ -145,7 +148,10 @@ public class ClueBankTagService
 			List<Integer> clueItems = clue.getItems(plugin, configManager);
 			if (clueItems != null)
 			{
-				itemIds.addAll(clueItems);
+				for (Integer itemId : clueItems)
+				{
+					itemIds.add(resolveDisplayItemId(itemId));
+				}
 			}
 		}
 
@@ -162,6 +168,17 @@ public class ClueBankTagService
 			section.addItems(makeBankTabItem(itemId, section.getName()));
 		}
 		sections.add(section);
+	}
+
+	// Substitute the actual stored dose if the configured one is only in potion storage.
+	private int resolveDisplayItemId(int itemId)
+	{
+		ItemContainer bank = client.getItemContainer(InventoryID.BANK);
+		if (bank != null && bank.count(itemId) > 0)
+		{
+			return itemId;
+		}
+		return potionStorage.resolveActualItemId(itemId);
 	}
 
 	private String getSectionName(ClueInstance instance)
