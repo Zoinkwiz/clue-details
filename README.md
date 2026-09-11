@@ -104,6 +104,18 @@ You can share your edited clue detail text, colors, and items, or import from so
 
 You can find custom clue details examples at https://thelope.github.io/clue-tags/details/.
 
+## Bank filter
+
+Adds a button to the bank that filters to configured items for the clues currently in your inventory.
+
+![bank_filter](https://github.com/user-attachments/assets/d2cad801-2bba-4793-963f-542f4cc8a39e)
+
+Items are grouped into sections named after the clue text (or a generic tier name if unread), separated by dividers, using the same items you configure via [Items](#items) above.
+
+- The "Show bank filter" toggle in the plugin's settings enables or disables the button. The button itself only shows up while you actually have relevant clues to filter for.
+- The "Include banked clues in filter" toggle includes clues in your bank in the filter. In this case the clue scroll itself is included too, since it still needs withdrawing.
+- The "Filter hotkey" configuration option lets you set a hotkey to toggle the filter, equivalent to clicking the button.
+
 ## Helpers
 
 ### Three-stepper saver
