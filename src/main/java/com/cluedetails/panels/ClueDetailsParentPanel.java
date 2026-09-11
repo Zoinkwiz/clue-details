@@ -54,6 +54,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigGroup;
@@ -69,6 +70,7 @@ import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 import net.runelite.client.util.ImageUtil;
 import org.apache.commons.text.WordUtils;
 
+@Slf4j
 public class ClueDetailsParentPanel extends PluginPanel
 {
 	JPanel searchCluesPanel = new JPanel();
@@ -125,6 +127,9 @@ public class ClueDetailsParentPanel extends PluginPanel
 		PASTE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(pasteIcon, 0.53f));
 	}
 
+	private final JLabel statusLabel;
+	private Timer statusLabelTimer;
+
 	public ClueDetailsParentPanel(ConfigManager configManager, Gson gson, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
 									ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager, ClueDetailsPlugin plugin)
 	{
@@ -147,6 +152,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JPanel titlePanel = setupTitlePanel();
 
 		titlePanel.add(setupImportExportButtons(), BorderLayout.EAST);
+
+		statusLabel = new JLabel("", SwingConstants.CENTER);
+		statusLabel.setVisible(false);
+		statusLabel.setOpaque(false);
+		statusLabel.setFocusable(false);
+		statusLabel.setBackground(null);
+		statusLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+		titlePanel.add(statusLabel, BorderLayout.SOUTH);
 
 		setupSearchBar();
 
@@ -750,7 +763,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 				}
 				catch (InterruptedException | ExecutionException e)
 				{
-					e.printStackTrace();
+					log.error("Failed to refresh clue list", e);
 				}
 			}
 		};
@@ -794,5 +807,37 @@ public class ClueDetailsParentPanel extends PluginPanel
 			.type(ChatMessageType.CONSOLE)
 			.runeLiteFormattedMessage(message)
 			.build());
+	}
+
+	public void updateStatus(String newStatusText) {
+		SwingUtilities.invokeLater(() -> {
+			if (statusLabelTimer != null && statusLabelTimer.isRunning()) {
+				statusLabelTimer.stop();
+			}
+			statusLabel.setText(newStatusText);
+			statusLabel.setVisible(true);
+			revalidate();
+			repaint();
+		});
+	}
+
+	public void updateStatusTemporarily(String newStatusText, int durationMS) {
+		SwingUtilities.invokeLater(() -> {
+			if (statusLabelTimer != null && statusLabelTimer.isRunning()) {
+				statusLabelTimer.stop();
+			}
+			statusLabel.setText(newStatusText);
+			statusLabel.setVisible(true);
+			revalidate();
+			repaint();
+
+			statusLabelTimer = new Timer(durationMS, actionEvent -> {
+				statusLabel.setVisible(false);
+				revalidate();
+				repaint();
+			});
+			statusLabelTimer.setRepeats(false);
+			statusLabelTimer.start();
+		});
 	}
 }

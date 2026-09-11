@@ -712,6 +712,9 @@ public class ClueDetailsPlugin extends Plugin
 		String option = infoBoxMenuClicked.getEntry().getOption();
 		if (option.isEmpty()) return;
 
+		// InfoBoxMenuClicked is posted for every infobox's menu clicks, not just clue-details
+		if (!(infoBoxMenuClicked.getInfoBox() instanceof ClueGroundTimer)) return;
+
 		ClueGroundTimer clickedTimer = (ClueGroundTimer) infoBoxMenuClicked.getInfoBox();
 		if (clickedTimer == null) return;
 		if (!clueGroundTimers.contains(clickedTimer)) return;
