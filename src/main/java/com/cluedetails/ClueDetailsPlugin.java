@@ -30,7 +30,9 @@ import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -233,6 +235,12 @@ public class ClueDetailsPlugin extends Plugin
 	private static final String CLUE_GROUND_TIMER_CLEAR = "Clear";
 	private static final String CLUE_GROUND_TIMER_LOCATE = "Locate";
 	private static final String CLUE_GROUND_TIMER_UNLOCATE = "Unlocate";
+	// Suffix used on combined timers to clarify
+	// these options only act on the oldest tile, not every combined pile
+	private static final String OLDEST_SUFFIX = " Oldest";
+	private static final String CLUE_GROUND_TIMER_CLEAR_OLDEST = CLUE_GROUND_TIMER_CLEAR + OLDEST_SUFFIX;
+	private static final String CLUE_GROUND_TIMER_LOCATE_OLDEST = CLUE_GROUND_TIMER_LOCATE + OLDEST_SUFFIX;
+	private static final String CLUE_GROUND_TIMER_UNLOCATE_OLDEST = CLUE_GROUND_TIMER_UNLOCATE + OLDEST_SUFFIX;
 
 	@Getter @Setter
 	private boolean fairyRingOpen = false;
@@ -704,6 +712,102 @@ public class ClueDetailsPlugin extends Plugin
 				}
 			}
 		}
+
+		updateCombinedGroundClueTimers();
+	}
+
+	// When combining is enabled, only the oldest timer is shown, with its tooltip listing
+	// clues from every tracked tile.
+	private void updateCombinedGroundClueTimers()
+	{
+		if (!config.combineGroundClueTimers())
+		{
+			for (ClueGroundTimer timer : clueGroundTimers)
+			{
+				timer.setHiddenByCombine(false);
+				timer.setCombinedClueInstancesWithQuantity(null);
+				timer.setCombinedNeedsAttention(false);
+				updateOldestMenuLabels(timer, false);
+			}
+			return;
+		}
+
+		// Clear stale hidden state first so render() reflects only each timer's own eligibility below
+		for (ClueGroundTimer timer : clueGroundTimers)
+		{
+			timer.setHiddenByCombine(false);
+		}
+
+		ClueGroundTimer soonestTimer = null;
+		int activeTileCount = 0;
+		for (ClueGroundTimer timer : clueGroundTimers)
+		{
+			if (!timer.render()) continue;
+			activeTileCount++;
+			if (soonestTimer == null || timer.getDespawnTick() < soonestTimer.getDespawnTick())
+			{
+				soonestTimer = timer;
+			}
+		}
+
+		// Use a plain map keyed by ClueInstance#equals to accumulate raw entries.
+		Map<ClueInstance, Integer> rawCombinedClues = new LinkedHashMap<>();
+		boolean anyNeedsAttention = false;
+		for (ClueGroundTimer timer : clueGroundTimers)
+		{
+			if (!timer.render()) continue;
+			rawCombinedClues.putAll(timer.getClueInstancesWithQuantity());
+			anyNeedsAttention |= timer.isNotified() || timer.shouldNotify();
+			timer.setHiddenByCombine(timer != soonestTimer);
+			updateOldestMenuLabels(timer, timer == soonestTimer && activeTileCount > 1);
+		}
+
+		// Sum quantities across tiles for clues the current collapse setting treats as duplicates
+		Map<ClueInstance, Integer> mergedClues = ClueGroundManager.mergeQuantitiesAcrossTiles(rawCombinedClues, config);
+
+		// Sort soonest-to-despawn first, matching the single-tile infoboxes' own countdown
+		List<Map.Entry<ClueInstance, Integer>> sortedEntries = new ArrayList<>(mergedClues.entrySet());
+		sortedEntries.sort(Comparator.<Map.Entry<ClueInstance, Integer>>comparingInt(e -> e.getKey().getDespawnTick())
+			.thenComparingLong(e -> e.getKey().getSequenceNumber()));
+
+		Map<ClueInstance, Integer> combinedClues = new LinkedHashMap<>();
+		for (Map.Entry<ClueInstance, Integer> entry : sortedEntries)
+		{
+			combinedClues.put(entry.getKey(), entry.getValue());
+		}
+
+		if (soonestTimer != null)
+		{
+			soonestTimer.setCombinedClueInstancesWithQuantity(combinedClues);
+			soonestTimer.setCombinedNeedsAttention(anyNeedsAttention);
+		}
+	}
+
+	// Relabels Clear/Locate/Unlocate with an "Oldest" suffix when this timer is combined
+	private static void updateOldestMenuLabels(ClueGroundTimer timer, boolean showOldest)
+	{
+		String desiredClear = showOldest ? CLUE_GROUND_TIMER_CLEAR_OLDEST : CLUE_GROUND_TIMER_CLEAR;
+		boolean hasDesiredClear = timer.getMenuEntries().stream().anyMatch(e -> desiredClear.equals(e.getOption()));
+		if (!hasDesiredClear)
+		{
+			switchTimerLocateEntry(timer,
+				showOldest ? CLUE_GROUND_TIMER_CLEAR : CLUE_GROUND_TIMER_CLEAR_OLDEST,
+				desiredClear);
+		}
+
+		boolean currentlyUnlocated = timer.getMenuEntries().stream()
+			.anyMatch(e -> CLUE_GROUND_TIMER_UNLOCATE.equals(e.getOption()) || CLUE_GROUND_TIMER_UNLOCATE_OLDEST.equals(e.getOption()));
+		String desiredLocate = currentlyUnlocated
+			? (showOldest ? CLUE_GROUND_TIMER_UNLOCATE_OLDEST : CLUE_GROUND_TIMER_UNLOCATE)
+			: (showOldest ? CLUE_GROUND_TIMER_LOCATE_OLDEST : CLUE_GROUND_TIMER_LOCATE);
+		boolean hasDesiredLocate = timer.getMenuEntries().stream().anyMatch(e -> desiredLocate.equals(e.getOption()));
+		if (!hasDesiredLocate)
+		{
+			String oppositeLocate = currentlyUnlocated
+				? (showOldest ? CLUE_GROUND_TIMER_UNLOCATE : CLUE_GROUND_TIMER_UNLOCATE_OLDEST)
+				: (showOldest ? CLUE_GROUND_TIMER_LOCATE : CLUE_GROUND_TIMER_LOCATE_OLDEST);
+			switchTimerLocateEntry(timer, oppositeLocate, desiredLocate);
+		}
 	}
 
 	@Subscribe
@@ -716,10 +820,13 @@ public class ClueDetailsPlugin extends Plugin
 		if (clickedTimer == null) return;
 		if (!clueGroundTimers.contains(clickedTimer)) return;
 
+		boolean oldest = option.endsWith(OLDEST_SUFFIX);
+
 		switch (option)
 		{
 			// Clear infobox and tracked clues for world point
 			case CLUE_GROUND_TIMER_CLEAR:
+			case CLUE_GROUND_TIMER_CLEAR_OLDEST:
 				infoBoxManager.removeInfoBox(clickedTimer);
 				clueGroundTimers.remove(clickedTimer);
 				clueGroundManager.clearBeginnerAndMasterCluesAtWorldPoint(clickedTimer.getWorldPoint());
@@ -727,13 +834,15 @@ public class ClueDetailsPlugin extends Plugin
 				break;
 			// Add world map point for timer
 			case CLUE_GROUND_TIMER_LOCATE:
+			case CLUE_GROUND_TIMER_LOCATE_OLDEST:
 				worldMapPointManager.add(clickedTimer.getClueDetailsWorldMapPoint());
-				switchTimerLocateEntry(clickedTimer, CLUE_GROUND_TIMER_LOCATE, CLUE_GROUND_TIMER_UNLOCATE);
+				switchTimerLocateEntry(clickedTimer, option, oldest ? CLUE_GROUND_TIMER_UNLOCATE_OLDEST : CLUE_GROUND_TIMER_UNLOCATE);
 				break;
 			// Remove world map point for timer
 			case CLUE_GROUND_TIMER_UNLOCATE:
+			case CLUE_GROUND_TIMER_UNLOCATE_OLDEST:
 				worldMapPointManager.remove(clickedTimer.getClueDetailsWorldMapPoint());
-				switchTimerLocateEntry(clickedTimer, CLUE_GROUND_TIMER_UNLOCATE, CLUE_GROUND_TIMER_LOCATE);
+				switchTimerLocateEntry(clickedTimer, option, oldest ? CLUE_GROUND_TIMER_LOCATE_OLDEST : CLUE_GROUND_TIMER_LOCATE);
 				break;
 		}
 	}

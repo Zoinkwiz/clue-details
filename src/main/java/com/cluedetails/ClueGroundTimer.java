@@ -45,6 +45,7 @@ class ClueGroundTimer extends InfoBox
 	private final ClueDetailsConfig config;
 	private final ConfigManager configManager;
 	@Setter
+	@Getter
 	private int despawnTick;
 	@Setter
 	@Getter
@@ -60,6 +61,12 @@ class ClueGroundTimer extends InfoBox
 	@Setter
 	@Getter
 	private boolean renotifying = false;
+	@Setter
+	private boolean hiddenByCombine = false;
+	@Setter
+	private Map<ClueInstance, Integer> combinedClueInstancesWithQuantity;
+	@Setter
+	private boolean combinedNeedsAttention = false;
 
 	ClueGroundTimer(
 		Client client,
@@ -126,7 +133,11 @@ class ClueGroundTimer extends InfoBox
 	{
 		stringBuilder.setLength(0);
 
-		for (Map.Entry<ClueInstance, Integer> entry : clueInstancesWithQuantity.entrySet())
+		Map<ClueInstance, Integer> tooltipEntries = combinedClueInstancesWithQuantity != null
+			? combinedClueInstancesWithQuantity
+			: clueInstancesWithQuantity;
+
+		for (Map.Entry<ClueInstance, Integer> entry : tooltipEntries.entrySet())
 		{
 			ClueInstance item = entry.getKey();
 
@@ -146,7 +157,10 @@ class ClueGroundTimer extends InfoBox
 	@Override
 	public Color getTextColor()
 	{
-		return shouldNotify()
+		boolean notify = combinedClueInstancesWithQuantity != null
+			? combinedNeedsAttention
+			: shouldNotify();
+		return notify
 			? Color.RED
 			: Color.WHITE;
 	}
@@ -174,6 +188,11 @@ class ClueGroundTimer extends InfoBox
 	@Override
 	public boolean render()
 	{
+		if (hiddenByCombine)
+		{
+			return false;
+		}
+
 		// Render if any ClueInstance is enabled
 		if(!clueInstancesWithQuantity.isEmpty())
 		{
