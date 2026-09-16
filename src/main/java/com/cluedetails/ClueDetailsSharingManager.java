@@ -180,15 +180,15 @@ public class ClueDetailsSharingManager
 						return ;
 					}
 
-					final String exportDump = gson.toJson(get());
+					final boolean isSingle = get().size() == 1;
 
-					final String sortedExportDump = sortJsonArrayById(gson, exportDump);
+					final String exportDump = isSingle ? gson.toJson(get().get(0)) : sortJsonArrayById(gson, gson.toJson(get()));
 
-					log.debug("Exported clue details: {}", sortedExportDump);
+					log.debug("Exported clue details: {}", exportDump);
 
 					Toolkit.getDefaultToolkit()
 						.getSystemClipboard()
-						.setContents(new StringSelection(sortedExportDump), null);
+						.setContents(new StringSelection(exportDump), null);
 					plugin.getPanel().updateStatusTemporarily(get().size() + " clue details were copied.", 5000);
 					sendChatMessage(get().size() + " clue details were copied to your clipboard.");
 				}
