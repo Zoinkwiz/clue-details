@@ -29,7 +29,6 @@ import static com.cluedetails.ClueDetailsConfig.CLUE_WIDGETS_CONFIG;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -55,34 +54,26 @@ import javax.swing.*;
 
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
-import net.runelite.api.GameState;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.inventorytags.InventoryTagsConfig;
 
 @Slf4j
 public class ClueDetailsSharingManager
 {
-	private final Client client;
-	private final ClueDetailsPlugin plugin;
+    private final ClueDetailsPlugin plugin;
 	private final ClueDetailsConfig config;
-	private final ChatboxPanelManager chatboxPanelManager;
-	private final Gson gson;
+    private final Gson gson;
 
 	private final ConfigManager configManager;
 
 	@Inject
-	private ClueDetailsSharingManager(Client client, ClueDetailsPlugin plugin, ClueDetailsConfig config, ChatboxPanelManager chatboxPanelManager,
-									  Gson gson, ConfigManager configManager)
+	private ClueDetailsSharingManager(ClueDetailsPlugin plugin, ClueDetailsConfig config, Gson gson, ConfigManager configManager)
 	{
-		this.client = client;
-		this.plugin = plugin;
+        this.plugin = plugin;
 		this.config = config;
-		this.chatboxPanelManager = chatboxPanelManager;
-		this.gson = gson;
+        this.gson = gson;
 		this.configManager = configManager;
 	}
 
@@ -318,24 +309,16 @@ public class ClueDetailsSharingManager
 
 		String importMessage = "Are you sure you want to import " + visibleImportClueDetails.size() + " clue detail(s)?";
 
-		if (client.getGameState() == GameState.LOGGED_IN)
-		{
-			chatboxPanelManager.openTextMenuInput(importMessage)
-					.option("Yes", () -> importClueDetails(visibleImportClueDetails))
-					.option("No", Runnables.doNothing())
-					.build();
-		} else {
-			int confirm = JOptionPane.showConfirmDialog(
-					plugin.getPanel(),
-					importMessage,
-					"Warning",
-					JOptionPane.YES_NO_OPTION
-			);
+		int confirm = JOptionPane.showConfirmDialog(
+				plugin.getPanel(),
+				importMessage,
+				"Warning",
+				JOptionPane.YES_NO_OPTION
+		);
 
-			if (confirm == 0)
-			{
-				importClueDetails(visibleImportClueDetails);
-			}
+		if (confirm == 0)
+		{
+			importClueDetails(visibleImportClueDetails);
 		}
 	}
 
