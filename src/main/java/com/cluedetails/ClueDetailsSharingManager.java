@@ -236,7 +236,19 @@ public class ClueDetailsSharingManager
 		}
 	}
 
-	public void promptForImport()
+	private int showImportConfirmDialog(int amount)
+	{
+		String message = "Are you sure you want to import " + amount + " clue detail(s)?";
+
+		return JOptionPane.showConfirmDialog(
+				plugin.getPanel(),
+				message,
+				"Warning",
+				JOptionPane.YES_NO_OPTION
+		);
+	}
+
+	public void promptForImport(boolean filtered)
 	{
 		final String clipboardText;
 		try
@@ -292,33 +304,38 @@ public class ClueDetailsSharingManager
 			return;
 		}
 
-		HashSet<Integer> visibleClueIds = getFilteredClues().stream()
-				.map(Clues::getClueID)
-				.collect(Collectors.toCollection(HashSet::new));
-
-		// Using in-place removeIf causes gson parse errors to not be caught correctly???
-		List<ClueIdToDetails> visibleImportClueDetails = importClueDetails.stream()
-				.filter(ip -> visibleClueIds.contains(ip.getId()))
-				.collect(Collectors.toList());
-
-		if (visibleImportClueDetails.isEmpty())
+		if (filtered)
 		{
-			sendChatMessage("You do not have any clue detail(s) copied to your clipboard that match your filtered clues.");
-			return;
+			HashSet<Integer> visibleClueIds = getFilteredClues().stream()
+					.map(Clues::getClueID)
+					.collect(Collectors.toCollection(HashSet::new));
+
+			// Using in-place removeIf causes gson parse errors to not be caught correctly???
+			List<ClueIdToDetails> visibleImportClueDetails = importClueDetails.stream()
+					.filter(ip -> visibleClueIds.contains(ip.getId()))
+					.collect(Collectors.toList());
+
+			if (visibleImportClueDetails.isEmpty())
+			{
+				sendChatMessage("You do not have any clue detail(s) copied to your clipboard that match your filtered clues.");
+				return;
+			}
+
+			int confirm = showImportConfirmDialog(visibleImportClueDetails.size());
+
+			if (confirm == 0)
+			{
+				importClueDetails(visibleImportClueDetails);
+			}
 		}
-
-		String importMessage = "Are you sure you want to import " + visibleImportClueDetails.size() + " clue detail(s)?";
-
-		int confirm = JOptionPane.showConfirmDialog(
-				plugin.getPanel(),
-				importMessage,
-				"Warning",
-				JOptionPane.YES_NO_OPTION
-		);
-
-		if (confirm == 0)
+		else
 		{
-			importClueDetails(visibleImportClueDetails);
+			int confirm = showImportConfirmDialog(importClueDetails.size());
+
+			if (confirm == 0)
+			{
+				importClueDetails(importClueDetails);
+			}
 		}
 	}
 
