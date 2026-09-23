@@ -401,7 +401,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private void openResetPopup(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
 		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
-			"Are you sure you want to reset your customised details?",
+			"Are you sure you want to reset your currently filtered customised details?",
 			"Warning", JOptionPane.OK_CANCEL_OPTION);
 
 		if (confirm == 0)
