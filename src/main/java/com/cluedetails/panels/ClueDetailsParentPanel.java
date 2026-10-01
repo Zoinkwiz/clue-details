@@ -514,7 +514,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		});
 
-		pasteMarkers.setToolTipText("Import currently filtered details from your clipboard");
+		pasteMarkers.setToolTipText("Import all details from your clipboard");
 		JPopupMenu importPopupMenu = getImportPopupMenu();
 		pasteMarkers.setComponentPopupMenu(importPopupMenu);
 		pasteMarkers.addMouseListener(new MouseAdapter()
@@ -523,7 +523,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			public void mousePressed(MouseEvent e)
 			{
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					clueDetailsSharingManager.promptForImport(true);
+					clueDetailsSharingManager.promptForImport(false);
 				}
 			}
 
@@ -636,9 +636,9 @@ public class ClueDetailsParentPanel extends PluginPanel
 	{
 		JPopupMenu popupMenu = new JPopupMenu();
 
-		JMenuItem inputItemImportAll = new JMenuItem("Import all details from your clipboard");
+		JMenuItem inputItemImportAll = new JMenuItem("Import details for currently filtered clues from your clipboard");
 		inputItemImportAll.addActionListener(event ->
-				clueDetailsSharingManager.promptForImport(false)
+				clueDetailsSharingManager.promptForImport(true)
 		);
 		popupMenu.add(inputItemImportAll);
 
