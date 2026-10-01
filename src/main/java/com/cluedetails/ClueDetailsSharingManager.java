@@ -50,7 +50,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-import javax.swing.*;
+import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
