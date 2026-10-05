@@ -757,7 +757,7 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			if (!timer.render()) continue;
 			rawCombinedClues.putAll(timer.getClueInstancesWithQuantity());
-			anyNeedsAttention |= timer.isNotified() || timer.shouldNotify();
+			anyNeedsAttention |= timer.shouldNotify();
 			timer.setHiddenByCombine(timer != soonestTimer);
 			updateOldestMenuLabels(timer, timer == soonestTimer && activeTileCount > 1);
 		}
@@ -831,6 +831,8 @@ public class ClueDetailsPlugin extends Plugin
 				clueGroundTimers.remove(clickedTimer);
 				clueGroundManager.clearBeginnerAndMasterCluesAtWorldPoint(clickedTimer.getWorldPoint());
 				clueGroundManager.clearEasyToEliteCluesAtWorldPoint(clickedTimer.getWorldPoint());
+				worldMapPointManager.remove(clickedTimer.getClueDetailsWorldMapPoint());
+				updateCombinedGroundClueTimers();
 				break;
 			// Add world map point for timer
 			case CLUE_GROUND_TIMER_LOCATE:

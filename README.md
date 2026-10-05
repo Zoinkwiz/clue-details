@@ -65,6 +65,8 @@ The "Show ground clue timers" toggle shows despawn timers for ground clues, simi
   - "Clear" will remove the clues on the associated world point from tracking. Loading the area with the clues will cause them to be tracked.
   - "Locate/Unlocate" adds or removes a world point from the world map indicating the location of the tracked clues.
 
+Enable "Combine ground clue timers" to show one infobox for the tile with the next clue to despawn. Its tooltip includes clues from all enabled tracked tiles and respects the collapse-by-tier and collapse-by-step settings. When multiple tiles are combined, "Clear Oldest" and "Locate/Unlocate Oldest" act only on the tile shown by the timer.
+
 ## Editing clue details
 
 ### Text

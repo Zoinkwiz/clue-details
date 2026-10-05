@@ -174,8 +174,7 @@ class ClueGroundTimer extends InfoBox
 		{
 			return true;
 		}
-		int timeLeft = getSecondsLeft();
-		return timeLeft == 0 || timeLeft < 0;
+		return despawnTick <= client.getTickCount();
 	}
 
 	private boolean activeWorldPoint()

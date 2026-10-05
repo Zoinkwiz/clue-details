@@ -446,8 +446,8 @@ public class ClueGroundManager
 		public int compare(ClueInstance o1, ClueInstance o2)
 		{
 			return Comparator
-				.comparingLong(ClueInstance::getSequenceNumber)
-				.thenComparingInt(ClueInstance::getDespawnTick)
+				.comparingInt(ClueInstance::getDespawnTick)
+				.thenComparingLong(ClueInstance::getSequenceNumber)
 				.compare(o1, o2);
 		}
 	}
@@ -496,12 +496,8 @@ public class ClueGroundManager
 				|| item.getDespawnTick() < lowestValueItems.get(clueIds).getDespawnTick())
 			{
 				lowestValueItems.put(clueIds, item);
-				uniqueCount.put(clueIds, 1);
 			}
-			else
-			{
-				uniqueCount.put(clueIds, uniqueCount.get(clueIds) + 1);
-			}
+			uniqueCount.merge(clueIds, 1, Integer::sum);
 		}
 
 		return lowestValueItems.values().stream()
@@ -522,12 +518,8 @@ public class ClueGroundManager
 				|| item.getDespawnTick() < lowestValueItems.get(tier).getDespawnTick())
 			{
 				lowestValueItems.put(tier, item);
-				uniqueCount.put(tier, 1);
 			}
-			else
-			{
-				uniqueCount.put(tier, uniqueCount.get(tier) + 1);
-			}
+			uniqueCount.merge(tier, 1, Integer::sum);
 		}
 
 		return lowestValueItems.values().stream()
