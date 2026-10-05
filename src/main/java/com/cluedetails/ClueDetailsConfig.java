@@ -654,11 +654,24 @@ public interface ClueDetailsConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "combineGroundClueTimers",
+		name = "Combine ground clue timers",
+		description = "Toggle whether to combine all ground clue timer infoboxes into a single infobox showing only the" +
+			" timer closest to despawning. The tooltip lists clues from every tracked tile.",
+		section = groundCluesSection,
+		position = 8
+	)
+	default boolean combineGroundClueTimers()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "groundClueTimersNotificationTime",
 		name = "Timer notifications",
 		description = "Seconds remaining until despawn per tile to send notification. Set to 0 to disable the notification.",
 		section = groundCluesSection,
-		position = 8
+		position = 9
 	)
 	default int groundClueTimersNotificationTime()
 	{
@@ -671,7 +684,7 @@ public interface ClueDetailsConfig extends Config
 		description = "Seconds after initial notification to periodically renotify. Set to 0 to disable the notification." +
 			"<br> This also acts as a cooldown between notifications for clues in the same tile",
 		section = groundCluesSection,
-		position = 9
+		position = 10
 	)
 	default int groundClueTimersRenotificationTime()
 	{
@@ -685,7 +698,7 @@ public interface ClueDetailsConfig extends Config
 			"<br> Minimum is 5 minutes: recommend 'Timer notifications' set to 300 or higher." +
 			"<br> Uses Logout Timer plugin config when resetting idle timer.",
 		section = groundCluesSection,
-		position = 10
+		position = 11
 	)
 	default boolean decreaseIdleTimeout()
 	{
