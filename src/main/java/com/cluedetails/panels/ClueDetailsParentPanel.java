@@ -522,7 +522,8 @@ public class ClueDetailsParentPanel extends PluginPanel
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
-				if (SwingUtilities.isLeftMouseButton(e)) {
+				if (SwingUtilities.isLeftMouseButton(e))
+				{
 					clueDetailsSharingManager.promptForImport(false);
 				}
 			}
@@ -636,11 +637,11 @@ public class ClueDetailsParentPanel extends PluginPanel
 	{
 		JPopupMenu popupMenu = new JPopupMenu();
 
-		JMenuItem inputItemImportAll = new JMenuItem("Import details for currently filtered clues from your clipboard");
-		inputItemImportAll.addActionListener(event ->
-				clueDetailsSharingManager.promptForImport(true)
+		JMenuItem importFiltered = new JMenuItem("Import details for currently filtered clues from your clipboard");
+		importFiltered.addActionListener(event ->
+			clueDetailsSharingManager.promptForImport(true)
 		);
-		popupMenu.add(inputItemImportAll);
+		popupMenu.add(importFiltered);
 
 		return popupMenu;
 	}
@@ -789,10 +790,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private void updateClueList(List<ListItem> items)
 	{
-		SwingUtilities.invokeLater(() ->
+		if (SwingUtilities.isEventDispatchThread())
 		{
 			clueTableModel.setItems(items);
-		});
+		}
+		else
+		{
+			SwingUtilities.invokeLater(() -> clueTableModel.setItems(items));
+		}
 	}
 
 	public boolean filterUnmarkedClues(Clues clue)
@@ -861,8 +866,9 @@ public class ClueDetailsParentPanel extends PluginPanel
 	public List<Clues> getVisibleClues()
 	{
 		return clueTableModel.getItems().stream()
-				.filter(item -> !item.isHeader())
-				.map(ListItem::getClue)
-				.collect(Collectors.toList());
+			.filter(item -> !item.isHeader())
+			.map(ListItem::getClue)
+			.distinct()
+			.collect(Collectors.toList());
 	}
 }

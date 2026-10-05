@@ -28,7 +28,6 @@ import static com.cluedetails.ClueDetailsConfig.CLUE_ITEMS_CONFIG;
 import static com.cluedetails.ClueDetailsConfig.CLUE_WIDGETS_CONFIG;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -45,14 +44,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.client.chat.QueuedMessage;
@@ -63,30 +62,35 @@ import net.runelite.client.plugins.inventorytags.InventoryTagsConfig;
 @Slf4j
 public class ClueDetailsSharingManager
 {
-    private final ClueDetailsPlugin plugin;
+	private final ClueDetailsPlugin plugin;
 	private final ClueDetailsConfig config;
-    private final Gson gson;
+	private final Gson gson;
 
 	private final ConfigManager configManager;
 
 	@Inject
 	private ClueDetailsSharingManager(ClueDetailsPlugin plugin, ClueDetailsConfig config, Gson gson, ConfigManager configManager)
 	{
-        this.plugin = plugin;
+		this.plugin = plugin;
 		this.config = config;
-        this.gson = gson;
+		this.gson = gson;
 		this.configManager = configManager;
 	}
 
 	public void resetClueDetails(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
+		if (!SwingUtilities.isEventDispatchThread())
+		{
+			SwingUtilities.invokeLater(() -> resetClueDetails(resetText, resetColors, resetItems, resetWidgets));
+			return;
+		}
+		// Capture the selected rows before the worker starts or the user changes filters.
+		final List<Clues> filteredClues = getFilteredClues();
 		SwingWorker<Integer, String> worker = new SwingWorker<>()
 		{
 			@Override
 			protected Integer doInBackground() throws Exception
 			{
-				List<Clues> filteredClues = getFilteredClues();
-
 				int counter = 0;
 
 				for (Clues clue : filteredClues)
@@ -131,14 +135,18 @@ public class ClueDetailsSharingManager
 
 	public void exportClueDetails(boolean exportText, boolean exportColors, boolean exportItems, boolean exportWidgets)
 	{
+		if (!SwingUtilities.isEventDispatchThread())
+		{
+			SwingUtilities.invokeLater(() -> exportClueDetails(exportText, exportColors, exportItems, exportWidgets));
+			return;
+		}
+		final List<Clues> filteredClues = getFilteredClues();
 		SwingWorker<List<ClueIdToDetails>, String> worker = new SwingWorker<>()
 		{
 			@Override
 			protected List<ClueIdToDetails> doInBackground() throws Exception
 			{
 				List<ClueIdToDetails> clueIdToDetailsList = new ArrayList<>();
-
-				List<Clues> filteredClues = getFilteredClues();
 
 				int counter = 0;
 
@@ -174,28 +182,30 @@ public class ClueDetailsSharingManager
 			@Override
 			protected void done()
 			{
-				try {
-					if (get().isEmpty()) {
+				try
+				{
+					List<ClueIdToDetails> details = get();
+					if (details.isEmpty())
+					{
 						plugin.getPanel().updateStatusTemporarily("No clue details to export.", 5000);
 						sendChatMessage("You have no updated clue details to export.");
-						return ;
+						return;
 					}
 
-					final boolean isSingle = get().size() == 1;
-
-					final String exportDump = isSingle ? gson.toJson(get().get(0)) : sortJsonArrayById(gson, gson.toJson(get()));
+					final String exportDump = details.size() == 1
+						? gson.toJson(details.get(0)) : sortJsonArrayById(gson, gson.toJson(details));
 
 					log.debug("Exported clue details: {}", exportDump);
 
 					Toolkit.getDefaultToolkit()
 						.getSystemClipboard()
 						.setContents(new StringSelection(exportDump), null);
-					plugin.getPanel().updateStatusTemporarily(get().size() + " clue details were copied.", 5000);
-					sendChatMessage(get().size() + " clue details were copied to your clipboard.");
+					plugin.getPanel().updateStatusTemporarily(details.size() + " clue details were copied.", 5000);
+					sendChatMessage(details.size() + " clue details were copied to your clipboard.");
 				}
-				catch(Exception exception)
+				catch (Exception exception)
 				{
-					log.error("Error resetting clue details", exception);
+					log.error("Error exporting clue details", exception);
 				}
 			}
 		};
@@ -251,6 +261,11 @@ public class ClueDetailsSharingManager
 
 	public void promptForImport(boolean filtered)
 	{
+		if (!SwingUtilities.isEventDispatchThread())
+		{
+			SwingUtilities.invokeLater(() -> promptForImport(filtered));
+			return;
+		}
 		final String clipboardText;
 		try
 		{
@@ -259,9 +274,9 @@ public class ClueDetailsSharingManager
 				.getData(DataFlavor.stringFlavor)
 				.toString();
 		}
-		catch (IOException | UnsupportedFlavorException ex)
+		catch (IOException | UnsupportedFlavorException | IllegalStateException ex)
 		{
-			sendChatMessage("Unable to read system clipboard.");
+			reportImportError("Unable to read system clipboard.");
 			log.warn("error reading clipboard", ex);
 			return;
 		}
@@ -269,75 +284,89 @@ public class ClueDetailsSharingManager
 		log.debug("Clipboard contents: {}", clipboardText);
 		if (Strings.isNullOrEmpty(clipboardText))
 		{
-			sendChatMessage("You do not have any clue details copied in your clipboard.");
+			reportImportError("You do not have any clue details copied in your clipboard.");
 			return;
 		}
 
 		List<ClueIdToDetails> importClueDetails;
 		try
 		{
-			JsonElement jsonElement = new JsonParser().parse(clipboardText);
-			if (jsonElement.isJsonArray()) {
-				// CHECKSTYLE:OFF
-				importClueDetails = gson.fromJson(clipboardText, new TypeToken<List<ClueIdToDetails>>(){}.getType());
-				// CHECKSTYLE:ON
-			} else {
-				importClueDetails = Lists.newArrayList((ClueIdToDetails) gson.fromJson(clipboardText, new TypeToken<ClueIdToDetails>(){}.getType()));
-			}
-
+			importClueDetails = parseClueDetails(gson, clipboardText);
 		}
 		catch (JsonSyntaxException e)
 		{
 			log.debug("Malformed JSON for clipboard import", e);
-			sendChatMessage("Your clue detail(s) are improperly formatted.");
+			reportImportError("Your clue detail(s) are improperly formatted.");
 			return;
 		}
 		catch (NumberFormatException e)
 		{
 			log.debug("Malformed JSON for clipboard import", e);
-			sendChatMessage("Your clue detail(s) color is not properly formatted.");
+			reportImportError("Your clue detail(s) color is not properly formatted.");
 			return;
 		}
 
 		if (importClueDetails.isEmpty())
 		{
-			sendChatMessage("You do not have any clue detail(s) copied in your clipboard.");
+			reportImportError("You do not have any clue detail(s) copied in your clipboard.");
 			return;
 		}
 
 		if (filtered)
 		{
-			HashSet<Integer> visibleClueIds = getFilteredClues().stream()
-					.map(Clues::getClueID)
-					.collect(Collectors.toCollection(HashSet::new));
+			Set<Integer> visibleClueIds = getFilteredClues().stream()
+				.map(Clues::getClueID)
+				.collect(Collectors.toSet());
 
-			// Using in-place removeIf causes gson parse errors to not be caught correctly???
-			List<ClueIdToDetails> visibleImportClueDetails = importClueDetails.stream()
-					.filter(ip -> visibleClueIds.contains(ip.getId()))
-					.collect(Collectors.toList());
+			importClueDetails = importClueDetails.stream()
+				.filter(detail -> visibleClueIds.contains(detail.getId()))
+				.collect(Collectors.toList());
 
-			if (visibleImportClueDetails.isEmpty())
+			if (importClueDetails.isEmpty())
 			{
-				sendChatMessage("You do not have any clue detail(s) copied to your clipboard that match your filtered clues.");
+				reportImportError("You do not have any clue detail(s) copied to your clipboard that match your filtered clues.");
 				return;
 			}
+		}
 
-			int confirm = showImportConfirmDialog(visibleImportClueDetails.size());
+		if (showImportConfirmDialog(importClueDetails.size()) == JOptionPane.YES_OPTION)
+		{
+			importClueDetails(importClueDetails);
+		}
+	}
 
-			if (confirm == 0)
-			{
-				importClueDetails(visibleImportClueDetails);
-			}
+	static List<ClueIdToDetails> parseClueDetails(Gson gson, String json)
+	{
+		JsonElement element = new JsonParser().parse(json);
+		List<ClueIdToDetails> details;
+		if (element.isJsonArray())
+		{
+			details = gson.fromJson(element, new TypeToken<List<ClueIdToDetails>>(){}.getType());
+		}
+		else if (element.isJsonObject())
+		{
+			details = new ArrayList<>();
+			details.add(gson.fromJson(element, ClueIdToDetails.class));
 		}
 		else
 		{
-			int confirm = showImportConfirmDialog(importClueDetails.size());
-
-			if (confirm == 0)
-			{
-				importClueDetails(importClueDetails);
-			}
+			throw new JsonSyntaxException("Expected a clue detail object or array");
 		}
+		// Validate the whole input before filtering or making any configuration changes.
+		if (details.stream().anyMatch(detail -> detail == null))
+		{
+			throw new JsonSyntaxException("Clue details cannot contain null entries");
+		}
+		return details;
+	}
+
+	private void reportImportError(String message)
+	{
+		if (plugin.getPanel() != null)
+		{
+			plugin.getPanel().updateStatusTemporarily(message, 5000);
+		}
+		sendChatMessage(message);
 	}
 
 	private void importClueDetails(Collection<ClueIdToDetails> importPoints)
@@ -462,14 +491,13 @@ public class ClueDetailsSharingManager
 
 	private List<Clues> getFilteredClues()
 	{
-		if (plugin.getPanel() != null && plugin.getPanel().isVisible())
+		if (plugin.getPanel() != null)
 		{
 			return plugin.getPanel().getVisibleClues();
-		} else {
-			return Clues.CLUES.stream()
-					.filter(config.filterListByTier())
-					.filter(config.filterListByRegion())
-					.collect(Collectors.toList());
 		}
+		return Clues.CLUES.stream()
+			.filter(config.filterListByTier())
+			.filter(config.filterListByRegion())
+			.collect(Collectors.toList());
 	}
 }

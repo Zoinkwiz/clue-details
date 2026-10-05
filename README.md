@@ -100,6 +100,8 @@ You can edit the clue details items for each clue, this can be done 3 different 
 
 You can share your edited clue detail text, colors, and items, or import from someone else via the import and export buttons at the top of the sidebar.
 
+Export and reset apply to the clues currently listed in the sidebar, including the search, tier, region, and marked-clue filters. Left-click import to import all details from the clipboard, or right-click it to import only details matching the currently filtered clues. Imports accept either a single clue detail object or an array; exporting one customised clue produces a single object.
+
 ![java_WJJq9uFwNH](https://github.com/user-attachments/assets/504a4bb8-a0dc-429d-be3d-1684e663a264)
 
 You can find custom clue details examples at https://thelope.github.io/clue-tags/details/.
