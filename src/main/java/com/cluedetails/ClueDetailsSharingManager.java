@@ -28,11 +28,11 @@ import static com.cluedetails.ClueDetailsConfig.CLUE_ITEMS_CONFIG;
 import static com.cluedetails.ClueDetailsConfig.CLUE_WIDGETS_CONFIG;
 
 import com.google.common.base.Strings;
-import com.google.common.util.concurrent.Runnables;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import java.awt.Color;
@@ -46,13 +46,16 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.inventorytags.InventoryTagsConfig;
 
@@ -61,90 +64,152 @@ public class ClueDetailsSharingManager
 {
 	private final ClueDetailsPlugin plugin;
 	private final ClueDetailsConfig config;
-	private final ChatboxPanelManager chatboxPanelManager;
 	private final Gson gson;
 
 	private final ConfigManager configManager;
 
 	@Inject
-	private ClueDetailsSharingManager(ClueDetailsPlugin plugin, ClueDetailsConfig config, ChatboxPanelManager chatboxPanelManager,
-										Gson gson, ConfigManager configManager)
+	private ClueDetailsSharingManager(ClueDetailsPlugin plugin, ClueDetailsConfig config, Gson gson, ConfigManager configManager)
 	{
 		this.plugin = plugin;
 		this.config = config;
-		this.chatboxPanelManager = chatboxPanelManager;
 		this.gson = gson;
 		this.configManager = configManager;
 	}
 
 	public void resetClueDetails(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
-		List<Clues> filteredClues = Clues.CLUES.stream()
-			.filter(config.filterListByTier())
-			.filter(config.filterListByRegion())
-			.collect(Collectors.toList());
-
-		for (Clues clue : filteredClues)
+		if (!SwingUtilities.isEventDispatchThread())
 		{
-			int id = clue.getClueID();
-			if (resetText) configManager.unsetConfiguration("clue-details-text", String.valueOf(id));
-			if (resetColors) configManager.unsetConfiguration("clue-details-color", String.valueOf(id));
-			if (resetItems) configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
-			if (resetWidgets) configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id));
+			SwingUtilities.invokeLater(() -> resetClueDetails(resetText, resetColors, resetItems, resetWidgets));
+			return;
 		}
+		// Capture the selected rows before the worker starts or the user changes filters.
+		final List<Clues> filteredClues = getFilteredClues();
+		SwingWorker<Integer, String> worker = new SwingWorker<>()
+		{
+			@Override
+			protected Integer doInBackground() throws Exception
+			{
+				int counter = 0;
+
+				for (Clues clue : filteredClues)
+				{
+					// Adds the data to the chunk which was processed
+					publish("Resetting clue details... (" + ++counter + "/" + filteredClues.size() + ")");
+					int id = clue.getClueID();
+					if (resetText) configManager.unsetConfiguration("clue-details-text", String.valueOf(id));
+					if (resetColors) configManager.unsetConfiguration("clue-details-color", String.valueOf(id));
+					if (resetItems) configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
+					if (resetWidgets) configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id));
+				}
+				return filteredClues.size();
+			}
+
+			@Override
+			protected void process(List<String> chunks)
+			{
+				if (plugin.getPanel() != null && plugin.getPanel().isVisible())
+				{
+					// Work is now in chunks, so grab the last processed value from the chunk
+					plugin.getPanel().updateStatus(chunks.get(chunks.size() - 1));
+				}
+			}
+
+			@Override
+			protected void done()
+			{
+				try
+				{
+					plugin.getPanel().updateStatusTemporarily(get() + " clue details were reset.", 5000);
+					sendChatMessage(get() + " clue details were reset.");
+				}
+				catch (Exception exception)
+				{
+					log.error("Error resetting clue details", exception);
+				}
+			}
+		};
+		worker.execute();
 	}
 
 	public void exportClueDetails(boolean exportText, boolean exportColors, boolean exportItems, boolean exportWidgets)
 	{
-		List<ClueIdToDetails> clueIdToDetailsList = new ArrayList<>();
-
-		List<Clues> filteredClues = Clues.CLUES.stream()
-			.filter(config.filterListByTier())
-			.filter(config.filterListByRegion())
-			.collect(Collectors.toList());
-
-		for (Clues clue : filteredClues)
+		if (!SwingUtilities.isEventDispatchThread())
 		{
-			int id = clue.getClueID();
-			String clueText = exportText ? configManager.getConfiguration("clue-details-text", String.valueOf(id)) : null;
-			String clueColor = exportColors ? configManager.getConfiguration("clue-details-color", String.valueOf(id)) : null;
-			String clueItems = exportItems ? configManager.getConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id)) : null;
-			String clueWidgets = exportWidgets ? configManager.getConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id)) : null;
-
-			// Try to export text, color, and items. Export where valid configurations are returned
-			List<Integer> loadedClueItemsData = clueItems != null
-					? gson.fromJson(clueItems, new TypeToken<List<Integer>>(){}.getType())
-					: null;
-
-			List<WidgetId> loadedClueWidgetsData = clueWidgets != null
-					? gson.fromJson(clueWidgets, new TypeToken<List<WidgetId>>(){}.getType())
-					: null;
-
-			Color exportedColor = clueColor != null ? Color.decode(clueColor) : null;
-
-			ClueIdToDetails clueDetails = new ClueIdToDetails(id, clueText, exportedColor, loadedClueItemsData, loadedClueWidgetsData);
-			if (clueText != null || exportedColor != null || loadedClueItemsData != null || loadedClueWidgetsData != null)
-			{
-				clueIdToDetailsList.add(clueDetails);
-			}
-		}
-
-		if (clueIdToDetailsList.isEmpty())
-		{
-			sendChatMessage("You have no updated clue details to export.");
+			SwingUtilities.invokeLater(() -> exportClueDetails(exportText, exportColors, exportItems, exportWidgets));
 			return;
 		}
+		final List<Clues> filteredClues = getFilteredClues();
+		SwingWorker<List<ClueIdToDetails>, String> worker = new SwingWorker<>()
+		{
+			@Override
+			protected List<ClueIdToDetails> doInBackground() throws Exception
+			{
+				List<ClueIdToDetails> clueIdToDetailsList = new ArrayList<>();
 
-		final String exportDump = gson.toJson(clueIdToDetailsList);
+				int counter = 0;
 
-		final String sortedExportDump = sortJsonArrayById(gson, exportDump);
+				for (Clues clue : filteredClues)
+				{
+					publish("Exporting clue details... (" + ++counter + "/" + filteredClues.size() + ")");
+					int id = clue.getClueID();
 
-		log.debug("Exported clue details: {}", sortedExportDump);
+					ClueIdToDetails clueDetails = ClueIdToDetails.generateDetail(id, configManager, gson, exportText, exportColors, exportItems, exportWidgets);
+					if (clueDetails.getText() != null || clueDetails.getColor() != null || clueDetails.getItemIds() != null || clueDetails.getWidgetIds() != null)
+					{
+						clueIdToDetailsList.add(clueDetails);
+					}
+				}
 
-		Toolkit.getDefaultToolkit()
-			.getSystemClipboard()
-			.setContents(new StringSelection(sortedExportDump), null);
-		sendChatMessage(clueIdToDetailsList.size() + " clue details were copied to your clipboard.");
+				if (clueIdToDetailsList.isEmpty())
+				{
+					publish("You have no updated clue details to export.");
+					return clueIdToDetailsList;
+				}
+				return clueIdToDetailsList;
+			}
+
+			@Override
+			protected void process(List<String> chunks)
+			{
+				if (plugin.getPanel() != null && plugin.getPanel().isVisible())
+				{
+					plugin.getPanel().updateStatus(chunks.get(chunks.size() - 1));
+				}
+			}
+
+			@Override
+			protected void done()
+			{
+				try
+				{
+					List<ClueIdToDetails> details = get();
+					if (details.isEmpty())
+					{
+						plugin.getPanel().updateStatusTemporarily("No clue details to export.", 5000);
+						sendChatMessage("You have no updated clue details to export.");
+						return;
+					}
+
+					final String exportDump = details.size() == 1
+						? gson.toJson(details.get(0)) : sortJsonArrayById(gson, gson.toJson(details));
+
+					log.debug("Exported clue details: {}", exportDump);
+
+					Toolkit.getDefaultToolkit()
+						.getSystemClipboard()
+						.setContents(new StringSelection(exportDump), null);
+					plugin.getPanel().updateStatusTemporarily(details.size() + " clue details were copied.", 5000);
+					sendChatMessage(details.size() + " clue details were copied to your clipboard.");
+				}
+				catch (Exception exception)
+				{
+					log.error("Error exporting clue details", exception);
+				}
+			}
+		};
+		worker.execute();
 	}
 
 	public static String sortJsonArrayById(Gson gson, String jsonString)
@@ -182,8 +247,25 @@ public class ClueDetailsSharingManager
 		}
 	}
 
-	public void promptForImport()
+	private int showImportConfirmDialog(int amount)
 	{
+		String message = "Are you sure you want to import " + amount + " clue detail(s)?";
+
+		return JOptionPane.showConfirmDialog(
+				plugin.getPanel(),
+				message,
+				"Warning",
+				JOptionPane.YES_NO_OPTION
+		);
+	}
+
+	public void promptForImport(boolean filtered)
+	{
+		if (!SwingUtilities.isEventDispatchThread())
+		{
+			SwingUtilities.invokeLater(() -> promptForImport(filtered));
+			return;
+		}
 		final String clipboardText;
 		try
 		{
@@ -192,9 +274,9 @@ public class ClueDetailsSharingManager
 				.getData(DataFlavor.stringFlavor)
 				.toString();
 		}
-		catch (IOException | UnsupportedFlavorException ex)
+		catch (IOException | UnsupportedFlavorException | IllegalStateException ex)
 		{
-			sendChatMessage("Unable to read system clipboard.");
+			reportImportError("Unable to read system clipboard.");
 			log.warn("error reading clipboard", ex);
 			return;
 		}
@@ -202,120 +284,201 @@ public class ClueDetailsSharingManager
 		log.debug("Clipboard contents: {}", clipboardText);
 		if (Strings.isNullOrEmpty(clipboardText))
 		{
-			sendChatMessage("You do not have any clue details copied in your clipboard.");
+			reportImportError("You do not have any clue details copied in your clipboard.");
 			return;
 		}
 
 		List<ClueIdToDetails> importClueDetails;
 		try
 		{
-			// CHECKSTYLE:OFF
-			importClueDetails = gson.fromJson(clipboardText, new TypeToken<List<ClueIdToDetails>>(){}.getType());
-			// CHECKSTYLE:ON
+			importClueDetails = parseClueDetails(gson, clipboardText);
 		}
 		catch (JsonSyntaxException e)
 		{
 			log.debug("Malformed JSON for clipboard import", e);
-			sendChatMessage("You do not have any clue details copied in your clipboard.");
+			reportImportError("Your clue detail(s) are improperly formatted.");
 			return;
 		}
 		catch (NumberFormatException e)
 		{
 			log.debug("Malformed JSON for clipboard import", e);
-			sendChatMessage("Your clue details color is not properly formatted.");
+			reportImportError("Your clue detail(s) color is not properly formatted.");
 			return;
 		}
 
 		if (importClueDetails.isEmpty())
 		{
-			sendChatMessage("You do not have any clue details copied in your clipboard.");
+			reportImportError("You do not have any clue detail(s) copied in your clipboard.");
 			return;
 		}
 
-		chatboxPanelManager.openTextMenuInput("Are you sure you want to import " + importClueDetails.size() + " clue details?")
-			.option("Yes", () -> importClueDetails(importClueDetails))
-			.option("No", Runnables.doNothing())
-			.build();
+		if (filtered)
+		{
+			Set<Integer> visibleClueIds = getFilteredClues().stream()
+				.map(Clues::getClueID)
+				.collect(Collectors.toSet());
+
+			importClueDetails = importClueDetails.stream()
+				.filter(detail -> visibleClueIds.contains(detail.getId()))
+				.collect(Collectors.toList());
+
+			if (importClueDetails.isEmpty())
+			{
+				reportImportError("You do not have any clue detail(s) copied to your clipboard that match your filtered clues.");
+				return;
+			}
+		}
+
+		if (showImportConfirmDialog(importClueDetails.size()) == JOptionPane.YES_OPTION)
+		{
+			importClueDetails(importClueDetails);
+		}
+	}
+
+	static List<ClueIdToDetails> parseClueDetails(Gson gson, String json)
+	{
+		JsonElement element = new JsonParser().parse(json);
+		List<ClueIdToDetails> details;
+		if (element.isJsonArray())
+		{
+			details = gson.fromJson(element, new TypeToken<List<ClueIdToDetails>>(){}.getType());
+		}
+		else if (element.isJsonObject())
+		{
+			details = new ArrayList<>();
+			details.add(gson.fromJson(element, ClueIdToDetails.class));
+		}
+		else
+		{
+			throw new JsonSyntaxException("Expected a clue detail object or array");
+		}
+		// Validate the whole input before filtering or making any configuration changes.
+		if (details.stream().anyMatch(detail -> detail == null))
+		{
+			throw new JsonSyntaxException("Clue details cannot contain null entries");
+		}
+		return details;
+	}
+
+	private void reportImportError(String message)
+	{
+		if (plugin.getPanel() != null)
+		{
+			plugin.getPanel().updateStatusTemporarily(message, 5000);
+		}
+		sendChatMessage(message);
 	}
 
 	private void importClueDetails(Collection<ClueIdToDetails> importPoints)
 	{
-		for (ClueIdToDetails importPoint : importPoints)
+		SwingWorker<Integer, String> worker = new SwingWorker<>()
 		{
-			if (importPoint.text != null)
+			@Override
+			protected Integer doInBackground() throws Exception
 			{
-				configManager.setConfiguration("clue-details-text", String.valueOf(importPoint.id), importPoint.text);
-			}
-			if (importPoint.color != null)
-			{
-				// Default color is white, so white is used to unset configurations
-				if (ClueIdToDetails.equalRGB(importPoint.color, Color.WHITE))
+				int counter = 0;
+				for (ClueIdToDetails importPoint : importPoints)
 				{
-					configManager.unsetConfiguration("clue-details-color", String.valueOf(importPoint.id));
-
-					// Reset Ground Items and Inventory Tags
-					// Beginner & master clues are not supported by these plugins
-					if (importPoint.id >= 2677)
+					publish("Importing clue details... (" + ++counter + "/" + importPoints.size() + ")");
+					if (importPoint.text != null)
 					{
-						if (config.colorGroundItems())
+						configManager.setConfiguration("clue-details-text", String.valueOf(importPoint.id), importPoint.text);
+					}
+					if (importPoint.color != null)
+					{
+						// Default color is white, so white is used to unset configurations
+						if (ClueIdToDetails.equalRGB(importPoint.color, Color.WHITE))
 						{
-							configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id);
+							configManager.unsetConfiguration("clue-details-color", String.valueOf(importPoint.id));
+
+							// Reset Ground Items and Inventory Tags
+							// Beginner & master clues are not supported by these plugins
+							if (importPoint.id >= 2677)
+							{
+								if (config.colorGroundItems())
+								{
+									configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id);
+								}
+								if (config.colorInventoryTags())
+								{
+									configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id);
+								}
+							}
 						}
-						if (config.colorInventoryTags())
+						else
 						{
-							configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id);
+							configManager.setConfiguration("clue-details-color", String.valueOf(importPoint.id), importPoint.color);
+
+							// Apply color to Ground Items and Inventory Tags
+							// Beginner & master clues are not supported by these plugins
+							if (importPoint.id >= 2677)
+							{
+								// Ensure ARGB format
+								Color color = Color.decode(configManager.getConfiguration("clue-details-color", String.valueOf(importPoint.id)));
+
+								if (config.colorGroundItems())
+								{
+									configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id, color);
+								}
+								if (config.colorInventoryTags())
+								{
+									configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id,
+										gson.toJson(Map.of("color", color)));
+								}
+							}
+						}
+					}
+					if (importPoint.itemIds != null)
+					{
+						if (importPoint.itemIds.isEmpty())
+						{
+							configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(importPoint.id));
+						}
+						else
+						{
+							configManager.setConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(importPoint.id), importPoint.itemIds);
+						}
+					}
+					if (importPoint.widgetIds != null)
+					{
+						if (importPoint.widgetIds.isEmpty())
+						{
+							configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(importPoint.id));
+						}
+						else
+						{
+							configManager.setConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(importPoint.id), gson.toJson(importPoint.widgetIds));
 						}
 					}
 				}
-				else
-				{
-					configManager.setConfiguration("clue-details-color", String.valueOf(importPoint.id), importPoint.color);
-
-					// Apply color to Ground Items and Inventory Tags
-					// Beginner & master clues are not supported by these plugins
-					if (importPoint.id >= 2677)
-					{
-						// Ensure ARGB format
-						Color color = Color.decode(configManager.getConfiguration("clue-details-color", String.valueOf(importPoint.id)));
-
-						if (config.colorGroundItems())
-						{
-							configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id, color);
-						}
-						if (config.colorInventoryTags())
-						{
-							configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id,
-								gson.toJson(Map.of("color", color)));
-						}
-					}
-				}
+				return importPoints.size();
 			}
-			if (importPoint.itemIds != null)
+
+			@Override
+			protected void process(List<String> chunks)
 			{
-				if (importPoint.itemIds.isEmpty())
+				if (plugin.getPanel() != null && plugin.getPanel().isVisible())
 				{
-					configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(importPoint.id));
-				}
-				else
-				{
-					configManager.setConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(importPoint.id), importPoint.itemIds);
+					plugin.getPanel().updateStatus(chunks.get(chunks.size() - 1));
 				}
 			}
-			if (importPoint.widgetIds != null)
-			{
-				if (importPoint.widgetIds.isEmpty())
-				{
-					configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(importPoint.id));
-				}
-				else
-				{
-					configManager.setConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(importPoint.id), gson.toJson(importPoint.widgetIds));
-				}
-			}
-		}
 
-		sendChatMessage(importPoints.size() + " clue details were imported from the clipboard.");
-		plugin.getPanel().refresh();
+			@Override
+			protected void done()
+			{
+				try
+				{
+					plugin.getPanel().updateStatusTemporarily(get() + " clue details were imported.", 5000);
+					sendChatMessage(get() + " clue details were imported from the clipboard.");
+					plugin.getPanel().refresh();
+				}
+				catch (Exception error)
+				{
+					log.error("Error importing clue details", error);
+				}
+			}
+		};
+		worker.execute();
 	}
 
 	private void sendChatMessage(final String message)
@@ -324,5 +487,17 @@ public class ClueDetailsSharingManager
 			.type(ChatMessageType.CONSOLE)
 			.runeLiteFormattedMessage(message)
 			.build());
+	}
+
+	private List<Clues> getFilteredClues()
+	{
+		if (plugin.getPanel() != null)
+		{
+			return plugin.getPanel().getVisibleClues();
+		}
+		return Clues.CLUES.stream()
+			.filter(config.filterListByTier())
+			.filter(config.filterListByRegion())
+			.collect(Collectors.toList());
 	}
 }

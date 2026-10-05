@@ -740,16 +740,17 @@ public class Clues
 				new WorldPoint(2851, 9849, 0), // Taverley dungeon
 				new WorldPoint(3439, 10082, 0), // Wildy slayer dungeon
 				new WorldPoint(1639, 10060, 0), // Kourend Catacombs
-				new WorldPoint(1200, 10263, 1) // Karuulm Slayer Dungeon
+				new WorldPoint(1340, 10202, 2) // Karuulm Slayer Dungeon
 			)
 		),
 		new Clues("Ankou: Kill", ItemID.CLUE_SCROLL_ELITE_19805, ClueTier.ELITE, null, List.of(
 				new WorldPoint(2960, 3744, 0),
-				new WorldPoint(1963, 4951, 0),
-				new WorldPoint(2003, 4953, 0),
+				new WorldPoint(2315, 5229, 0), // Stronghold of Security
+				new WorldPoint(2355, 5241, 0), // Stronghold of Security
 				new WorldPoint(2468, 9802, 0),
 				new WorldPoint(3348, 10075, 0),
-				new WorldPoint(1637, 9991, 0)
+				new WorldPoint(1637, 9991, 0),
+				new WorldPoint(2051, 9181, 0) // Deepfin mine
 			)
 		),
 		new Clues("Crocodile: Kill", ItemID.CLUE_SCROLL_ELITE_19804, ClueTier.ELITE, null, List.of(
@@ -801,7 +802,7 @@ public class Clues
 			new WorldPoint(3409, 3571, 0),
 			new WorldPoint(3403, 9934, 0),
 			new WorldPoint(2434, 9817, 0),
-			new WorldPoint(2950, 10085, 0)
+			new WorldPoint(3048, 10085, 0) // Wildy GWD
 		)),
 		new Clues("Aberrant spectre: Kill", ItemID.CLUE_SCROLL_ELITE_19802, ClueTier.ELITE, null, List.of(
 			new WorldPoint(3413, 3550, 0),

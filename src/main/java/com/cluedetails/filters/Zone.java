@@ -40,7 +40,7 @@ public class Zone
 	@Getter
 	private final int maxY;
 	private int minPlane = 0;
-	private int maxPlane = 2;
+	private int maxPlane = 3;
 
 	//The first plane of the "Overworld"
 	public Zone()

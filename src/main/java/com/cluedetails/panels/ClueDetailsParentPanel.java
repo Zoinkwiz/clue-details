@@ -28,6 +28,7 @@ import com.cluedetails.*;
 import com.cluedetails.ClueDetailsConfig.*;
 
 import static com.cluedetails.ClueDetailsConfig.GROUP;
+import com.google.gson.Gson;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -35,6 +36,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -85,6 +88,8 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private ConfigManager configManager;
 
+	private Gson gson;
+
 	private ChatboxPanelManager chatboxPanelManager;
 
 	private CluePreferenceManager cluePreferenceManager;
@@ -122,12 +127,16 @@ public class ClueDetailsParentPanel extends PluginPanel
 		PASTE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(pasteIcon, 0.53f));
 	}
 
-	public ClueDetailsParentPanel(ConfigManager configManager, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
+	private final JLabel statusLabel;
+	private Timer statusLabelTimer;
+
+	public ClueDetailsParentPanel(ConfigManager configManager, Gson gson, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
 									ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager, ClueDetailsPlugin plugin)
 	{
 		super(false);
 
 		this.configManager = configManager;
+		this.gson = gson;
 		this.cluePreferenceManager = cluePreferenceManager;
 		this.config = config;
 		this.chatboxPanelManager = chatboxPanelManager;
@@ -143,6 +152,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JPanel titlePanel = setupTitlePanel();
 
 		titlePanel.add(setupImportExportButtons(), BorderLayout.EAST);
+
+		statusLabel = new JLabel("", SwingConstants.CENTER);
+		statusLabel.setVisible(false);
+		statusLabel.setOpaque(false);
+		statusLabel.setFocusable(false);
+		statusLabel.setBackground(null);
+		statusLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+		titlePanel.add(statusLabel, BorderLayout.SOUTH);
 
 		setupSearchBar();
 
@@ -368,13 +385,23 @@ public class ClueDetailsParentPanel extends PluginPanel
 		});
 		popupMenu.add(inputItems);
 
+		JMenuItem copyClueDetail = new JMenuItem("Export detail to clipboard");
+		copyClueDetail.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			ClueIdToDetails clueDetail = ClueIdToDetails.generateDetail(item.getClue().getClueID(), configManager, gson);
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(gson.toJson(clueDetail)), null);
+			sendChatMessage("The clue detail was copied to your clipboard.");
+		});
+		popupMenu.add(copyClueDetail);
+
 		return popupMenu;
 	}
 
 	private void openResetPopup(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
 		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
-			"Are you sure you want to reset your customised details?",
+			"Are you sure you want to reset your currently filtered customised details?",
 			"Warning", JOptionPane.OK_CANCEL_OPTION);
 
 		if (confirm == 0)
@@ -487,13 +514,18 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		});
 
-		pasteMarkers.setToolTipText("Import details from your clipboard");
+		pasteMarkers.setToolTipText("Import all details from your clipboard");
+		JPopupMenu importPopupMenu = getImportPopupMenu();
+		pasteMarkers.setComponentPopupMenu(importPopupMenu);
 		pasteMarkers.addMouseListener(new MouseAdapter()
 		{
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
-				clueDetailsSharingManager.promptForImport();
+				if (SwingUtilities.isLeftMouseButton(e))
+				{
+					clueDetailsSharingManager.promptForImport(false);
+				}
 			}
 
 			@Override
@@ -597,6 +629,19 @@ public class ClueDetailsParentPanel extends PluginPanel
 			-> clueDetailsSharingManager.exportClueDetails(false, false, false, true)
 		);
 		popupMenu.add(inputItemExportWidgets);
+
+		return popupMenu;
+	}
+
+	private JPopupMenu getImportPopupMenu()
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+
+		JMenuItem importFiltered = new JMenuItem("Import details for currently filtered clues from your clipboard");
+		importFiltered.addActionListener(event ->
+			clueDetailsSharingManager.promptForImport(true)
+		);
+		popupMenu.add(importFiltered);
 
 		return popupMenu;
 	}
@@ -745,10 +790,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private void updateClueList(List<ListItem> items)
 	{
-		SwingUtilities.invokeLater(() ->
+		if (SwingUtilities.isEventDispatchThread())
 		{
 			clueTableModel.setItems(items);
-		});
+		}
+		else
+		{
+			SwingUtilities.invokeLater(() -> clueTableModel.setItems(items));
+		}
 	}
 
 	public boolean filterUnmarkedClues(Clues clue)
@@ -780,5 +829,46 @@ public class ClueDetailsParentPanel extends PluginPanel
 			.type(ChatMessageType.CONSOLE)
 			.runeLiteFormattedMessage(message)
 			.build());
+	}
+
+	public void updateStatus(String newStatusText) {
+		SwingUtilities.invokeLater(() -> {
+			if (statusLabelTimer != null && statusLabelTimer.isRunning()) {
+				statusLabelTimer.stop();
+			}
+			statusLabel.setText(newStatusText);
+			statusLabel.setVisible(true);
+			revalidate();
+			repaint();
+		});
+	}
+
+	public void updateStatusTemporarily(String newStatusText, int durationMS) {
+		SwingUtilities.invokeLater(() -> {
+			if (statusLabelTimer != null && statusLabelTimer.isRunning()) {
+				statusLabelTimer.stop();
+			}
+			statusLabel.setText(newStatusText);
+			statusLabel.setVisible(true);
+			revalidate();
+			repaint();
+
+			statusLabelTimer = new Timer(durationMS, actionEvent -> {
+				statusLabel.setVisible(false);
+				revalidate();
+				repaint();
+			});
+			statusLabelTimer.setRepeats(false);
+			statusLabelTimer.start();
+		});
+	}
+
+	public List<Clues> getVisibleClues()
+	{
+		return clueTableModel.getItems().stream()
+			.filter(item -> !item.isHeader())
+			.map(ListItem::getClue)
+			.distinct()
+			.collect(Collectors.toList());
 	}
 }

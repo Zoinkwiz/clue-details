@@ -35,6 +35,7 @@ import net.runelite.api.events.ItemDespawned;
 import net.runelite.api.events.ItemSpawned;
 
 import java.util.*;
+import java.util.function.Function;
 import net.runelite.api.gameval.ItemID;
 
 @Singleton
@@ -445,8 +446,8 @@ public class ClueGroundManager
 		public int compare(ClueInstance o1, ClueInstance o2)
 		{
 			return Comparator
-				.comparingLong(ClueInstance::getSequenceNumber)
-				.thenComparingInt(ClueInstance::getDespawnTick)
+				.comparingInt(ClueInstance::getDespawnTick)
+				.thenComparingLong(ClueInstance::getSequenceNumber)
 				.compare(o1, o2);
 		}
 	}
@@ -495,12 +496,8 @@ public class ClueGroundManager
 				|| item.getDespawnTick() < lowestValueItems.get(clueIds).getDespawnTick())
 			{
 				lowestValueItems.put(clueIds, item);
-				uniqueCount.put(clueIds, 1);
 			}
-			else
-			{
-				uniqueCount.put(clueIds, uniqueCount.get(clueIds) + 1);
-			}
+			uniqueCount.merge(clueIds, 1, Integer::sum);
 		}
 
 		return lowestValueItems.values().stream()
@@ -521,16 +518,51 @@ public class ClueGroundManager
 				|| item.getDespawnTick() < lowestValueItems.get(tier).getDespawnTick())
 			{
 				lowestValueItems.put(tier, item);
-				uniqueCount.put(tier, 1);
 			}
-			else
-			{
-				uniqueCount.put(tier, uniqueCount.get(tier) + 1);
-			}
+			uniqueCount.merge(tier, 1, Integer::sum);
 		}
 
 		return lowestValueItems.values().stream()
 			.collect(Collectors.toMap(item -> item, item ->	uniqueCount.get(item.getTier())));
+	}
+
+	// When combining timers across tiles, apply collapse settings
+	public static Map<ClueInstance, Integer> mergeQuantitiesAcrossTiles(Map<ClueInstance, Integer> items, ClueDetailsConfig config)
+	{
+		if (config.collapseGroundCluesByTier())
+		{
+			return mergeQuantitiesByKey(items, ClueInstance::getTier);
+		}
+		if (config.collapseGroundClues())
+		{
+			return mergeQuantitiesByKey(items, ClueInstance::getUniqueIds);
+		}
+		return items;
+	}
+
+	private static <K> Map<ClueInstance, Integer> mergeQuantitiesByKey(Map<ClueInstance, Integer> items, Function<ClueInstance, K> keyFn)
+	{
+		Map<K, ClueInstance> oldestByKey = new HashMap<>();
+		Map<K, Integer> totalByKey = new HashMap<>();
+
+		for (Map.Entry<ClueInstance, Integer> entry : items.entrySet())
+		{
+			ClueInstance clue = entry.getKey();
+			K key = keyFn.apply(clue);
+
+			if (!oldestByKey.containsKey(key) || clue.getDespawnTick() < oldestByKey.get(key).getDespawnTick())
+			{
+				oldestByKey.put(key, clue);
+			}
+			totalByKey.merge(key, entry.getValue(), Integer::sum);
+		}
+
+		Map<ClueInstance, Integer> merged = new HashMap<>();
+		for (Map.Entry<K, ClueInstance> entry : oldestByKey.entrySet())
+		{
+			merged.put(entry.getValue(), totalByKey.get(entry.getKey()));
+		}
+		return merged;
 	}
 
 	public void clearBeginnerAndMasterCluesAtWorldPoint(WorldPoint wp)

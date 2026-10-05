@@ -24,9 +24,14 @@
  */
 package com.cluedetails;
 
+import static com.cluedetails.ClueDetailsConfig.CLUE_ITEMS_CONFIG;
+import static com.cluedetails.ClueDetailsConfig.CLUE_WIDGETS_CONFIG;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.awt.Color;
 import java.util.List;
 import lombok.Data;
+import net.runelite.client.config.ConfigManager;
 
 @Data
 public class ClueIdToDetails
@@ -44,6 +49,29 @@ public class ClueIdToDetails
 		this.color = color;
 		this.itemIds = itemIds;
 		this.widgetIds = widgetIds;
+	}
+
+	public static ClueIdToDetails generateDetail(int clueID, ConfigManager configManager, Gson gson, boolean exportText, boolean exportColors, boolean exportItems, boolean exportWidgets) {
+		String clueText = exportText ? configManager.getConfiguration("clue-details-text", String.valueOf(clueID)) : null;
+		String clueColor = exportColors ? configManager.getConfiguration("clue-details-color", String.valueOf(clueID)) : null;
+		String clueItems = exportItems ? configManager.getConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(clueID)) : null;
+		String clueWidgets = exportWidgets ? configManager.getConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(clueID)) : null;
+
+		// Try to export text, color, and items. Export where valid configurations are returned
+		List<Integer> loadedClueItemsData = clueItems != null
+			? gson.fromJson(clueItems, new TypeToken<List<Integer>>(){}.getType())
+			: null;
+
+		List<WidgetId> loadedClueWidgetsData = clueWidgets != null
+			? gson.fromJson(clueWidgets, new TypeToken<List<WidgetId>>(){}.getType())
+			: null;
+
+		Color exportedColor = clueColor != null ? Color.decode(clueColor) : null;
+		return new ClueIdToDetails(clueID, clueText, exportedColor, loadedClueItemsData, loadedClueWidgetsData);
+	}
+
+	public static ClueIdToDetails generateDetail(int clueID, ConfigManager configManager, Gson gson) {
+		return generateDetail(clueID, configManager, gson, true, true, true, true);
 	}
 
 	public static boolean equalRGB(Color color1, Color color2)
