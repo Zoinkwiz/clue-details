@@ -401,7 +401,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private void openResetPopup(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
 		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
-			"Are you sure you want to reset your customised details?",
+			"Are you sure you want to reset your currently filtered customised details?",
 			"Warning", JOptionPane.OK_CANCEL_OPTION);
 
 		if (confirm == 0)
@@ -514,13 +514,18 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		});
 
-		pasteMarkers.setToolTipText("Import details from your clipboard");
+		pasteMarkers.setToolTipText("Import all details from your clipboard");
+		JPopupMenu importPopupMenu = getImportPopupMenu();
+		pasteMarkers.setComponentPopupMenu(importPopupMenu);
 		pasteMarkers.addMouseListener(new MouseAdapter()
 		{
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
-				clueDetailsSharingManager.promptForImport();
+				if (SwingUtilities.isLeftMouseButton(e))
+				{
+					clueDetailsSharingManager.promptForImport(false);
+				}
 			}
 
 			@Override
@@ -624,6 +629,19 @@ public class ClueDetailsParentPanel extends PluginPanel
 			-> clueDetailsSharingManager.exportClueDetails(false, false, false, true)
 		);
 		popupMenu.add(inputItemExportWidgets);
+
+		return popupMenu;
+	}
+
+	private JPopupMenu getImportPopupMenu()
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+
+		JMenuItem importFiltered = new JMenuItem("Import details for currently filtered clues from your clipboard");
+		importFiltered.addActionListener(event ->
+			clueDetailsSharingManager.promptForImport(true)
+		);
+		popupMenu.add(importFiltered);
 
 		return popupMenu;
 	}
@@ -772,10 +790,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private void updateClueList(List<ListItem> items)
 	{
-		SwingUtilities.invokeLater(() ->
+		if (SwingUtilities.isEventDispatchThread())
 		{
 			clueTableModel.setItems(items);
-		});
+		}
+		else
+		{
+			SwingUtilities.invokeLater(() -> clueTableModel.setItems(items));
+		}
 	}
 
 	public boolean filterUnmarkedClues(Clues clue)
@@ -839,5 +861,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 			statusLabelTimer.setRepeats(false);
 			statusLabelTimer.start();
 		});
+	}
+
+	public List<Clues> getVisibleClues()
+	{
+		return clueTableModel.getItems().stream()
+			.filter(item -> !item.isHeader())
+			.map(ListItem::getClue)
+			.distinct()
+			.collect(Collectors.toList());
 	}
 }
