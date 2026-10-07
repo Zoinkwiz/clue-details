@@ -60,7 +60,6 @@ import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
-import net.runelite.client.game.chatbox.ChatboxPanelManager;
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;
 import net.runelite.client.plugins.inventorytags.InventoryTagsConfig;
 import net.runelite.client.ui.ColorScheme;
@@ -90,9 +89,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private Gson gson;
 
-	private ChatboxPanelManager chatboxPanelManager;
-
-	private CluePreferenceManager cluePreferenceManager;
+    private CluePreferenceManager cluePreferenceManager;
 	private ClueDetailsSharingManager clueDetailsSharingManager;
 	private final ClueDetailsPlugin plugin;
 	private final ClueDetailsConfig config;
@@ -131,7 +128,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private Timer statusLabelTimer;
 
 	public ClueDetailsParentPanel(ConfigManager configManager, Gson gson, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
-									ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager, ClueDetailsPlugin plugin)
+								  ClueDetailsSharingManager clueDetailsSharingManager, ClueDetailsPlugin plugin)
 	{
 		super(false);
 
@@ -139,8 +136,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		this.gson = gson;
 		this.cluePreferenceManager = cluePreferenceManager;
 		this.config = config;
-		this.chatboxPanelManager = chatboxPanelManager;
-		this.clueDetailsSharingManager = clueDetailsSharingManager;
+        this.clueDetailsSharingManager = clueDetailsSharingManager;
 		this.plugin = plugin;
 
 		setBackground(ColorScheme.DARK_GRAY_COLOR);

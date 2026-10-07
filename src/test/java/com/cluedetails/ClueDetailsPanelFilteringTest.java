@@ -75,7 +75,7 @@ public class ClueDetailsPanelFilteringTest
 		SwingUtilities.invokeAndWait(() ->
 		{
 			result[0] = new ClueDetailsParentPanel(configManager, new Gson(), preferences, config,
-				null, mock(ClueDetailsSharingManager.class), mock(ClueDetailsPlugin.class));
+                    mock(ClueDetailsSharingManager.class), mock(ClueDetailsPlugin.class));
 			try
 			{
 				ClueTableModel model = (ClueTableModel) field(result[0], "clueTableModel");
