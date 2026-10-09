@@ -545,6 +545,8 @@ public class ClueDetailsParentPanel extends PluginPanel
 		});
 
 		editMarkers.setToolTipText("Edit currently filtered clues");
+		JPopupMenu editPopupMenu = getEditPopupMenu();
+		editMarkers.setComponentPopupMenu(editPopupMenu);
 		editMarkers.addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -662,6 +664,19 @@ public class ClueDetailsParentPanel extends PluginPanel
 			clueDetailsSharingManager.promptForImport(true)
 		);
 		popupMenu.add(importFiltered);
+
+		return popupMenu;
+	}
+
+	private JPopupMenu getEditPopupMenu()
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+
+		JMenuItem literalTextReplace = new JMenuItem("Replace text");
+		literalTextReplace.addActionListener(event ->
+			clueDetailsSharingManager.showLiteralReplacePopup()
+		);
+		popupMenu.add(literalTextReplace);
 
 		return popupMenu;
 	}

@@ -49,9 +49,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
+
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.client.chat.QueuedMessage;
@@ -499,5 +498,77 @@ public class ClueDetailsSharingManager
 			.filter(config.filterListByTier())
 			.filter(config.filterListByRegion())
 			.collect(Collectors.toList());
+	}
+
+	public void showLiteralReplacePopup()
+	{
+		JTextField findField = new JTextField();
+		JTextField replaceField = new JTextField();
+
+		Object[] message = {
+			"Replace:", findField,
+			"With:", replaceField
+		};
+
+		final JOptionPane optionPane = new JOptionPane(
+			message,
+			JOptionPane.PLAIN_MESSAGE,
+			JOptionPane.OK_CANCEL_OPTION
+		);
+
+		final JDialog dialog = new JDialog();
+		dialog.setLocationRelativeTo(plugin.getPanel());
+		dialog.setTitle("Replace");
+		dialog.setModal(true);
+		dialog.setContentPane(optionPane);
+		optionPane.addPropertyChangeListener(JOptionPane.VALUE_PROPERTY, e ->
+		{
+			if (dialog.isVisible() && (e.getSource() == optionPane))
+			{
+				log.debug(findField.getText());
+				int value = (Integer) optionPane.getValue();
+
+				switch (value)
+				{
+					case JOptionPane.ERROR:
+						return;
+					case JOptionPane.OK_OPTION:
+						if (findField.getText().isEmpty())
+						{
+							JOptionPane.showMessageDialog(
+								dialog,
+								"Text to replace cannot be blank",
+								"",
+								JOptionPane.WARNING_MESSAGE
+							);
+							optionPane.setValue(JOptionPane.ERROR);
+							return;
+						}
+					default:
+						dialog.setVisible(false);
+				}
+			}
+		});
+		dialog.pack();
+		dialog.setVisible(true);
+
+		int confirm = (Integer) optionPane.getValue();
+
+		if (confirm == JOptionPane.OK_OPTION)
+		{
+			String findText = findField.getText();
+			String replaceText = replaceField.getText();
+			for (Clues clue : getFilteredClues())
+			{
+				String originalDetail = clue.getDetail(configManager);
+				if (originalDetail.contains(findText))
+				{
+					String newDetail = originalDetail.replace(findText, replaceText);
+					configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
+				}
+			}
+		}
+
+		plugin.getPanel().refresh();
 	}
 }
