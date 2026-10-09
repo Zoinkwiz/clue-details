@@ -305,21 +305,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 				// Default color is white, so white is used to unset configurations
 				if (ClueIdToDetails.equalRGB(c, Color.WHITE))
 				{
-					configManager.unsetConfiguration("clue-details-color", String.valueOf(clueClueID));
-
-					// Reset Ground Items and Inventory Tags
-					// Beginner & master clues are not supported by these plugins
-					if (clueClueID >= 2677)
-					{
-						if (config.colorGroundItems())
-						{
-							configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueClueID);
-						}
-						if (config.colorInventoryTags())
-						{
-							configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueClueID);
-						}
-					}
+					clueDetailsSharingManager.resetClueDetail(clueClueID, false, true, false, false);
 				}
 				else
 				{
