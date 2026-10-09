@@ -405,21 +405,7 @@ public class ClueDetailsSharingManager
 						// Default color is white, so white is used to unset configurations
 						if (ClueIdToDetails.equalRGB(importPoint.color, Color.WHITE))
 						{
-							configManager.unsetConfiguration("clue-details-color", String.valueOf(importPoint.id));
-
-							// Reset Ground Items and Inventory Tags
-							// Beginner & master clues are not supported by these plugins
-							if (importPoint.id >= 2677)
-							{
-								if (config.colorGroundItems())
-								{
-									configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id);
-								}
-								if (config.colorInventoryTags())
-								{
-									configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id);
-								}
-							}
+							resetClueDetail(importPoint.id, false, true, false, false);
 						}
 						else
 						{
