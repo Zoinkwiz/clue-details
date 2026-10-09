@@ -104,10 +104,13 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private static final ImageIcon COPY_HOVER_ICON;
 	private static final ImageIcon PASTE_ICON;
 	private static final ImageIcon PASTE_HOVER_ICON;
+	private static final ImageIcon EDIT_ICON;
+	private static final ImageIcon EDIT_HOVER_ICON;
 
 	private final JLabel resetMarkers = new JLabel(RESET_ICON);
 	private final JLabel copyMarkers = new JLabel(COPY_ICON);
 	private final JLabel pasteMarkers = new JLabel(PASTE_ICON);
+	private final JLabel editMarkers = new JLabel(EDIT_ICON);
 
 	static
 	{
@@ -122,6 +125,10 @@ public class ClueDetailsParentPanel extends PluginPanel
 		final BufferedImage pasteIcon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/paste_icon.png");
 		PASTE_ICON = new ImageIcon(pasteIcon);
 		PASTE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(pasteIcon, 0.53f));
+
+		final BufferedImage editIcon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/edit_icon.png");
+		EDIT_ICON = new ImageIcon(editIcon);
+		EDIT_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(editIcon, 0.53f));
 	}
 
 	private final JLabel statusLabel;
@@ -537,9 +544,26 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		});
 
+		editMarkers.setToolTipText("Edit currently filtered clues");
+		editMarkers.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				editMarkers.setIcon(EDIT_HOVER_ICON);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				editMarkers.setIcon(EDIT_ICON);
+			}
+		});
+
 		markerButtons.add(resetMarkers);
 		markerButtons.add(pasteMarkers);
 		markerButtons.add(copyMarkers);
+		markerButtons.add(editMarkers);
 
 		return markerButtons;
 	}
