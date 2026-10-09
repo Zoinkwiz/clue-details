@@ -674,9 +674,36 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 		JMenuItem literalTextReplace = new JMenuItem("Replace text");
 		literalTextReplace.addActionListener(event ->
-			clueDetailsSharingManager.showLiteralReplacePopup()
+			showLiteralReplacePopup()
 		);
 		popupMenu.add(literalTextReplace);
+
+		JMenuItem addItemToClues = new JMenuItem("Add item");
+		addItemToClues.addActionListener(event ->
+		{
+			ChatboxItemSearch itemSearch = getItemSearch("Add item");
+			itemSearch.onItemSelected((itemId) ->
+			{
+				for (Clues clue : getVisibleClues())
+				{
+					addItemToClue(itemId, clue);
+				}
+			}).build();
+		});
+		popupMenu.add(addItemToClues);
+
+		JMenuItem removeItemFromClues = new JMenuItem("Remove item");
+		removeItemFromClues.addActionListener(event ->
+		{
+			ChatboxItemSearch itemSearch = getItemSearch("Remove item");
+			itemSearch.onItemSelected((itemId) ->
+			{
+				for (Clues clue : getVisibleClues())
+				{
+					removeItemFromClue(itemId, clue);
+				}
+			}).build();
+		});
 
 		return popupMenu;
 	}
@@ -905,5 +932,111 @@ public class ClueDetailsParentPanel extends PluginPanel
 			.map(ListItem::getClue)
 			.distinct()
 			.collect(Collectors.toList());
+	}
+
+	private void showLiteralReplacePopup()
+	{
+		JTextField findField = new JTextField();
+		JTextField replaceField = new JTextField();
+
+		Object[] message = {
+				"Replace:", findField,
+				"With:", replaceField
+		};
+
+		final JOptionPane optionPane = new JOptionPane(
+				message,
+				JOptionPane.PLAIN_MESSAGE,
+				JOptionPane.OK_CANCEL_OPTION
+		);
+
+		final JDialog dialog = new JDialog();
+		dialog.setLocationRelativeTo(plugin.getPanel());
+		dialog.setTitle("Replace");
+		dialog.setModal(true);
+		dialog.setContentPane(optionPane);
+		optionPane.addPropertyChangeListener(JOptionPane.VALUE_PROPERTY, e ->
+		{
+			if (dialog.isVisible() && (e.getSource() == optionPane))
+			{
+				int value = (Integer) optionPane.getValue();
+
+				switch (value)
+				{
+					case JOptionPane.ERROR:
+						return;
+					case JOptionPane.OK_OPTION:
+						if (findField.getText().isEmpty())
+						{
+							JOptionPane.showMessageDialog(
+									dialog,
+									"Text to replace cannot be blank",
+									"",
+									JOptionPane.WARNING_MESSAGE
+							);
+							optionPane.setValue(JOptionPane.ERROR);
+							return;
+						}
+					default:
+						dialog.setVisible(false);
+				}
+			}
+		});
+		dialog.pack();
+		dialog.setVisible(true);
+
+		int confirm = (Integer) optionPane.getValue();
+
+		if (confirm == JOptionPane.OK_OPTION)
+		{
+			String findText = findField.getText();
+			String replaceText = replaceField.getText();
+			for (Clues clue : getVisibleClues())
+			{
+				String originalDetail = clue.getDetail(configManager);
+				if (originalDetail.contains(findText))
+				{
+					String newDetail = originalDetail.replace(findText, replaceText);
+					configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
+				}
+			}
+		}
+
+		plugin.getPanel().refresh();
+	}
+
+	private void addItemToClue(Integer itemId, Clues clue)
+	{
+		int clueId = clue.getClueID();
+		List<Integer> clueItemIds = cluePreferenceManager.getItemsPreference(clueId);
+
+		if (clueItemIds == null)
+		{
+			clueItemIds = new ArrayList<>();
+		}
+
+		if (!clueItemIds.contains(itemId))
+		{
+			clueItemIds.add(itemId);
+		}
+
+		cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
+	}
+
+	private void removeItemFromClue(Integer itemId, Clues clue)
+	{
+		int clueId = clue.getClueID();
+		List<Integer> clueItemIds = cluePreferenceManager.getItemsPreference(clueId);
+
+		if (clueItemIds != null)
+		{
+			clueItemIds.remove(itemId);
+		}
+		else
+		{
+			clueItemIds = new ArrayList<>();
+		}
+
+		cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
 	}
 }
