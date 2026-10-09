@@ -104,11 +104,11 @@ public class ClueDetailsSharingManager
 					if (resetWidgets) configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id));
 					if (id >= 2677) // Beginner/Master/Elite challenge not supported by other plugins
 					{
-						if (config.colorGroundItems())
+						if (config.colorGroundItems() && resetColors)
 						{
 							configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + id);
 						}
-						if (config.colorInventoryTags())
+						if (config.colorInventoryTags() && resetColors)
 						{
 							configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + id);
 						}
