@@ -102,6 +102,17 @@ public class ClueDetailsSharingManager
 					if (resetColors) configManager.unsetConfiguration("clue-details-color", String.valueOf(id));
 					if (resetItems) configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
 					if (resetWidgets) configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id));
+					if (id >= 2677) // Beginner/Master/Elite challenge not supported by other plugins
+					{
+						if (config.colorGroundItems())
+						{
+							configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + id);
+						}
+						if (config.colorInventoryTags())
+						{
+							configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + id);
+						}
+					}
 				}
 				return filteredClues.size();
 			}
