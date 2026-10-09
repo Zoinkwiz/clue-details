@@ -385,6 +385,54 @@ public class ClueDetailsParentPanel extends PluginPanel
 		});
 		popupMenu.add(inputItems);
 
+		JMenu resetMenu = new JMenu("Reset clue detail");
+		popupMenu.add(resetMenu);
+
+		JMenuItem resetAllItem = new JMenuItem("Reset all");
+		resetAllItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, true, true, true, true);
+		});
+		resetMenu.add(resetAllItem);
+
+		JMenuItem resetTextItem = new JMenuItem("Reset text");
+		resetTextItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, true, false, false, false);
+		});
+		resetMenu.add(resetTextItem);
+
+		JMenuItem resetColourItem = new JMenuItem("Reset colour");
+		resetColourItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, false, true, false, false);
+		});
+		resetMenu.add(resetColourItem);
+
+		JMenuItem resetItemsItem = new JMenuItem("Reset items");
+		resetItemsItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, false, false, true, false);
+		});
+		resetMenu.add(resetItemsItem);
+
+		JMenuItem resetWidgetsItem = new JMenuItem("Reset widgets");
+		resetWidgetsItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, false, false, false, true);
+		});
+		resetMenu.add(resetWidgetsItem);
+
 		JMenuItem copyClueDetail = new JMenuItem("Export detail to clipboard");
 		copyClueDetail.addActionListener(event ->
 		{
@@ -407,6 +455,18 @@ public class ClueDetailsParentPanel extends PluginPanel
 		if (confirm == 0)
 		{
 			clueDetailsSharingManager.resetClueDetails(resetText, resetColors, resetItems, resetWidgets);
+		}
+	}
+
+	private void openResetPopup(int id, boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
+	{
+		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
+				"Are you sure you want to reset the details for this clue?",
+				"Warning", JOptionPane.OK_CANCEL_OPTION);
+
+		if (confirm == 0)
+		{
+			clueDetailsSharingManager.resetClueDetail(id, resetText, resetColors, resetItems, resetWidgets);
 		}
 	}
 

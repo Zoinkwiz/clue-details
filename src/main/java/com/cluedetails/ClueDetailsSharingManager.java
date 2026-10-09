@@ -98,10 +98,7 @@ public class ClueDetailsSharingManager
 					// Adds the data to the chunk which was processed
 					publish("Resetting clue details... (" + ++counter + "/" + filteredClues.size() + ")");
 					int id = clue.getClueID();
-					if (resetText) configManager.unsetConfiguration("clue-details-text", String.valueOf(id));
-					if (resetColors) configManager.unsetConfiguration("clue-details-color", String.valueOf(id));
-					if (resetItems) configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
-					if (resetWidgets) configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id));
+					resetClueDetail(id, resetText, resetColors, resetItems, resetWidgets);
 				}
 				return filteredClues.size();
 			}
@@ -131,6 +128,25 @@ public class ClueDetailsSharingManager
 			}
 		};
 		worker.execute();
+	}
+
+	public void resetClueDetail(int id, boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
+	{
+		if (resetText) configManager.unsetConfiguration("clue-details-text", String.valueOf(id));
+		if (resetColors) configManager.unsetConfiguration("clue-details-color", String.valueOf(id));
+		if (resetItems) configManager.unsetConfiguration(CLUE_ITEMS_CONFIG, String.valueOf(id));
+		if (resetWidgets) configManager.unsetConfiguration(CLUE_WIDGETS_CONFIG, String.valueOf(id));
+		if (id >= 2677) // Beginner/Master/Elite challenge not supported by other plugins
+		{
+			if (config.colorGroundItems() && resetColors)
+			{
+				configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + id);
+			}
+			if (config.colorInventoryTags() && resetColors)
+			{
+				configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + id);
+			}
+		}
 	}
 
 	public void exportClueDetails(boolean exportText, boolean exportColors, boolean exportItems, boolean exportWidgets)
