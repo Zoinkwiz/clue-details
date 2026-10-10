@@ -25,6 +25,7 @@
  */
 package com.cluedetails.bank.banktab;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,6 +33,7 @@ import lombok.Setter;
  * A single item shown in the clue bank tab, tied to the clue(s) it's useful for.
  * Adapted from quest-helper's BankTabItem.java (com.questhelper.bank.banktab).
  */
+@EqualsAndHashCode
 public class BankTabItem
 {
 	@Getter

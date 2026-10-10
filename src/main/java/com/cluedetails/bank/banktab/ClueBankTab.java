@@ -115,6 +115,9 @@ public class ClueBankTab
 
 	private int originalContainerChildren = -1;
 
+	// Last sections applied via refreshBankTab(), to skip relayout when nothing actually changed.
+	private List<BankTabItems> lastRefreshedSections;
+
 	public void startUp()
 	{
 		if (!config.showClueBankTab()) return;
@@ -157,8 +160,14 @@ public class ClueBankTab
 
 		// May be called off the client thread (e.g. a config change), so marshal first.
 		clientThread.invokeLater(() -> {
+			List<BankTabItems> sections = clueBankTagService.getBankTabSections();
+
 			// refreshTab() alone no-ops unless already active, so update visibility separately.
-			clueBankTabInterface.updateVisibility(!clueBankTagService.getBankTabSections().isEmpty());
+			clueBankTabInterface.updateVisibility(!sections.isEmpty());
+
+			if (sections.equals(lastRefreshedSections)) return;
+			lastRefreshedSections = sections;
+
 			clueBankTabInterface.refreshTab();
 		});
 	}
