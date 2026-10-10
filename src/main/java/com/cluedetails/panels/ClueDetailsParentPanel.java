@@ -434,8 +434,16 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private void openResetPopup(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
+		StringBuilder messageBuilder = new StringBuilder("Are you sure you want to reset the following customised details for the currently filtered clues?");
+		if (resetText) messageBuilder.append("\n - Text");
+		if (resetColors) messageBuilder.append("\n - Colours");
+		if (resetItems) messageBuilder.append("\n - Items");
+		if (resetWidgets) messageBuilder.append("\n - Widgets");
+
+		String confirmMessage = messageBuilder.toString();
+
 		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
-			"Are you sure you want to reset your currently filtered customised details?",
+			confirmMessage,
 			"Warning", JOptionPane.OK_CANCEL_OPTION);
 
 		if (confirm == 0)
@@ -446,8 +454,16 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private void openResetPopup(int id, boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
+		StringBuilder messageBuilder = new StringBuilder("Are you sure you want to reset the following details for this clue?");
+		if (resetText) messageBuilder.append("\n - Text");
+		if (resetColors) messageBuilder.append("\n - Colours");
+		if (resetItems) messageBuilder.append("\n - Items");
+		if (resetWidgets) messageBuilder.append("\n - Widgets");
+
+		String confirmMessage = messageBuilder.toString();
+
 		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
-				"Are you sure you want to reset the details for this clue?",
+				confirmMessage,
 				"Warning", JOptionPane.OK_CANCEL_OPTION);
 
 		if (confirm == 0)
