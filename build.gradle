@@ -22,6 +22,13 @@ dependencies {
 	testImplementation 'org.mockito:mockito-core:4.11.0'
 	testImplementation group: 'net.runelite', name:'client', version: runeLiteVersion
 	testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
+
+	def junitVersion = "5.5.2" // max version before junit-bom was added to pom files, due to runelite restrictions
+	testImplementation group: "org.junit.jupiter", name: "junit-jupiter-api", version: junitVersion
+	testImplementation group: "org.junit.jupiter", name: "junit-jupiter-params", version: junitVersion
+	testImplementation group: "org.junit.jupiter", name: "junit-jupiter-engine", version: junitVersion
+
+	testImplementation "org.mockito:mockito-core:5.17.0"
 }
 
 group = 'com.example'
@@ -30,4 +37,8 @@ version = '2.9.0'
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 	options.release.set(11)
+}
+
+tasks.test {
+	useJUnitPlatform()
 }

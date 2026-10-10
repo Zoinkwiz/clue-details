@@ -24,6 +24,7 @@
  */
 package com.cluedetails;
 
+import com.cluedetails.bank.banktab.ClueBankTab;
 import com.cluedetails.panels.ClueDetailsParentPanel;
 import com.cluedetails.tools.ClueDetailsWorldMapPoint;
 import com.google.gson.Gson;
@@ -188,6 +189,10 @@ public class ClueDetailsPlugin extends Plugin
 
 	@Getter
 	@Inject
+	private ClueBankTab clueBankTab;
+
+	@Getter
+	@Inject
 	private CluePreferenceManager cluePreferenceManager;
 
 	@Inject
@@ -260,6 +265,9 @@ public class ClueDetailsPlugin extends Plugin
 		clueSaver.startUp();
 		clueGroundManager.startUp();
 
+		clueBankTab.startUp();
+		clueBankTab.register(eventBus);
+
 		Clues.rebuildFilteredCluesCache();
 
 		populateValidFairyRings();
@@ -286,6 +294,9 @@ public class ClueDetailsPlugin extends Plugin
 		shutDownOverlays();
 
 		clueGroundManager.shutDown();
+
+		clueBankTab.unregister(eventBus);
+		clueBankTab.shutDown();
 
 		clientToolbar.removeNavigation(navButton);
 
@@ -357,6 +368,7 @@ public class ClueDetailsPlugin extends Plugin
 			itemsOverlay.invalidateCache();
 			clueInventoryManager.updateInventory(event.getItemContainer());
 			clueSaver.scanInventory();
+			clueBankTab.refreshBankTab();
 		}
 		else if (event.getContainerId() == InventoryID.BANK.getId())
 		{
@@ -572,6 +584,7 @@ public class ClueDetailsPlugin extends Plugin
 		{
 			Clues.rebuildFilteredCluesCache();
 			clueInventoryManager.updateLastInventoryRefreshTime();
+			clueBankTab.refreshBankTab();
 		}
 
 		if (event.getGroup().equals("clue-details-color")
@@ -581,6 +594,11 @@ public class ClueDetailsPlugin extends Plugin
 			|| event.getKey().equals("colorInventoryClueItems"))
 		{
 			itemsOverlay.invalidateCache();
+		}
+
+		if (event.getGroup().equals("clue-details-items"))
+		{
+			clueBankTab.refreshBankTab();
 		}
 
 		if (event.getGroup().equals(config.CLUE_WIDGETS_CONFIG)
@@ -617,6 +635,23 @@ public class ClueDetailsPlugin extends Plugin
 			{
 				clientToolbar.removeNavigation(navButton);
 			}
+		}
+
+		if ("showClueBankTab".equals(event.getKey()))
+		{
+			if ("true".equals(event.getNewValue()))
+			{
+				clueBankTab.startUp();
+			}
+			else
+			{
+				clueBankTab.shutDown();
+			}
+		}
+
+		if ("includeBankCluesInBankTab".equals(event.getKey()))
+		{
+			clueBankTab.refreshBankTab();
 		}
 
 		// Reset clueGroundTimers when showGroundClueTimers toggled off
