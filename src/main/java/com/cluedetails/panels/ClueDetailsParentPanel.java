@@ -29,14 +29,8 @@ import com.cluedetails.ClueDetailsConfig.*;
 
 import static com.cluedetails.ClueDetailsConfig.GROUP;
 import com.google.gson.Gson;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+
+import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
@@ -52,6 +46,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
@@ -507,6 +502,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 		editMarkers.addMouseListener(new MouseAdapter()
 		{
 			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e))
+				{
+					editPopupMenu.show(editMarkers, e.getX(), e.getY());
+				}
+			}
+
+			@Override
 			public void mouseEntered(MouseEvent e)
 			{
 				editMarkers.setIcon(EDIT_HOVER_ICON);
@@ -519,10 +522,10 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		});
 
+		markerButtons.add(editMarkers);
 		markerButtons.add(resetMarkers);
 		markerButtons.add(pasteMarkers);
 		markerButtons.add(copyMarkers);
-		markerButtons.add(editMarkers);
 
 		return markerButtons;
 	}
