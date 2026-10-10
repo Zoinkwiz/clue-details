@@ -303,47 +303,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			int clueClueID = clue.getClueID();
 
 			RuneliteColorPicker colorPicker = getColorPicker(clue.getDetailColor(configManager));
-			colorPicker.setOnColorChange(c ->
-			{
-				// Default color is white, so white is used to unset configurations
-				if (ClueIdToDetails.equalRGB(c, Color.WHITE))
-				{
-					configManager.unsetConfiguration("clue-details-color", String.valueOf(clueClueID));
-
-					// Reset Ground Items and Inventory Tags
-					// Beginner & master clues are not supported by these plugins
-					if (clueClueID >= 2677)
-					{
-						if (config.colorGroundItems())
-						{
-							configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueClueID);
-						}
-						if (config.colorInventoryTags())
-						{
-							configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueClueID);
-						}
-					}
-				}
-				else
-				{
-					configManager.setConfiguration("clue-details-color", String.valueOf(clueClueID), c);
-
-					// Apply color to Ground Items and Inventory Tags
-					// Beginner & master clues are not supported by these plugins
-					if (clueClueID >= 2677)
-					{
-						if (config.colorGroundItems())
-						{
-							configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueItemId, c);
-						}
-						if (config.colorInventoryTags())
-						{
-							configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueItemId,
-								plugin.getGson().toJson(Map.of("color", c)));
-						}
-					}
-				}
-			});
+			colorPicker.setOnColorChange(c -> clueDetailsSharingManager.setClueColour(c, clueClueID));
 			colorPicker.setVisible(true);
 		});
 		popupMenu.add(inputColorItem);
@@ -704,6 +664,20 @@ public class ClueDetailsParentPanel extends PluginPanel
 				}
 			}).build();
 		});
+		popupMenu.add(removeItemFromClues);
+
+		JMenuItem setColourForClues = new JMenuItem("Set colour");
+		setColourForClues.addActionListener(event ->
+		{
+			RuneliteColorPicker colorPicker = getColorPicker(Color.WHITE);
+			// Only set colour on close because my god that was a lot of config updates per frame
+			colorPicker.setOnClose(c ->
+			{
+				for (Clues clue : getVisibleClues()) clueDetailsSharingManager.setClueColour(c, clue.getClueID());
+			});
+			colorPicker.setVisible(true);
+		});
+		popupMenu.add(setColourForClues);
 
 		return popupMenu;
 	}
