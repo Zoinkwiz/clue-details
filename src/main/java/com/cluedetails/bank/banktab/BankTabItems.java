@@ -28,6 +28,7 @@ package com.cluedetails.bank.banktab;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,6 +37,7 @@ import lombok.Setter;
  * Typically one is created per clue instance in the player's inventory or bank.
  * Adapted from quest-helper's BankTabItems.java (com.questhelper.bank.banktab).
  */
+@EqualsAndHashCode
 public class BankTabItems
 {
 	@Getter
