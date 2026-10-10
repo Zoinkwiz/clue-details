@@ -305,21 +305,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 				// Default color is white, so white is used to unset configurations
 				if (ClueIdToDetails.equalRGB(c, Color.WHITE))
 				{
-					configManager.unsetConfiguration("clue-details-color", String.valueOf(clueClueID));
-
-					// Reset Ground Items and Inventory Tags
-					// Beginner & master clues are not supported by these plugins
-					if (clueClueID >= 2677)
-					{
-						if (config.colorGroundItems())
-						{
-							configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueClueID);
-						}
-						if (config.colorInventoryTags())
-						{
-							configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueClueID);
-						}
-					}
+					clueDetailsSharingManager.resetClueDetail(clueClueID, false, true, false, false);
 				}
 				else
 				{
@@ -385,6 +371,54 @@ public class ClueDetailsParentPanel extends PluginPanel
 		});
 		popupMenu.add(inputItems);
 
+		JMenu resetMenu = new JMenu("Reset clue detail");
+		popupMenu.add(resetMenu);
+
+		JMenuItem resetAllItem = new JMenuItem("Reset all");
+		resetAllItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, true, true, true, true);
+		});
+		resetMenu.add(resetAllItem);
+
+		JMenuItem resetTextItem = new JMenuItem("Reset text");
+		resetTextItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, true, false, false, false);
+		});
+		resetMenu.add(resetTextItem);
+
+		JMenuItem resetColourItem = new JMenuItem("Reset colour");
+		resetColourItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, false, true, false, false);
+		});
+		resetMenu.add(resetColourItem);
+
+		JMenuItem resetItemsItem = new JMenuItem("Reset items");
+		resetItemsItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, false, false, true, false);
+		});
+		resetMenu.add(resetItemsItem);
+
+		JMenuItem resetWidgetsItem = new JMenuItem("Reset widgets");
+		resetWidgetsItem.addActionListener(event ->
+		{
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, false, false, false, true);
+		});
+		resetMenu.add(resetWidgetsItem);
+
 		JMenuItem copyClueDetail = new JMenuItem("Export detail to clipboard");
 		copyClueDetail.addActionListener(event ->
 		{
@@ -400,13 +434,41 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private void openResetPopup(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
 	{
+		StringBuilder messageBuilder = new StringBuilder("Are you sure you want to reset the following customised details for the currently filtered clues?");
+		if (resetText) messageBuilder.append("\n - Text");
+		if (resetColors) messageBuilder.append("\n - Colours");
+		if (resetItems) messageBuilder.append("\n - Items");
+		if (resetWidgets) messageBuilder.append("\n - Widgets");
+
+		String confirmMessage = messageBuilder.toString();
+
 		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
-			"Are you sure you want to reset your currently filtered customised details?",
+			confirmMessage,
 			"Warning", JOptionPane.OK_CANCEL_OPTION);
 
 		if (confirm == 0)
 		{
 			clueDetailsSharingManager.resetClueDetails(resetText, resetColors, resetItems, resetWidgets);
+		}
+	}
+
+	private void openResetPopup(int id, boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
+	{
+		StringBuilder messageBuilder = new StringBuilder("Are you sure you want to reset the following details for this clue?");
+		if (resetText) messageBuilder.append("\n - Text");
+		if (resetColors) messageBuilder.append("\n - Colours");
+		if (resetItems) messageBuilder.append("\n - Items");
+		if (resetWidgets) messageBuilder.append("\n - Widgets");
+
+		String confirmMessage = messageBuilder.toString();
+
+		int confirm = JOptionPane.showConfirmDialog(ClueDetailsParentPanel.this,
+				confirmMessage,
+				"Warning", JOptionPane.OK_CANCEL_OPTION);
+
+		if (confirm == 0)
+		{
+			clueDetailsSharingManager.resetClueDetail(id, resetText, resetColors, resetItems, resetWidgets);
 		}
 	}
 
