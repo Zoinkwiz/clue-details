@@ -39,7 +39,9 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.swing.*;
@@ -683,6 +685,35 @@ public class ClueDetailsParentPanel extends PluginPanel
 		});
 		popupMenu.add(setColourForClues);
 
+		JMenuItem replaceColourForClues = new JMenuItem("Replace colour");
+		replaceColourForClues.addActionListener(event ->
+		{
+			List<Clues> visibleClues = getVisibleClues();
+			Set<Color> visibleColours = new HashSet<>();
+			visibleClues.forEach(c -> visibleColours.add(c.getDetailColor(configManager)));
+			Color[] colours = visibleColours.toArray(Color[]::new);
+
+			JComboBox<Color> colourList = new JComboBox<>(colours);
+			colourList.setRenderer(new ColourListCellRenderer());
+
+			JOptionPane.showConfirmDialog(this, colourList, "Select a colour to replace", JOptionPane.OK_CANCEL_OPTION);
+			Color prevColour = (Color) colourList.getSelectedItem();
+			List<Clues> affectedClues = visibleClues.stream().filter(clue ->
+					clue.getDetailColor(configManager).getRGB() == prevColour.getRGB()).collect(Collectors.toList()
+			);
+
+			RuneliteColorPicker colorPicker = getColorPicker(prevColour);
+			colorPicker.setOnClose(c ->
+			{
+				if (showColourChangeConfirmDialog(prevColour, c, affectedClues.size()) == 0)
+				{
+					for (Clues clue : affectedClues) clueDetailsSharingManager.setClueColour(c, clue.getClueID());
+				}
+			});
+			colorPicker.setVisible(true);
+		});
+		popupMenu.add(replaceColourForClues);
+
 		return popupMenu;
 	}
 
@@ -1036,5 +1067,39 @@ public class ClueDetailsParentPanel extends PluginPanel
 			"Confirm colour change",
 			JOptionPane.YES_NO_OPTION
 		);
+	}
+
+	private static class ColourListCellRenderer extends JPanel implements ListCellRenderer<Color>
+	{
+		// I don't *think* I need to initialise this but better safe than sorry
+		private Color swatchColour = Color.WHITE;
+
+		private final static int SWATCH_PADDING = 1;
+		private final static int SWATCH_WIDTH = 50;
+		private final static int HEX_PAD = 5;
+
+		public ColourListCellRenderer()
+		{
+			setOpaque(true);
+		}
+
+		@Override
+		public Component getListCellRendererComponent(JList list, Color colour, int index, boolean isSelected, boolean cellHasFocus)
+		{
+			this.swatchColour = colour;
+			if (isSelected) this.setBackground(ColorScheme.DARKER_GRAY_HOVER_COLOR);
+			else this.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			return this;
+		}
+
+		@Override
+		public void paint(Graphics g)
+		{
+			super.paint(g);
+			g.setColor(swatchColour);
+			g.fillRect(SWATCH_PADDING, SWATCH_PADDING, SWATCH_WIDTH, this.getHeight() - SWATCH_PADDING * 2);
+			String hex = String.format("#%02X%02X%02X", swatchColour.getRed(), swatchColour.getGreen(), swatchColour.getBlue());
+			g.drawString(hex, SWATCH_PADDING + SWATCH_WIDTH + HEX_PAD, this.getHeight());
+		}
 	}
 }
