@@ -696,21 +696,31 @@ public class ClueDetailsParentPanel extends PluginPanel
 			JComboBox<Color> colourList = new JComboBox<>(colours);
 			colourList.setRenderer(new ColourListCellRenderer());
 
-			JOptionPane.showConfirmDialog(this, colourList, "Select a colour to replace", JOptionPane.OK_CANCEL_OPTION);
-			Color prevColour = (Color) colourList.getSelectedItem();
-			List<Clues> affectedClues = visibleClues.stream().filter(clue ->
-					clue.getDetailColor(configManager).getRGB() == prevColour.getRGB()).collect(Collectors.toList()
+			int confirm = JOptionPane.showConfirmDialog(
+				this,
+				colourList,
+				"Select a colour to replace",
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE
 			);
 
-			RuneliteColorPicker colorPicker = getColorPicker(prevColour);
-			colorPicker.setOnClose(c ->
+			if (confirm == 0)
 			{
-				if (showColourChangeConfirmDialog(prevColour, c, affectedClues.size()) == 0)
+				Color prevColour = (Color) colourList.getSelectedItem();
+				List<Clues> affectedClues = visibleClues.stream().filter(clue ->
+						clue.getDetailColor(configManager).getRGB() == prevColour.getRGB()).collect(Collectors.toList()
+				);
+
+				RuneliteColorPicker colorPicker = getColorPicker(prevColour);
+				colorPicker.setOnClose(c ->
 				{
-					for (Clues clue : affectedClues) clueDetailsSharingManager.setClueColour(c, clue.getClueID());
-				}
-			});
-			colorPicker.setVisible(true);
+					if (showColourChangeConfirmDialog(prevColour, c, affectedClues.size()) == 0)
+					{
+						for (Clues clue : affectedClues) clueDetailsSharingManager.setClueColour(c, clue.getClueID());
+					}
+				});
+				colorPicker.setVisible(true);
+			}
 		});
 		popupMenu.add(replaceColourForClues);
 
@@ -1052,7 +1062,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private int showColourChangeConfirmDialog(Color oldColour, Color newColour, int affectedClueCount)
 	{
 		String oldColourString = oldColour == null ? "" : String.format("#%02X%02X%02X", oldColour.getRed(), oldColour.getGreen(), oldColour.getBlue());
-		String oldColourMessage = oldColour == null ? "" : String.format("<font color=%s>%s</font>", oldColourString, oldColourString);
+		String oldColourMessage = oldColour == null ? "" : String.format("from <font color=%s>%s</font>", oldColourString, oldColourString);
 		String newColourString = String.format("#%02X%02X%02X", newColour.getRed(), newColour.getGreen(), newColour.getBlue());
 		String confirmMessage = String.format(
 			"<html>Are you sure you want to change the colour of %d clues %s to <font color=%s>%s</font>?</html>",
@@ -1065,7 +1075,8 @@ public class ClueDetailsParentPanel extends PluginPanel
 			this,
 			confirmMessage,
 			"Confirm colour change",
-			JOptionPane.YES_NO_OPTION
+			JOptionPane.YES_NO_OPTION,
+			JOptionPane.PLAIN_MESSAGE
 		);
 	}
 
