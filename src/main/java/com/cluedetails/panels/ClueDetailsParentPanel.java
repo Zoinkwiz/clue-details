@@ -673,7 +673,11 @@ public class ClueDetailsParentPanel extends PluginPanel
 			// Only set colour on close because my god that was a lot of config updates per frame
 			colorPicker.setOnClose(c ->
 			{
-				for (Clues clue : getVisibleClues()) clueDetailsSharingManager.setClueColour(c, clue.getClueID());
+				List<Clues> affectedClues = getVisibleClues();
+				if (showColourChangeConfirmDialog(null, c, affectedClues.size()) == 0)
+				{
+					for (Clues clue : affectedClues) clueDetailsSharingManager.setClueColour(c, clue.getClueID());
+				}
 			});
 			colorPicker.setVisible(true);
 		});
@@ -1012,5 +1016,25 @@ public class ClueDetailsParentPanel extends PluginPanel
 		}
 
 		cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
+	}
+
+	private int showColourChangeConfirmDialog(Color oldColour, Color newColour, int affectedClueCount)
+	{
+		String oldColourString = oldColour == null ? "" : String.format("#%02X%02X%02X", oldColour.getRed(), oldColour.getGreen(), oldColour.getBlue());
+		String oldColourMessage = oldColour == null ? "" : String.format("<font color=%s>%s</font>", oldColourString, oldColourString);
+		String newColourString = String.format("#%02X%02X%02X", newColour.getRed(), newColour.getGreen(), newColour.getBlue());
+		String confirmMessage = String.format(
+			"<html>Are you sure you want to change the colour of %d clues %s to <font color=%s>%s</font>?</html>",
+			affectedClueCount,
+			oldColourMessage,
+			newColourString,
+			newColourString
+		);
+		return JOptionPane.showConfirmDialog(
+			this,
+			confirmMessage,
+			"Confirm colour change",
+			JOptionPane.YES_NO_OPTION
+		);
 	}
 }
