@@ -419,6 +419,33 @@ public class ClueDetailsParentPanel extends PluginPanel
 		});
 		resetMenu.add(resetWidgetsItem);
 
+		JMenuItem resetMultipleItem = new JMenuItem("Reset multiple");
+		resetMultipleItem.addActionListener(event ->
+		{
+			JCheckBox textBox = new JCheckBox("Text");
+			JCheckBox colourBox = new JCheckBox("Colour");
+			JCheckBox itemsBox = new JCheckBox("Items");
+			JCheckBox widgetsBox = new JCheckBox("Widgets");
+			JCheckBox[] checkBoxes = {
+				textBox, colourBox, itemsBox, widgetsBox
+			};
+			int confirm = JOptionPane.showConfirmDialog(
+				this,
+				checkBoxes,
+				"Choose details to reset",
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE
+			);
+
+			if (confirm == 0)
+			{
+				ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+				int id = item.getClue().getClueID();
+				openResetPopup(id, textBox.isSelected(), colourBox.isSelected(), itemsBox.isSelected(), widgetsBox.isSelected());
+			}
+		});
+		resetMenu.add(resetMultipleItem);
+
 		JMenuItem copyClueDetail = new JMenuItem("Export detail to clipboard");
 		copyClueDetail.addActionListener(event ->
 		{
