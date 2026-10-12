@@ -45,7 +45,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -557,7 +559,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private JPopupMenu getResetPopupMenu()
 	{
-		JPopupMenu popupMenu = new JPopupMenu();
+		JPopupMenu popupMenu = createTitledPopupMenu("Reset filtered details");
 
 		JMenuItem inputItemResetText = new JMenuItem("Reset clue text");
 		inputItemResetText.addActionListener(event
@@ -588,7 +590,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private JPopupMenu getCopyPopupMenu()
 	{
-		JPopupMenu popupMenu = new JPopupMenu();
+		JPopupMenu popupMenu = createTitledPopupMenu("Export filtered details");
 
 		JMenuItem inputItemExportText = new JMenuItem("Export clue text");
 		inputItemExportText.addActionListener(event
@@ -619,7 +621,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private JPopupMenu getImportPopupMenu()
 	{
-		JPopupMenu popupMenu = new JPopupMenu();
+		JPopupMenu popupMenu = createTitledPopupMenu("Import clue details");
 
 		JMenuItem importFiltered = new JMenuItem("Import details for currently filtered clues from your clipboard");
 		importFiltered.addActionListener(event ->
@@ -632,7 +634,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private JPopupMenu getEditPopupMenu()
 	{
-		JPopupMenu popupMenu = new JPopupMenu();
+		JPopupMenu popupMenu = createTitledPopupMenu("Edit filtered clues");
 
 		JMenuItem literalTextReplace = new JMenuItem("Replace text");
 		literalTextReplace.addActionListener(event ->
@@ -1078,6 +1080,19 @@ public class ClueDetailsParentPanel extends PluginPanel
 			JOptionPane.YES_NO_OPTION,
 			JOptionPane.PLAIN_MESSAGE
 		);
+	}
+
+	// https://stackoverflow.com/a/79706033
+	private JPopupMenu createTitledPopupMenu(String title)
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+		Border titleUnderline = BorderFactory.createMatteBorder(1, 0, 0, 0, popupMenu.getForeground());
+		TitledBorder labelBorder = BorderFactory.createTitledBorder(
+				titleUnderline, title, TitledBorder.CENTER, TitledBorder.ABOVE_TOP
+		);
+		popupMenu.setBorder(BorderFactory.createCompoundBorder(popupMenu.getBorder(), labelBorder));
+
+		return popupMenu;
 	}
 
 	private static class ColourListCellRenderer extends JPanel implements ListCellRenderer<Color>
