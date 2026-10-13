@@ -725,6 +725,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 				openResetPopup(resetText, resetColours, resetItems, resetWidgets);
 			}
 		});
+		popupMenu.add(resetMultipleItem);
 
 		return popupMenu;
 	}
