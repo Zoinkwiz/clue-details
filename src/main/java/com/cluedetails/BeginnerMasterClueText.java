@@ -169,7 +169,7 @@ public class BeginnerMasterClueText
 	public static final String MASTER_FALO_4 = "A mark used to increase one's grace, found atop a seer's place.";
 	public static final String MASTER_FALO_5 = "A molten beast with fiery breath, you acquire these with its death.";
 	public static final String MASTER_FALO_6 = "A shiny helmet of flight, to obtain this with melee, struggle you might.";
-	public static final String MASTER_FALO_7 = "A sword held in the other hand, red its color, Cyclops strength you must withstand.";
+	public static final String MASTER_FALO_7 = "A sword held in the other hand, red its colour, Cyclops strength you must withstand.";
 	public static final String MASTER_FALO_8 = "A token used to kill mythical beasts, in hopes of a blade or just for an xp feast.";
 	public static final String MASTER_FALO_9 = "Green is my favourite, mature ale I do love, this takes your herblore above.";
 	public static final String MASTER_FALO_10 = "It can hold down a boat or crush a goat, this object, you see, is quite heavy.";
