@@ -392,14 +392,14 @@ public class ClueDetailsParentPanel extends PluginPanel
 		});
 		resetMenu.add(resetTextItem);
 
-		JMenuItem resetColourItem = new JMenuItem("Reset colour");
-		resetColourItem.addActionListener(event ->
+		JMenuItem resetColorItem = new JMenuItem("Reset color");
+		resetColorItem.addActionListener(event ->
 		{
 			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
 			int id = item.getClue().getClueID();
 			openResetPopup(id, false, true, false, false);
 		});
-		resetMenu.add(resetColourItem);
+		resetMenu.add(resetColorItem);
 
 		JMenuItem resetItemsItem = new JMenuItem("Reset items");
 		resetItemsItem.addActionListener(event ->
@@ -431,11 +431,11 @@ public class ClueDetailsParentPanel extends PluginPanel
 				int id = item.getClue().getClueID();
 
 				boolean resetText = (options & 2) != 0;
-				boolean resetColours = (options & 4) != 0;
+				boolean resetColors = (options & 4) != 0;
 				boolean resetItems = (options & 8) != 0;
 				boolean resetWidgets = (options & 16) != 0;
 
-				openResetPopup(id, resetText, resetColours, resetItems, resetWidgets);
+				openResetPopup(id, resetText, resetColors, resetItems, resetWidgets);
 			}
 		});
 		resetMenu.add(resetMultipleItem);
@@ -456,11 +456,11 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private int openResetTypePopup()
 	{
 		JCheckBox textBox = new JCheckBox("Text");
-		JCheckBox colourBox = new JCheckBox("Colour");
+		JCheckBox colorBox = new JCheckBox("Color");
 		JCheckBox itemsBox = new JCheckBox("Items");
 		JCheckBox widgetsBox = new JCheckBox("Widgets");
 		JCheckBox[] checkBoxes = {
-				textBox, colourBox, itemsBox, widgetsBox
+				textBox, colorBox, itemsBox, widgetsBox
 		};
 		int confirm = JOptionPane.showConfirmDialog(
 				this,
@@ -474,7 +474,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 		if (confirm == 0) ret |= 1;
 		if (textBox.isSelected()) ret |= 2;
-		if (colourBox.isSelected()) ret |= 4;
+		if (colorBox.isSelected()) ret |= 4;
 		if (itemsBox.isSelected()) ret |= 8;
 		if (widgetsBox.isSelected()) ret |= 16;
 
@@ -485,7 +485,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	{
 		StringBuilder messageBuilder = new StringBuilder("Are you sure you want to reset the following customised details for the currently filtered clues?");
 		if (resetText) messageBuilder.append("\n - Text");
-		if (resetColors) messageBuilder.append("\n - Colours");
+		if (resetColors) messageBuilder.append("\n - Colors");
 		if (resetItems) messageBuilder.append("\n - Items");
 		if (resetWidgets) messageBuilder.append("\n - Widgets");
 
@@ -505,7 +505,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 	{
 		StringBuilder messageBuilder = new StringBuilder("Are you sure you want to reset the following details for this clue?");
 		if (resetText) messageBuilder.append("\n - Text");
-		if (resetColors) messageBuilder.append("\n - Colours");
+		if (resetColors) messageBuilder.append("\n - Colors");
 		if (resetItems) messageBuilder.append("\n - Items");
 		if (resetWidgets) messageBuilder.append("\n - Widgets");
 
@@ -719,10 +719,10 @@ public class ClueDetailsParentPanel extends PluginPanel
 			if (confirm)
 			{
 				boolean resetText = (options & 2) != 0;
-				boolean resetColours = (options & 4) != 0;
+				boolean resetColors = (options & 4) != 0;
 				boolean resetItems = (options & 8) != 0;
 				boolean resetWidgets = (options & 16) != 0;
-				openResetPopup(resetText, resetColours, resetItems, resetWidgets);
+				openResetPopup(resetText, resetColors, resetItems, resetWidgets);
 			}
 		});
 		popupMenu.add(resetMultipleItem);
