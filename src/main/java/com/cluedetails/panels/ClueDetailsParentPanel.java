@@ -54,6 +54,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import lombok.Getter;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.client.chat.QueuedMessage;
@@ -422,21 +423,12 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JMenuItem resetMultipleItem = new JMenuItem("Reset multiple");
 		resetMultipleItem.addActionListener(event ->
 		{
-			int options = openResetTypePopup();
+			ResetSelection selection = openResetTypePopup();
+			if (selection == null) return;
 
-			boolean confirm = (options & 1) != 0;
-			if (confirm)
-			{
-				ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
-				int id = item.getClue().getClueID();
-
-				boolean resetText = (options & 2) != 0;
-				boolean resetColors = (options & 4) != 0;
-				boolean resetItems = (options & 8) != 0;
-				boolean resetWidgets = (options & 16) != 0;
-
-				openResetPopup(id, resetText, resetColors, resetItems, resetWidgets);
-			}
+			ListItem item = (ListItem) clueTableModel.getValueAt(rightClickedRow, 0);
+			int id = item.getClue().getClueID();
+			openResetPopup(id, selection.isText(), selection.isColors(), selection.isItems(), selection.isWidgets());
 		});
 		resetMenu.add(resetMultipleItem);
 
@@ -453,7 +445,16 @@ public class ClueDetailsParentPanel extends PluginPanel
 		return popupMenu;
 	}
 
-	private int openResetTypePopup()
+	@Value
+	private static class ResetSelection
+	{
+		boolean text;
+		boolean colors;
+		boolean items;
+		boolean widgets;
+	}
+
+	private ResetSelection openResetTypePopup()
 	{
 		JCheckBox textBox = new JCheckBox("Text");
 		JCheckBox colorBox = new JCheckBox("Color");
@@ -470,15 +471,13 @@ public class ClueDetailsParentPanel extends PluginPanel
 				JOptionPane.PLAIN_MESSAGE
 		);
 
-		int ret = 0;
+		if (confirm != 0) return null;
 
-		if (confirm == 0) ret |= 1;
-		if (textBox.isSelected()) ret |= 2;
-		if (colorBox.isSelected()) ret |= 4;
-		if (itemsBox.isSelected()) ret |= 8;
-		if (widgetsBox.isSelected()) ret |= 16;
+		ResetSelection selection = new ResetSelection(
+			textBox.isSelected(), colorBox.isSelected(), itemsBox.isSelected(), widgetsBox.isSelected());
 
-		return ret;
+		boolean anySelected = selection.isText() || selection.isColors() || selection.isItems() || selection.isWidgets();
+		return anySelected ? selection : null;
 	}
 
 	private void openResetPopup(boolean resetText, boolean resetColors, boolean resetItems, boolean resetWidgets)
@@ -713,16 +712,10 @@ public class ClueDetailsParentPanel extends PluginPanel
 		JMenuItem resetMultipleItem = new JMenuItem("Reset multiple detail types");
 		resetMultipleItem.addActionListener(event ->
 		{
-			int options = openResetTypePopup();
-
-			boolean confirm = (options & 1) != 0;
-			if (confirm)
+			ResetSelection selection = openResetTypePopup();
+			if (selection != null)
 			{
-				boolean resetText = (options & 2) != 0;
-				boolean resetColors = (options & 4) != 0;
-				boolean resetItems = (options & 8) != 0;
-				boolean resetWidgets = (options & 16) != 0;
-				openResetPopup(resetText, resetColors, resetItems, resetWidgets);
+				openResetPopup(selection.isText(), selection.isColors(), selection.isItems(), selection.isWidgets());
 			}
 		});
 		popupMenu.add(resetMultipleItem);
