@@ -56,6 +56,7 @@ public class ClueInstance
 
 	private Integer timeToDespawnFromDataInTicks;
 	private TileItem tileItem;
+	private Integer lastTileItemDespawnTick;
 	private boolean isNewClue;
 
 	// Constructor for clues from config
@@ -233,6 +234,23 @@ public class ClueInstance
 		{
 			this.timeToDespawnFromDataInTicks = tileItem.getDespawnTime();
 		}
+	}
+
+	// TileItem.getDespawnTime() relies on the game's tick counter, which resets on logout, so record it while valid
+	public void recordTileItemDespawnTick()
+	{
+		if (tileItem == null) return;
+		lastTileItemDespawnTick = tileItem.getDespawnTime();
+	}
+
+	public void detachTileItem()
+	{
+		if (tileItem == null) return;
+		if (lastTileItemDespawnTick != null)
+		{
+			timeToDespawnFromDataInTicks = lastTileItemDespawnTick;
+		}
+		tileItem = null;
 	}
 
 	public int getDespawnTick()

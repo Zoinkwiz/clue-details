@@ -213,7 +213,20 @@ public class ClueGroundManager
 			createEasyToEliteForTile(tile);
 		}
 
+		for (ClueInstance clueInstance : trackedClues.getAllClues())
+		{
+			clueInstance.recordTileItemDespawnTick();
+		}
+
 		lastZone = currentZone;
+	}
+
+	public void detachTileItems()
+	{
+		for (ClueInstance clueInstance : trackedClues.getAllClues())
+		{
+			clueInstance.detachTileItem();
+		}
 	}
 
 	// A Tile from a scene which has since been unloaded still answers getSceneLocation(), but getWorldLocation()
