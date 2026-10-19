@@ -444,6 +444,12 @@ public class ClueDetailsPlugin extends Plugin
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
+		// TileItem despawn times are invalid once logged out
+		if (event.getGameState() != GameState.LOGGED_IN && event.getGameState() != GameState.LOADING)
+		{
+			clueGroundManager.detachTileItems();
+		}
+
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
 			clueGroundManager.saveStateToConfig();
