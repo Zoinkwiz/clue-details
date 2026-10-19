@@ -29,14 +29,8 @@ import com.cluedetails.ClueDetailsConfig.*;
 
 import static com.cluedetails.ClueDetailsConfig.GROUP;
 import com.google.gson.Gson;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+
+import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
@@ -45,14 +39,18 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
 import lombok.Getter;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -61,9 +59,6 @@ import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
-import net.runelite.client.game.chatbox.ChatboxPanelManager;
-import net.runelite.client.plugins.grounditems.GroundItemsConfig;
-import net.runelite.client.plugins.inventorytags.InventoryTagsConfig;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
@@ -91,9 +86,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private Gson gson;
 
-	private ChatboxPanelManager chatboxPanelManager;
-
-	private CluePreferenceManager cluePreferenceManager;
+    private CluePreferenceManager cluePreferenceManager;
 	private ClueDetailsSharingManager clueDetailsSharingManager;
 	private final ClueDetailsPlugin plugin;
 	private final ClueDetailsConfig config;
@@ -108,10 +101,13 @@ public class ClueDetailsParentPanel extends PluginPanel
 	private static final ImageIcon COPY_HOVER_ICON;
 	private static final ImageIcon PASTE_ICON;
 	private static final ImageIcon PASTE_HOVER_ICON;
+	private static final ImageIcon EDIT_ICON;
+	private static final ImageIcon EDIT_HOVER_ICON;
 
 	private final JLabel resetMarkers = new JLabel(RESET_ICON);
 	private final JLabel copyMarkers = new JLabel(COPY_ICON);
 	private final JLabel pasteMarkers = new JLabel(PASTE_ICON);
+	private final JLabel editMarkers = new JLabel(EDIT_ICON);
 
 	static
 	{
@@ -126,13 +122,17 @@ public class ClueDetailsParentPanel extends PluginPanel
 		final BufferedImage pasteIcon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/paste_icon.png");
 		PASTE_ICON = new ImageIcon(pasteIcon);
 		PASTE_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(pasteIcon, 0.53f));
+
+		final BufferedImage editIcon = ImageUtil.loadImageResource(ClueDetailsPlugin.class, "/edit_icon.png");
+		EDIT_ICON = new ImageIcon(editIcon);
+		EDIT_HOVER_ICON = new ImageIcon(ImageUtil.alphaOffset(editIcon, 0.53f));
 	}
 
 	private final JLabel statusLabel;
 	private Timer statusLabelTimer;
 
 	public ClueDetailsParentPanel(ConfigManager configManager, Gson gson, CluePreferenceManager cluePreferenceManager, ClueDetailsConfig config,
-									ChatboxPanelManager chatboxPanelManager, ClueDetailsSharingManager clueDetailsSharingManager, ClueDetailsPlugin plugin)
+								  ClueDetailsSharingManager clueDetailsSharingManager, ClueDetailsPlugin plugin)
 	{
 		super(false);
 
@@ -140,8 +140,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 		this.gson = gson;
 		this.cluePreferenceManager = cluePreferenceManager;
 		this.config = config;
-		this.chatboxPanelManager = chatboxPanelManager;
-		this.clueDetailsSharingManager = clueDetailsSharingManager;
+        this.clueDetailsSharingManager = clueDetailsSharingManager;
 		this.plugin = plugin;
 
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -301,33 +300,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 			int clueClueID = clue.getClueID();
 
 			RuneliteColorPicker colorPicker = getColorPicker(clue.getDetailColor(configManager));
-			colorPicker.setOnColorChange(c ->
-			{
-				// Default color is white, so white is used to unset configurations
-				if (ClueIdToDetails.equalRGB(c, Color.WHITE))
-				{
-					clueDetailsSharingManager.resetClueDetail(clueClueID, false, true, false, false);
-				}
-				else
-				{
-					configManager.setConfiguration("clue-details-color", String.valueOf(clueClueID), c);
-
-					// Apply color to Ground Items and Inventory Tags
-					// Beginner & master clues are not supported by these plugins
-					if (clueClueID >= 2677)
-					{
-						if (config.colorGroundItems())
-						{
-							configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueItemId, c);
-						}
-						if (config.colorInventoryTags())
-						{
-							configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueItemId,
-								plugin.getGson().toJson(Map.of("color", c)));
-						}
-					}
-				}
-			});
+			colorPicker.setOnColorChange(c -> clueDetailsSharingManager.setClueColour(c, clueClueID));
 			colorPicker.setVisible(true);
 		});
 		popupMenu.add(inputColorItem);
@@ -651,6 +624,33 @@ public class ClueDetailsParentPanel extends PluginPanel
 			}
 		});
 
+		editMarkers.setToolTipText("Edit currently filtered clues");
+		JPopupMenu editPopupMenu = getEditPopupMenu();
+		editMarkers.setComponentPopupMenu(editPopupMenu);
+		editMarkers.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e))
+				{
+					editPopupMenu.show(editMarkers, e.getX(), e.getY());
+				}
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				editMarkers.setIcon(EDIT_HOVER_ICON);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				editMarkers.setIcon(EDIT_ICON);
+			}
+		});
+
+		markerButtons.add(editMarkers);
 		markerButtons.add(resetMarkers);
 		markerButtons.add(pasteMarkers);
 		markerButtons.add(copyMarkers);
@@ -683,7 +683,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private JPopupMenu getResetPopupMenu()
 	{
-		JPopupMenu popupMenu = new JPopupMenu();
+		JPopupMenu popupMenu = createTitledPopupMenu("Reset filtered details");
 
 		JMenuItem inputItemResetText = new JMenuItem("Reset clue text");
 		inputItemResetText.addActionListener(event
@@ -725,7 +725,7 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private JPopupMenu getCopyPopupMenu()
 	{
-		JPopupMenu popupMenu = new JPopupMenu();
+		JPopupMenu popupMenu = createTitledPopupMenu("Export filtered details");
 
 		JMenuItem inputItemExportText = new JMenuItem("Export clue text");
 		inputItemExportText.addActionListener(event
@@ -756,13 +756,110 @@ public class ClueDetailsParentPanel extends PluginPanel
 
 	private JPopupMenu getImportPopupMenu()
 	{
-		JPopupMenu popupMenu = new JPopupMenu();
+		JPopupMenu popupMenu = createTitledPopupMenu("Import clue details");
 
 		JMenuItem importFiltered = new JMenuItem("Import details for currently filtered clues from your clipboard");
 		importFiltered.addActionListener(event ->
 			clueDetailsSharingManager.promptForImport(true)
 		);
 		popupMenu.add(importFiltered);
+
+		return popupMenu;
+	}
+
+	private JPopupMenu getEditPopupMenu()
+	{
+		JPopupMenu popupMenu = createTitledPopupMenu("Edit filtered clues");
+
+		JMenuItem literalTextReplace = new JMenuItem("Replace text");
+		literalTextReplace.addActionListener(event ->
+			showLiteralReplacePopup()
+		);
+		popupMenu.add(literalTextReplace);
+
+		JMenuItem addItemToClues = new JMenuItem("Add item");
+		addItemToClues.addActionListener(event ->
+		{
+			ChatboxItemSearch itemSearch = getItemSearch("Add item");
+			itemSearch.onItemSelected((itemId) ->
+			{
+				for (Clues clue : getVisibleClues())
+				{
+					addItemToClue(itemId, clue);
+				}
+			}).build();
+		});
+		popupMenu.add(addItemToClues);
+
+		JMenuItem removeItemFromClues = new JMenuItem("Remove item");
+		removeItemFromClues.addActionListener(event ->
+		{
+			ChatboxItemSearch itemSearch = getItemSearch("Remove item");
+			itemSearch.onItemSelected((itemId) ->
+			{
+				for (Clues clue : getVisibleClues())
+				{
+					removeItemFromClue(itemId, clue);
+				}
+			}).build();
+		});
+		popupMenu.add(removeItemFromClues);
+
+		JMenuItem setColourForClues = new JMenuItem("Set colour");
+		setColourForClues.addActionListener(event ->
+		{
+			RuneliteColorPicker colorPicker = getColorPicker(Color.WHITE);
+			// Only set colour on close because my god that was a lot of config updates per frame
+			colorPicker.setOnClose(c ->
+			{
+				List<Clues> affectedClues = getVisibleClues();
+				if (showColourChangeConfirmDialog(null, c, affectedClues.size()) == 0)
+				{
+					for (Clues clue : affectedClues) clueDetailsSharingManager.setClueColour(c, clue.getClueID());
+				}
+			});
+			colorPicker.setVisible(true);
+		});
+		popupMenu.add(setColourForClues);
+
+		JMenuItem replaceColourForClues = new JMenuItem("Replace colour");
+		replaceColourForClues.addActionListener(event ->
+		{
+			List<Clues> visibleClues = getVisibleClues();
+			Set<Color> visibleColours = new HashSet<>();
+			visibleClues.forEach(c -> visibleColours.add(c.getDetailColor(configManager)));
+			Color[] colours = visibleColours.toArray(Color[]::new);
+
+			JComboBox<Color> colourList = new JComboBox<>(colours);
+			colourList.setRenderer(new ColourListCellRenderer());
+
+			int confirm = JOptionPane.showConfirmDialog(
+				this,
+				colourList,
+				"Select a colour to replace",
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE
+			);
+
+			if (confirm == 0)
+			{
+				Color prevColour = (Color) colourList.getSelectedItem();
+				List<Clues> affectedClues = visibleClues.stream().filter(clue ->
+						clue.getDetailColor(configManager).getRGB() == prevColour.getRGB()).collect(Collectors.toList()
+				);
+
+				RuneliteColorPicker colorPicker = getColorPicker(prevColour);
+				colorPicker.setOnClose(c ->
+				{
+					if (showColourChangeConfirmDialog(prevColour, c, affectedClues.size()) == 0)
+					{
+						for (Clues clue : affectedClues) clueDetailsSharingManager.setClueColour(c, clue.getClueID());
+					}
+				});
+				colorPicker.setVisible(true);
+			}
+		});
+		popupMenu.add(replaceColourForClues);
 
 		return popupMenu;
 	}
@@ -991,5 +1088,179 @@ public class ClueDetailsParentPanel extends PluginPanel
 			.map(ListItem::getClue)
 			.distinct()
 			.collect(Collectors.toList());
+	}
+
+	private void showLiteralReplacePopup()
+	{
+		JTextField findField = new JTextField();
+		JTextField replaceField = new JTextField();
+
+		Object[] message = {
+				"Replace:", findField,
+				"With:", replaceField
+		};
+
+		final JOptionPane optionPane = new JOptionPane(
+				message,
+				JOptionPane.PLAIN_MESSAGE,
+				JOptionPane.OK_CANCEL_OPTION
+		);
+
+		final JDialog dialog = new JDialog();
+		dialog.setLocationRelativeTo(plugin.getPanel());
+		dialog.setTitle("Replace");
+		dialog.setModal(true);
+		dialog.setContentPane(optionPane);
+		optionPane.addPropertyChangeListener(JOptionPane.VALUE_PROPERTY, e ->
+		{
+			if (dialog.isVisible() && (e.getSource() == optionPane))
+			{
+				int value = (Integer) optionPane.getValue();
+
+				switch (value)
+				{
+					case JOptionPane.ERROR:
+						return;
+					case JOptionPane.OK_OPTION:
+						if (findField.getText().isEmpty())
+						{
+							JOptionPane.showMessageDialog(
+									dialog,
+									"Text to replace cannot be blank",
+									"",
+									JOptionPane.WARNING_MESSAGE
+							);
+							optionPane.setValue(JOptionPane.ERROR);
+							return;
+						}
+					default:
+						dialog.setVisible(false);
+				}
+			}
+		});
+		dialog.pack();
+		dialog.setVisible(true);
+
+		int confirm = (Integer) optionPane.getValue();
+
+		if (confirm == JOptionPane.OK_OPTION)
+		{
+			String findText = findField.getText();
+			String replaceText = replaceField.getText();
+			for (Clues clue : getVisibleClues())
+			{
+				String originalDetail = clue.getDetail(configManager);
+				if (originalDetail.contains(findText))
+				{
+					String newDetail = originalDetail.replace(findText, replaceText);
+					configManager.setConfiguration("clue-details-text", String.valueOf(clue.getClueID()), newDetail);
+				}
+			}
+		}
+
+		plugin.getPanel().refresh();
+	}
+
+	private void addItemToClue(Integer itemId, Clues clue)
+	{
+		int clueId = clue.getClueID();
+		List<Integer> clueItemIds = cluePreferenceManager.getItemsPreference(clueId);
+
+		if (clueItemIds == null)
+		{
+			clueItemIds = new ArrayList<>();
+		}
+
+		if (!clueItemIds.contains(itemId))
+		{
+			clueItemIds.add(itemId);
+		}
+
+		cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
+	}
+
+	private void removeItemFromClue(Integer itemId, Clues clue)
+	{
+		int clueId = clue.getClueID();
+		List<Integer> clueItemIds = cluePreferenceManager.getItemsPreference(clueId);
+
+		if (clueItemIds != null)
+		{
+			clueItemIds.remove(itemId);
+		}
+		else
+		{
+			clueItemIds = new ArrayList<>();
+		}
+
+		cluePreferenceManager.saveItemsPreference(clueId, clueItemIds);
+	}
+
+	private int showColourChangeConfirmDialog(Color oldColour, Color newColour, int affectedClueCount)
+	{
+		String oldColourString = oldColour == null ? "" : String.format("#%02X%02X%02X", oldColour.getRed(), oldColour.getGreen(), oldColour.getBlue());
+		String oldColourMessage = oldColour == null ? "" : String.format("from <font color=%s>%s</font>", oldColourString, oldColourString);
+		String newColourString = String.format("#%02X%02X%02X", newColour.getRed(), newColour.getGreen(), newColour.getBlue());
+		String confirmMessage = String.format(
+			"<html>Are you sure you want to change the colour of %d clues %s to <font color=%s>%s</font>?</html>",
+			affectedClueCount,
+			oldColourMessage,
+			newColourString,
+			newColourString
+		);
+		return JOptionPane.showConfirmDialog(
+			this,
+			confirmMessage,
+			"Confirm colour change",
+			JOptionPane.YES_NO_OPTION,
+			JOptionPane.PLAIN_MESSAGE
+		);
+	}
+
+	// https://stackoverflow.com/a/79706033
+	private JPopupMenu createTitledPopupMenu(String title)
+	{
+		JPopupMenu popupMenu = new JPopupMenu();
+		Border titleUnderline = BorderFactory.createMatteBorder(1, 0, 0, 0, popupMenu.getForeground());
+		TitledBorder labelBorder = BorderFactory.createTitledBorder(
+				titleUnderline, title, TitledBorder.CENTER, TitledBorder.ABOVE_TOP
+		);
+		popupMenu.setBorder(BorderFactory.createCompoundBorder(popupMenu.getBorder(), labelBorder));
+
+		return popupMenu;
+	}
+
+	private static class ColourListCellRenderer extends JPanel implements ListCellRenderer<Color>
+	{
+		// I don't *think* I need to initialise this but better safe than sorry
+		private Color swatchColour = Color.WHITE;
+
+		private final static int SWATCH_PADDING = 1;
+		private final static int SWATCH_WIDTH = 50;
+		private final static int HEX_PAD = 5;
+
+		public ColourListCellRenderer()
+		{
+			setOpaque(true);
+		}
+
+		@Override
+		public Component getListCellRendererComponent(JList list, Color colour, int index, boolean isSelected, boolean cellHasFocus)
+		{
+			this.swatchColour = colour;
+			if (isSelected) this.setBackground(ColorScheme.DARKER_GRAY_HOVER_COLOR);
+			else this.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			return this;
+		}
+
+		@Override
+		public void paint(Graphics g)
+		{
+			super.paint(g);
+			g.setColor(swatchColour);
+			g.fillRect(SWATCH_PADDING, SWATCH_PADDING, SWATCH_WIDTH, this.getHeight() - SWATCH_PADDING * 2);
+			String hex = String.format("#%02X%02X%02X", swatchColour.getRed(), swatchColour.getGreen(), swatchColour.getBlue());
+			g.drawString(hex, SWATCH_PADDING + SWATCH_WIDTH + HEX_PAD, this.getHeight());
+		}
 	}
 }
