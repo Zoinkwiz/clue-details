@@ -480,22 +480,7 @@ public class ClueDetailsSharingManager
 	{
 		if (ClueIdToDetails.equalRGB(colour, Color.WHITE))
 		{
-			// Replace the following with
-			// resetClueDetail(clueId, false, true, false, false);
-			// after #237 is merged
-			configManager.unsetConfiguration("clue-details-color", String.valueOf(clueId));
-
-			if (clueId >= 2677)
-			{
-				if (config.colorGroundItems())
-				{
-					configManager.unsetConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueId);
-				}
-				if (config.colorInventoryTags())
-				{
-					configManager.unsetConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueId);
-				}
-			}
+			resetClueDetail(clueId, false, true, false, false);
 		}
 		else
 		{
