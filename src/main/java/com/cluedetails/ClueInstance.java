@@ -54,9 +54,11 @@ public class ClueInstance
 	@Setter
 	private long sequenceNumber;
 
-	private Integer timeToDespawnFromDataInTicks;
+	// Despawn tick as reported once the item is loaded from the scene, used for timers, saving and matching
+	private int despawnTick;
 	private TileItem tileItem;
-	private Integer lastTileItemDespawnTick;
+	// A freshly dropped item reports a despawn tick 1 higher than it will once reloaded from the scene
+	private int tileItemOffset;
 	private boolean isNewClue;
 
 	// Constructor for clues from config
@@ -68,7 +70,7 @@ public class ClueInstance
 		// if had on then turned off in same session, we don't know what happened in meantime.
 		// Ticks go forward even when logged into other game modes. For simplicity we assume when
 		// Loaded we just are starting from the exact same despawn time remaining.
-		this.timeToDespawnFromDataInTicks = data.getDespawnTick();
+		this.despawnTick = data.getDespawnTick();
 
 		this.sequenceNumber = sequenceGenerator.getAndIncrement();
 	}
@@ -79,7 +81,7 @@ public class ClueInstance
 		this.clueIds = clueIds;
 		this.itemId = itemId;
 		this.location = null;
-		this.timeToDespawnFromDataInTicks = -1;
+		this.despawnTick = -1;
 
 		this.sequenceNumber = sequenceGenerator.getAndIncrement();
 	}
@@ -91,7 +93,7 @@ public class ClueInstance
 		this.itemId = itemId;
 		this.location = location;
 		this.tileItem = tileItem;
-		this.timeToDespawnFromDataInTicks = tileItem.getDespawnTime();
+		this.despawnTick = tileItem.getDespawnTime();
 
 		this.sequenceNumber = sequenceGenerator.getAndIncrement();
 	}
@@ -103,7 +105,9 @@ public class ClueInstance
 		this.itemId = itemId;
 		this.location = location;
 		this.tileItem = tileItem;
-		this.timeToDespawnFromDataInTicks = tileItem.getDespawnTime() - 2;
+		this.tileItemOffset = -1;
+		// Read at spawn, which is a further tick ahead of reads during the game tick
+		this.despawnTick = tileItem.getDespawnTime() - 2;
 		this.isNewClue = isNewClue;
 
 		this.sequenceNumber = sequenceGenerator.getAndIncrement();
@@ -228,45 +232,24 @@ public class ClueInstance
 		return color;
 	}
 
-	public void updateDespawnTick()
+	// Must be called during a game tick, with an item loaded from the scene
+	public void setTileItem(TileItem tileItem)
 	{
-		if (tileItem != null)
-		{
-			this.timeToDespawnFromDataInTicks = tileItem.getDespawnTime();
-		}
+		this.tileItem = tileItem;
+		this.tileItemOffset = 0;
+		this.despawnTick = tileItem.getDespawnTime();
 	}
 
-	// TileItem.getDespawnTime() relies on the game's tick counter, which resets on logout, so record it while valid
-	public void recordTileItemDespawnTick()
+	// TileItem.getDespawnTime() relies on the game's tick counter, which resets on logout, so only read it each game tick
+	public void refreshDespawnTick()
 	{
 		if (tileItem == null) return;
-		lastTileItemDespawnTick = tileItem.getDespawnTime();
+		despawnTick = tileItem.getDespawnTime() + tileItemOffset;
 	}
 
 	public void detachTileItem()
 	{
-		if (tileItem == null) return;
-		if (lastTileItemDespawnTick != null)
-		{
-			timeToDespawnFromDataInTicks = lastTileItemDespawnTick;
-		}
 		tileItem = null;
-	}
-
-	public int getDespawnTick()
-	{
-		if (tileItem != null)
-		{
-			return tileItem.getDespawnTime();
-		}
-		return timeToDespawnFromDataInTicks;
-	}
-
-	// Theory: This should mean that tiles we've seen have TileItem, and the actual despawn is used for ALL items on that tile
-	// For tiles we've not seen this session, all items on it should have no TileItem, and thus we'll keep the same consistent tick diff
-	public int getTicksToDespawnConsideringTileItem(int currentTick)
-	{
-		return timeToDespawnFromDataInTicks == null ? -1 : timeToDespawnFromDataInTicks;
 	}
 
 	public String getCombinedClueText(ConfigManager configManager, boolean showColor, boolean isFloorText)
