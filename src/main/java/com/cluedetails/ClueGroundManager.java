@@ -215,7 +215,7 @@ public class ClueGroundManager
 
 		for (ClueInstance clueInstance : trackedClues.getAllClues())
 		{
-			clueInstance.recordTileItemDespawnTick();
+			clueInstance.refreshDespawnTick();
 		}
 
 		lastZone = currentZone;
@@ -320,8 +320,6 @@ public class ClueGroundManager
 
 	private List<ClueInstance> generateNewCluesOnTile(WorldPoint tileWp, List<ClueInstance> storedClues, List<TileItem> cluesOnTile)
 	{
-		int currentTick = client.getTickCount();
-
 		if (storedClues.size() == 1 && cluesOnTile.size() == 1)
 		{
 			// We assume it is the same clue. It is possible for it to be swapped with another clue though in
@@ -334,7 +332,7 @@ public class ClueGroundManager
 		}
 
 		List<ClueInstance> sortedStoredClues = new ArrayList<>(storedClues);
-		sortedStoredClues.sort(Comparator.comparingInt((clue) -> clue.getTicksToDespawnConsideringTileItem(currentTick)));
+		sortedStoredClues.sort(Comparator.comparingInt(ClueInstance::getDespawnTick));
 
 		// If only 1 of either but not both, less certainty as can't use diffs.
 		// Could assume things like last clue expired, probs let's just assume nothing
@@ -402,31 +400,29 @@ public class ClueGroundManager
 			}
 		}
 
+		// Compare against the stored despawn ticks from before any matches on this tile are applied
+		int[] storedTicks = sortedStoredClues.stream().mapToInt(ClueInstance::getDespawnTick).toArray();
+		Map<ClueInstance, TileItem> matches = new IdentityHashMap<>();
+
 		// There can be fewer clues on the ground than we have stored for the tile, so stop once the ground pairs run out
 		for (int i = 0; i < sortedStoredClues.size() - 1 && minGroundItemFound + 1 < sortedGroundClues.size(); i++)
 		{
-			ClueInstance clueInstance1 = sortedStoredClues.get(i);
-			ClueInstance clueInstance2 = sortedStoredClues.get(i + 1);
-
 			TileItem groundClue1 = sortedGroundClues.get(minGroundItemFound);
 			TileItem groundClue2 = sortedGroundClues.get(minGroundItemFound + 1);
 
-			int currentStoredClueDiff = clueInstance2.getTimeToDespawnFromDataInTicks() - clueInstance1.getTimeToDespawnFromDataInTicks();
+			int currentStoredClueDiff = storedTicks[i + 1] - storedTicks[i];
 			int currentGroundClueDiff = groundClue2.getDespawnTime() - groundClue1.getDespawnTime();
 			// Same diff, probs same thing
 			if (currentGroundClueDiff != currentStoredClueDiff) continue;
 			// If item will despawn later than the stored clue, it can't be it.
-			if (groundClue1.getDespawnTime() > clueInstance1.getDespawnTick()) continue;
-			if (groundClue2.getDespawnTime() > clueInstance2.getDespawnTick()) continue;
-			clueInstance1.setTileItem(groundClue1);
-			clueInstance2.setTileItem(groundClue2);
+			if (groundClue1.getDespawnTime() > storedTicks[i]) continue;
+			if (groundClue2.getDespawnTime() > storedTicks[i + 1]) continue;
+			matches.put(sortedStoredClues.get(i), groundClue1);
+			matches.put(sortedStoredClues.get(i + 1), groundClue2);
 			minGroundItemFound++;
 		}
 
-		for (ClueInstance sortedStoredClue : sortedStoredClues)
-		{
-			sortedStoredClue.updateDespawnTick();
-		}
+		matches.forEach(ClueInstance::setTileItem);
 	}
 
 	private List<TileItem> getClueItemsAtTile(Tile tile)

@@ -165,7 +165,7 @@ public class ClueGroundTimersTest
 		ClueGroundTimer timer = visibleTimer();
 		assertEquals(Color.RED, timer.getTextColor());
 		timer.setNotified(true);
-		clue.setTimeToDespawnFromDataInTicks(600);
+		clue.setDespawnTick(600);
 		plugin.renderGroundClueTimers();
 		assertEquals(Color.WHITE, timer.getTextColor());
 	}

@@ -103,7 +103,7 @@ public class ClueGroundSaveDataManager
 					WorldPoint location = clueData.getLocation();
 					ClueInstance clue = new ClueInstance(clueData);
 					// Offset despawn time by current client tick count
-					clue.setTimeToDespawnFromDataInTicks(clue.getTimeToDespawnFromDataInTicks() + client.getTickCount());
+					clue.setDespawnTick(clue.getDespawnTick() + client.getTickCount());
 					if (groundClues.containsKey(location))
 					{
 						groundClues.get(location).add(clue);
