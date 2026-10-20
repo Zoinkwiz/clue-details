@@ -53,6 +53,7 @@ import net.runelite.client.util.HotkeyListener;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -101,8 +102,18 @@ public class ClueBankTab
 	@Inject
 	private PotionStorage potionStorage;
 
+	private volatile boolean hotkeyEnabled;
+
 	private final HotkeyListener hotkeyListener = new HotkeyListener(() -> config.clueBankTabHotkey())
 	{
+		// HotkeyListener consumes the key, blocking it elsewhere
+		@Override
+		public void keyPressed(KeyEvent e)
+		{
+			if (!hotkeyEnabled) return;
+			super.keyPressed(e);
+		}
+
 		@Override
 		public void hotkeyPressed()
 		{
@@ -170,6 +181,12 @@ public class ClueBankTab
 
 			clueBankTabInterface.refreshTab();
 		});
+	}
+
+	@Subscribe
+	public void onClientTick(ClientTick event)
+	{
+		hotkeyEnabled = clueBankTabInterface.canToggle();
 	}
 
 	@Subscribe

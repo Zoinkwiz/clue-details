@@ -222,12 +222,15 @@ public class ClueBankTabInterface
 	 */
 	public void toggleTab()
 	{
-		if (isHidden() || clueBackgroundWidget == null || clueBackgroundWidget.isHidden())
-		{
-			return;
-		}
+		if (!canToggle()) return;
 
 		handleToggle();
+	}
+
+	public boolean canToggle()
+	{
+		if (isHidden() || clueBackgroundWidget == null || clueBackgroundWidget.isHidden()) return false;
+		return client.getVarcIntValue(VarClientInt.INPUT_TYPE) == 0;
 	}
 
 	private void handleToggle()
