@@ -49,9 +49,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
+
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.client.chat.QueuedMessage;
@@ -402,33 +401,7 @@ public class ClueDetailsSharingManager
 					}
 					if (importPoint.color != null)
 					{
-						// Default color is white, so white is used to unset configurations
-						if (ClueIdToDetails.equalRGB(importPoint.color, Color.WHITE))
-						{
-							resetClueDetail(importPoint.id, false, true, false, false);
-						}
-						else
-						{
-							configManager.setConfiguration("clue-details-color", String.valueOf(importPoint.id), importPoint.color);
-
-							// Apply color to Ground Items and Inventory Tags
-							// Beginner & master clues are not supported by these plugins
-							if (importPoint.id >= 2677)
-							{
-								// Ensure ARGB format
-								Color color = Color.decode(configManager.getConfiguration("clue-details-color", String.valueOf(importPoint.id)));
-
-								if (config.colorGroundItems())
-								{
-									configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + importPoint.id, color);
-								}
-								if (config.colorInventoryTags())
-								{
-									configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + importPoint.id,
-										gson.toJson(Map.of("color", color)));
-								}
-							}
-						}
+						setClueColour(importPoint.color, importPoint.id);
 					}
 					if (importPoint.itemIds != null)
 					{
@@ -501,5 +474,37 @@ public class ClueDetailsSharingManager
 			.filter(config.filterListByTier())
 			.filter(config.filterListByRegion())
 			.collect(Collectors.toList());
+	}
+
+	public void setClueColour(Color colour, int clueId)
+	{
+		if (ClueIdToDetails.equalRGB(colour, Color.WHITE))
+		{
+			resetClueDetail(clueId, false, true, false, false);
+		}
+		else
+		{
+			{
+				configManager.setConfiguration("clue-details-color", String.valueOf(clueId), colour);
+
+				// Apply color to Ground Items and Inventory Tags
+				// Beginner & master clues are not supported by these plugins
+				if (clueId >= 2677)
+				{
+					// Ensure ARGB format
+					Color color = Color.decode(configManager.getConfiguration("clue-details-color", String.valueOf(clueId)));
+
+					if (config.colorGroundItems())
+					{
+						configManager.setConfiguration(GroundItemsConfig.GROUP, "highlight_" + clueId, color);
+					}
+					if (config.colorInventoryTags())
+					{
+						configManager.setConfiguration(InventoryTagsConfig.GROUP, "tag_" + clueId,
+								gson.toJson(Map.of("color", color)));
+					}
+				}
+			}
+		}
 	}
 }

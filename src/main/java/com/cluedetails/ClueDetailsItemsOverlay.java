@@ -143,11 +143,6 @@ public class ClueDetailsItemsOverlay extends WidgetItemOverlay
 	{
 		List<Integer> highlightItems = clue.getItems(clueDetailsPlugin, configManager);
 
-		if (highlightItems == null)
-		{
-			return;
-		}
-
 		highlightItems.forEach(item -> clueCache.put(item, clue));
 	}
 

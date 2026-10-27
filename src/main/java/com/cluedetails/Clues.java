@@ -1409,7 +1409,7 @@ public class Clues
 			{
 			}.getType());
 		}
-		return null;
+		return new ArrayList<>();
 	}
 
 	public static boolean isClue(int itemId, boolean isDeveloperMode)

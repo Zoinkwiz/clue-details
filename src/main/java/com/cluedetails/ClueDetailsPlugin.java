@@ -25,6 +25,7 @@
 package com.cluedetails;
 
 import com.cluedetails.panels.ClueDetailsParentPanel;
+import com.cluedetails.panels.ItemDetails;
 import com.cluedetails.tools.ClueDetailsWorldMapPoint;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
@@ -44,12 +45,15 @@ import java.util.stream.Collectors;
 import java.util.TreeMap;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.swing.*;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
+import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemID;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
@@ -252,6 +256,9 @@ public class ClueDetailsPlugin extends Plugin
 
 	private final HashSet<String> validFairyRings = new HashSet<>();
 
+	@Getter
+	private final List<ItemDetails> allItems = new ArrayList<>();
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -264,9 +271,11 @@ public class ClueDetailsPlugin extends Plugin
 
 		populateValidFairyRings();
 
+		populateAllItems();
+
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "/icon.png");
 
-		panel = new ClueDetailsParentPanel(configManager, gson, cluePreferenceManager, config, chatboxPanelManager, clueDetailsSharingManager, this);
+		panel = new ClueDetailsParentPanel(configManager, gson, cluePreferenceManager, config, clueDetailsSharingManager, this);
 		navButton = NavigationButton.builder()
 				.tooltip("Clue Details")
 				.icon(icon)
@@ -1019,5 +1028,26 @@ public class ClueDetailsPlugin extends Plugin
 			validFairyRings.add(fairyRing.name());
 		}
 		validFairyRings.add("HIDEOUT");
+	}
+
+	private void populateAllItems()
+	{
+		int maxId = client.getItemCount();
+
+		clientThread.invoke(() ->
+		{
+			for (int id = 0; id < maxId; id++)
+			{
+				ItemComposition comp = itemManager.getItemComposition(id);
+				// TODO: actually filter out junk items
+				if (comp.getName() != null && comp.getNote() == -1 && comp.getPlaceholderTemplateId() == -1)
+				{
+//					log.debug(String.valueOf(id));
+					allItems.add(new ItemDetails(id, comp.getName(), new ImageIcon(itemManager.getImage(id))));
+				}
+			}
+		});
+
+		allItems.sort(Comparator.comparing(ItemDetails::getName));
 	}
 }
