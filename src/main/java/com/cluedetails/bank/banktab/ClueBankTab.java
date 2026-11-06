@@ -192,21 +192,18 @@ public class ClueBankTab
 	@Subscribe
 	public void onScriptPreFired(ScriptPreFired event)
 	{
-		final int POTION_STORE_UPDATED = 6555;
-
 		int scriptId = event.getScriptId();
 
-		if (scriptId == POTION_STORE_UPDATED)
+		if (scriptId == ScriptID.BANKMAIN_FINISHBUILDING)
 		{
+			resetWidgets();
+
 			// Since the script vm isn't reentrant, we can't call into POTIONSTORE_DOSES/POTIONSTORE_WITHDRAW_DOSES
 			// from bankmain_finishbuilding for the layout. Instead, we record all of the potions on client tick,
 			// which is after this is run, but before the var/inv transmit listeners run, so that we will have
 			// them by the time the inv transmit listener runs.
 			potionStorage.updateCachedPotions = true;
-		}
-		else if (scriptId == ScriptID.BANKMAIN_FINISHBUILDING)
-		{
-			resetWidgets();
+
 			if (clueBankTabInterface.isClueTabActive())
 			{
 				Widget bankTitle = client.getWidget(InterfaceID.Bankmain.TITLE);

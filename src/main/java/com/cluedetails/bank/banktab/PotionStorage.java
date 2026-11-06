@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.events.WidgetClosed;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.VarPlayerID;
@@ -104,15 +105,31 @@ public class PotionStorage
 		}
 	}
 
-	// Use varp change event instead of a widget change listener so that we can recache the potions prior to
-	// the cs2 vm running.
+	// Use varp change events instead of a widget change listener so we can recache the potions
+	// prior to the cs2 vm running. BASE_VAR_1-6 carry the actual dose data; VIALS alone misses that.
 	@Subscribe
 	public void onVarbitChanged(VarbitChanged varbitChanged)
 	{
-		if (VarPlayerID.POTIONSTORE_VIALS == varbitChanged.getVarpId())
+		int id = varbitChanged.getVarpId();
+		if (id == VarPlayerID.POTIONSTORE_VIALS
+			|| id == VarPlayerID.POTIONSTORE_BASE_VAR_1
+			|| id == VarPlayerID.POTIONSTORE_BASE_VAR_2
+			|| id == VarPlayerID.POTIONSTORE_BASE_VAR_3
+			|| id == VarPlayerID.POTIONSTORE_BASE_VAR_4
+			|| id == VarPlayerID.POTIONSTORE_BASE_VAR_5
+			|| id == VarPlayerID.POTIONSTORE_BASE_VAR_6)
 		{
 			updateCachedPotions = true;
 			updateBankLayout = true; // trigger a bank rebuild as the qty has changed
+		}
+	}
+
+	@Subscribe
+	public void onWidgetClosed(WidgetClosed event)
+	{
+		if (event.getGroupId() == InterfaceID.BANKMAIN && event.isUnload())
+		{
+			potions = null;
 		}
 	}
 
