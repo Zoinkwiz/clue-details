@@ -107,6 +107,11 @@ public class ClueBankManager
 		cluesGoneFromInventory.put(clueInstance.getItemId(), clueInstance);
 	}
 
+	public ClueInstance getClueByClueItemId(Integer clueItemID)
+	{
+		return cluesInBank.get(clueItemID);
+	}
+
 	public void saveStateToConfig()
 	{
 		clueBankSaveDataManager.saveStateToConfig(cluesInBank);

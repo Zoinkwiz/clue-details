@@ -61,8 +61,9 @@ public class ClueInventoryManager
 	private final ClueDetailsPlugin clueDetailsPlugin;
 	private final ClueGroundManager clueGroundManager;
 	private final ChatboxPanelManager chatboxPanelManager;
-	private final Map<Integer, ClueInstance> cluesInInventory = new HashMap<>();
-	private final Map<Integer, ClueInstance> previousCluesInInventory = new HashMap<>();
+	// LinkedHashMap so getCluesInInventory() iterates in actual inventory slot order.
+	private final Map<Integer, ClueInstance> cluesInInventory = new LinkedHashMap<>();
+	private final Map<Integer, ClueInstance> previousCluesInInventory = new LinkedHashMap<>();
 
 	@Getter
 	private long lastInventoryUpdate = 0;
