@@ -351,7 +351,7 @@ public class Clues
 		new Clues("Eohric: Talk", ItemID.CLUE_SCROLL_MEDIUM_12071, ClueTier.MEDIUM, null, List.of(new WorldPoint(2900, 3565, 0))),
 		new Clues("Jethick: Talk", ItemID.CLUE_SCROLL_MEDIUM_7278, ClueTier.MEDIUM, null, List.of(new WorldPoint(2541, 3305, 0))),
 		new Clues("Horphis: Talk", ItemID.CLUE_SCROLL_MEDIUM_19742, ClueTier.MEDIUM, null, List.of(new WorldPoint(1639, 3812, 0))),
-		new Clues("Ironman tutor: Talk", ItemID.CLUE_SCROLL_MEDIUM_19770, ClueTier.MEDIUM, null, List.of(new WorldPoint(3227, 3227, 0))),
+		new Clues("Captain Harlan: Talk", ItemID.CLUE_SCROLL_MEDIUM_19770, ClueTier.MEDIUM, null, List.of(new WorldPoint(3227, 3227, 0))),
 		new Clues("Marisi: Talk", ItemID.CLUE_SCROLL_MEDIUM_19756, ClueTier.MEDIUM, null, List.of(new WorldPoint(1737, 3557, 0))),
 		new Clues("Dominic Onion: Talk", ItemID.CLUE_SCROLL_MEDIUM_19736, ClueTier.MEDIUM, null, List.of(new WorldPoint(2609, 3116, 0))),
 		new Clues("Nieve/Steve: Talk", ItemID.CLUE_SCROLL_MEDIUM_12059, ClueTier.MEDIUM, null, List.of(new WorldPoint(2432, 3423, 0))),
